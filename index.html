@@ -7791,7 +7791,7 @@ function openCreateView(id) {
   document.getElementById('detail-view').style.display = 'none';
   const _cv = document.getElementById('create-view');
   _cv.style.display = 'block';
-  _cv.style.visibility = 'hidden';   // Layout berechnen ohne Flackern
+  _cv.style.visibility = 'visible';
   _cv.style.pointerEvents = '';
   document.getElementById('back-btn').style.display = 'flex';
   document.getElementById('create-view-title').textContent = id ? 'Standort bearbeiten' : 'Standort erfassen';
@@ -7899,18 +7899,16 @@ function openCreateView(id) {
   document.getElementById('create-map-search').value = '';
   document.getElementById('create-search-results').style.display = 'none';
 
-  // Kartencontainer explizit bemassen und Layout synchron erzwingen,
-  // damit Leaflet beim Initialisieren korrekte Dimensionen vorfindet.
-  try {
-    const _mapEl = document.getElementById('create-map');
-    _mapEl.style.height = (window.innerHeight - 110) + 'px';
-    void _mapEl.offsetHeight; // Forced layout
+  // Kartenhöhe explizit setzen (umgeht CSS-Chain-Probleme)
+  const _mapEl = document.getElementById('create-map');
+  _mapEl.style.height = (window.innerHeight - 110) + 'px';
+
+  // Karte nach Layout-Berechnung initialisieren
+  setTimeout(() => {
     initCreateMap(mapCenter);
     setCreatePickMode('rs');
-  } finally {
-    // Immer sichtbar machen, auch wenn ein Fehler auftritt
-    _cv.style.visibility = 'visible';
-  }
+    setTimeout(() => { if (createMapLeaflet) createMapLeaflet.invalidateSize(); }, 200);
+  }, 80);
 }
 
 function initCreateMap(center) {
