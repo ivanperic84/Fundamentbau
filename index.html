@@ -2387,14 +2387,20 @@ function cardTileUrl(pair) {
 let currentFilter = 'alle';
 
 function updateProgress() {
+  // Nur Standorte der aktiven Phase zählen
+  const phasePairs = _activePhase === 'baugrund'
+    ? PAIRS.filter(p => !p._phase || p._phase === 'baugrund')
+    : PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
+
   let g=0, a=0, ab=0;
-  PAIRS.forEach(p => { const s=getPairData(p.id).status; if(s==='geplant')g++; else if(s==='abklaerung')a++; else ab++; });
+  phasePairs.forEach(p => { const s=getPairData(p.id).status; if(s==='geplant')g++; else if(s==='abklaerung')a++; else ab++; });
+  const total = phasePairs.length;
   document.getElementById('cnt-geplant').textContent = g;
   document.getElementById('cnt-abklaerung').textContent = a;
   document.getElementById('cnt-abgeschlossen').textContent = ab;
-  document.getElementById('progress-label').textContent = `Fortschritt: ${ab} / ${PAIRS.length} abgeschlossen`;
-  document.getElementById('pb-green').style.width = (ab/PAIRS.length*100)+'%';
-  document.getElementById('pb-amber').style.width = (a/PAIRS.length*100)+'%';
+  document.getElementById('progress-label').textContent = `Fortschritt: ${ab} / ${total} abgeschlossen`;
+  document.getElementById('pb-green').style.width = total ? (ab/total*100)+'%' : '0%';
+  document.getElementById('pb-amber').style.width = total ? (a/total*100)+'%' : '0%';
   updateHeaderSub();
 }
 
@@ -2402,7 +2408,11 @@ function updateHeaderSub() {
   const el = document.getElementById('header-sub');
   if (!el) return;
   const phase = PHASEN_CONFIG[_activePhase]?.label || _activePhase;
-  el.textContent = `${PAIRS.length} Standorte · ${phase}`;
+  const phasePairs = _activePhase === 'baugrund'
+    ? PAIRS.filter(p => !p._phase || p._phase === 'baugrund')
+    : PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
+  const label = _activePhase === 'baugrund' ? 'Sondagestandorte' : 'Fundamentstandorte';
+  el.textContent = `${phasePairs.length} ${label} · ${phase}`;
 }
 
 function setFilter(f, btn) {
