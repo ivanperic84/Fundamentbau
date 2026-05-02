@@ -7831,7 +7831,7 @@ function openCreateView(id) {
     document.getElementById('c-nachweis-link').value  = bp('nachweisLink');
     document.getElementById('c-nachweisgruppe').value = bp('nachweisgruppe');
     document.getElementById('c-neigung').value        = bp('neigung');
-    document.getElementById('c-boden').value          = bp('boden');
+    const _bodenEl = document.getElementById('c-boden'); if (_bodenEl) _bodenEl.value = bp('boden');
     // Koordinaten
     document.getElementById('c-rs-e').value  = p.rs?.e || '';
     document.getElementById('c-rs-n').value  = p.rs?.n || '';
@@ -7901,31 +7901,14 @@ function openCreateView(id) {
 
   // Kartenhöhe explizit setzen (umgeht CSS-Chain-Probleme)
   const _mapEl = document.getElementById('create-map');
-  _mapEl.style.height = (window.innerHeight - 110) + 'px';
+  if (_mapEl) _mapEl.style.height = (window.innerHeight - 110) + 'px';
 
   // Karte nach Layout-Berechnung initialisieren
   setTimeout(() => {
-    const _dbgEl = document.getElementById('create-map');
-
-    // DEBUG: position:fixed → immer sichtbar unabhängig vom Container
-    const _dbgInfo = document.createElement('div');
-    _dbgInfo.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(200,0,0,0.92);color:white;padding:20px 32px;border-radius:10px;font-size:18px;font-weight:700;z-index:99999;text-align:center;line-height:1.7;';
-    _dbgInfo.innerHTML = `create-map<br>offsetH: ${_dbgEl.offsetHeight}px<br>offsetW: ${_dbgEl.offsetWidth}px<br>style.height: ${_dbgEl.style.height}`;
-    document.body.appendChild(_dbgInfo);
-
     initCreateMap(mapCenter);
     setCreatePickMode('rs');
-
-    if (createMapLeaflet) {
-      const _sz = createMapLeaflet.getSize();
-      _dbgInfo.innerHTML += `<br>Leaflet: ${_sz.x}×${_sz.y}`;
-    }
-    setTimeout(() => {
-      if (createMapLeaflet) createMapLeaflet.invalidateSize();
-      _dbgInfo.innerHTML += `<br>[nach invalidateSize]`;
-    }, 300);
-    // Debug-Box nach 15s entfernen
-    setTimeout(() => _dbgInfo.remove(), 15000);
+    // Leaflet-Grösse nach Render-Zyklus neu berechnen
+    setTimeout(() => { if (createMapLeaflet) createMapLeaflet.invalidateSize(); }, 200);
   }, 80);
 }
 
