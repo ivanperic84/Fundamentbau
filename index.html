@@ -2376,6 +2376,25 @@ function hasFelddaten(id) {
 function renderCards() {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
+
+  // Sondagen-Kacheln nur in der Baugrundphase anzeigen.
+  // Bauprojekt / Ausführung haben eigene Standorte (Fundamentstandorte),
+  // die nicht mit den Sondagen identisch sind.
+  if (_activePhase !== 'baugrund') {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:#9ca3af;">
+        <div style="font-size:32px;margin-bottom:12px;">📋</div>
+        <div style="font-size:15px;font-weight:600;color:#6b7280;margin-bottom:6px;">
+          Kachelansicht nicht verfügbar
+        </div>
+        <div style="font-size:13px;line-height:1.5;">
+          In der Phase <strong>${PHASEN_CONFIG[_activePhase]?.label || _activePhase}</strong>
+          werden Standorte über die <strong>Karte</strong> oder <strong>Liste</strong> verwaltet.
+        </div>
+      </div>`;
+    return;
+  }
+
   const filtered = getFilteredSorted();
   filtered.forEach(p => {
     const pd = getPairData(p.id);
