@@ -7528,20 +7528,22 @@ function initCreateMap(center) {
   L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg',
     { maxZoom: 20 }).addTo(createMapLeaflet);
 
-  // Bestehende Standorte ausgegraut anzeigen (ausser den aktuell bearbeiteten)
+  // Bestehende Standorte ausgegraut anzeigen — nur in der Baugrundphase (Sondagen)
   _createExistingGroup = L.layerGroup().addTo(createMapLeaflet);
-  PAIRS.forEach(p => {
-    if (p.id === createEditId) return; // Bearbeiteter Standort nicht ausgegraut
-    const rsLL  = lv95ToWgs84(p.rs.e,  p.rs.n);
-    const rksLL = lv95ToWgs84(p.rks.e, p.rks.n);
-    const name = p.bezeichnung || 'Standort ' + p.id;
-    L.marker([rsLL.lat,  rsLL.lng],  { icon: CREATE_EXISTING_RS_ICON,  interactive: true })
-      .bindTooltip(name + ' RS',  { permanent: false, direction: 'top', className: '' })
-      .addTo(_createExistingGroup);
-    L.marker([rksLL.lat, rksLL.lng], { icon: CREATE_EXISTING_RKS_ICON, interactive: true })
-      .bindTooltip(name + ' RKS', { permanent: false, direction: 'top', className: '' })
-      .addTo(_createExistingGroup);
-  });
+  if (_activePhase === 'baugrund') {
+    PAIRS.forEach(p => {
+      if (p.id === createEditId) return; // Bearbeiteter Standort nicht ausgegraut
+      const rsLL  = lv95ToWgs84(p.rs.e,  p.rs.n);
+      const rksLL = lv95ToWgs84(p.rks.e, p.rks.n);
+      const name = p.bezeichnung || 'Standort ' + p.id;
+      L.marker([rsLL.lat,  rsLL.lng],  { icon: CREATE_EXISTING_RS_ICON,  interactive: true })
+        .bindTooltip(name + ' RS',  { permanent: false, direction: 'top', className: '' })
+        .addTo(_createExistingGroup);
+      L.marker([rksLL.lat, rksLL.lng], { icon: CREATE_EXISTING_RKS_ICON, interactive: true })
+        .bindTooltip(name + ' RKS', { permanent: false, direction: 'top', className: '' })
+        .addTo(_createExistingGroup);
+    });
+  }
 
   createMapLeaflet.on('click', onCreateMapClick);
   createMapLeaflet.getContainer().style.cursor = 'crosshair';
@@ -7650,10 +7652,11 @@ async function lookupSbbKm(lat, lng, type) {
 
   try {
     // 2 nächste Punkte holen (für Interpolation)
+    // Felder: km (war: km_anzeige), liniename (war: linie_text) — Stand API v2.1
     const url = `https://data.sbb.ch/api/explore/v2.1/catalog/datasets/linienkilometrierung/records`
       + `?limit=2`
-      + `&order_by=distance(geo_point_2d,GEOM%20'POINT(${lng}%20${lat})')`
-      + `&select=km_anzeige,geo_point_2d,linie_text`;
+      + `&order_by=distance(geo_point_2d,geom'POINT(${lng}%20${lat})')`
+      + `&select=km,geo_point_2d,liniename`;
 
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) throw new Error('API ' + res.status);
@@ -7664,17 +7667,17 @@ async function lookupSbbKm(lat, lng, type) {
     }
 
     const p1 = data.results[0];
-    const km1 = parseFloat(p1.km_anzeige);
+    const km1 = parseFloat(p1.km);
     const lat1 = p1.geo_point_2d.lat;
     const lng1 = p1.geo_point_2d.lon;
-    const linie = p1.linie_text || '';
+    const linie = p1.liniename || '';
 
     let kmResult;
     let hinweis = '';
 
     if (data.results.length >= 2) {
       const p2 = data.results[1];
-      const km2 = parseFloat(p2.km_anzeige);
+      const km2 = parseFloat(p2.km);
       const lat2 = p2.geo_point_2d.lat;
       const lng2 = p2.geo_point_2d.lon;
 
@@ -7751,7 +7754,7 @@ async function lookupSbbStrecke(lat, lng, context) {
   try {
     const url = `https://data.sbb.ch/api/explore/v2.1/catalog/datasets/linie-mit-betriebspunkten/records`
       + `?limit=1`
-      + `&order_by=distance(geopos,GEOM%20'POINT(${lng}%20${lat})')`
+      + `&order_by=distance(geopos,geom'POINT(${lng}%20${lat})')`
       + `&select=*`;
 
     const res = await fetch(url, { mode: "cors" });
@@ -7808,8 +7811,8 @@ async function lookupSbbStreckeModal() {
   try {
     const url = `https://data.sbb.ch/api/explore/v2.1/catalog/datasets/linienkilometrierung/records`
       + `?limit=2`
-      + `&order_by=distance(geo_point_2d,GEOM%20'POINT(${ll.lng}%20${ll.lat})')`
-      + `&select=km_anzeige,geo_point_2d,linie_text`;
+      + `&order_by=distance(geo_point_2d,geom'POINT(${ll.lng}%20${ll.lat})')`
+      + `&select=km,geo_point_2d,liniename`;
 
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) throw new Error('API ' + res.status);
@@ -7817,15 +7820,15 @@ async function lookupSbbStreckeModal() {
     if (!data.results || data.results.length === 0) throw new Error('Keine Daten');
 
     const p1 = data.results[0];
-    const km1 = parseFloat(p1.km_anzeige);
+    const km1 = parseFloat(p1.km);
     const lat1 = p1.geo_point_2d.lat;
     const lng1 = p1.geo_point_2d.lon;
-    const linie = p1.linie_text || '';
+    const linie = p1.liniename || '';
     let kmResult, hinweis;
 
     if (data.results.length >= 2) {
       const p2 = data.results[1];
-      const km2 = parseFloat(p2.km_anzeige);
+      const km2 = parseFloat(p2.km);
       const lat2 = p2.geo_point_2d.lat;
       const lng2 = p2.geo_point_2d.lon;
       const segLen = haversine(lat1, lng1, lat2, lng2);
