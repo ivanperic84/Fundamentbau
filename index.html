@@ -7900,12 +7900,16 @@ function openCreateView(id) {
   document.getElementById('create-search-results').style.display = 'none';
 
   // Karte nach DOM-Update initialisieren
-  setTimeout(() => {
-    initCreateMap(mapCenter);
-    setCreatePickMode('rs');
-    // Leaflet nach sichtbarem Einblenden neu kalibrieren
-    setTimeout(() => { if (createMapLeaflet) createMapLeaflet.invalidateSize(); }, 150);
-  }, 80);
+  // requestAnimationFrame stellt sicher, dass der Browser das Layout berechnet
+  // hat bevor Leaflet den Container ausmisst (display:none → block Timing-Problem)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      initCreateMap(mapCenter);
+      setCreatePickMode('rs');
+      // Zusätzliche Kalibrierung für langsame Render-Pfade
+      setTimeout(() => { if (createMapLeaflet) createMapLeaflet.invalidateSize(); }, 200);
+    });
+  });
 }
 
 function initCreateMap(center) {
@@ -7922,12 +7926,15 @@ function initCreateMap(center) {
   const el = document.getElementById('create-map');
   if (!el) return;
 
-  createMapLeaflet = L.map('create-map', { zoomControl: true, attributionControl: false })
-    .setView([center.lat, center.lng], 19);
+  createMapLeaflet = L.map('create-map', { zoomControl: true, attributionControl: false });
 
   // Luftbild als Standard-Basiskarte
   L.tileLayer('https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg',
     { maxZoom: 20 }).addTo(createMapLeaflet);
+
+  // Erst nach invalidateSize setView — stellt sicher dass Container korrekte Dimensionen hat
+  createMapLeaflet.invalidateSize();
+  createMapLeaflet.setView([center.lat, center.lng], 19);
 
   // Bestehende Standorte ausgegraut anzeigen — nur in der Baugrundphase (Sondagen)
   _createExistingGroup = L.layerGroup().addTo(createMapLeaflet);
