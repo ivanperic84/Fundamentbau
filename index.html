@@ -2161,6 +2161,17 @@ function setPhase(phase) {
   if (document.getElementById('overview-view')?.style.display !== 'none') {
     renderCards();
   }
+  // Übersichtskarte zurücksetzen: Sondagen-Marker gelten nur für Baugrundphase
+  if (overviewMap) {
+    overviewMarkers.forEach(m => {
+      if (m.rs)  m.rs.remove();
+      if (m.rks) m.rks.remove();
+      if (m.bs)  m.bs.remove();
+    });
+    overviewMarkers = [];
+    overviewMap.remove();
+    overviewMap = null;
+  }
   // Detailansicht: NICHT automatisch neu laden — User bleibt wo er ist
   // (Phasenwechsel nur in Übersicht erlaubt, s. updatePhaseSelectState)
 }
@@ -5416,6 +5427,18 @@ function renderList() {
 
   const tbody = document.getElementById('list-body');
   tbody.innerHTML = '';
+
+  // Sondagen nur in Baugrundphase auflisten
+  if (_activePhase !== 'baugrund') {
+    const colCount = 2 + cols.length + 2;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;padding:40px;color:#9ca3af;font-size:13px;">
+      <div style="font-size:24px;margin-bottom:8px;">📋</div>
+      <strong style="color:#6b7280;">${PHASEN_CONFIG[_activePhase]?.label || _activePhase}</strong><br>
+      Sondagestandorte werden in dieser Phase nicht aufgeführt.
+    </td></tr>`;
+    return;
+  }
+
   const filtered = getFilteredSorted();
   filtered.forEach(p => {
     const pd = getPairData(p.id);
@@ -5461,6 +5484,20 @@ function initOverviewMap() {
 
   // Basis-Karte setzen (zuletzt gewählte Kartenart)
   setOverviewBaseLayer(overviewBaseLayerKey);
+
+  // Sondagen-Marker nur in der Baugrundphase anzeigen
+  if (_activePhase !== 'baugrund') {
+    const placeholder = L.control({ position: 'topleft' });
+    placeholder.onAdd = () => {
+      const div = L.DomUtil.create('div');
+      div.style.cssText = 'background:white;padding:12px 16px;border-radius:8px;font-size:13px;color:#6b7280;box-shadow:0 1px 6px rgba(0,0,0,0.15);margin-top:60px;';
+      div.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">📋 ${PHASEN_CONFIG[_activePhase]?.label || _activePhase}</div>
+        <div style="font-size:11px;">Sondagestandorte nicht verfügbar.<br>Fundamentstandorte hier erfassen.</div>`;
+      return div;
+    };
+    placeholder.addTo(overviewMap);
+    return;
+  }
 
   const statusColor = { geplant:'#6b7280', abklaerung:'#d97706', abgeschlossen:'#059669' };
 
