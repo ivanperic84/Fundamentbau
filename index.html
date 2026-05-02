@@ -3820,18 +3820,59 @@ function mkMarkerPopupHtml(type, e, n, ll) {
   </div>`;
 }
 
+// Popup für Fundamentstandort-Marker (Bauprojektphase) — Massnahme-Farbe, kein Entsperren-Button
+function mkFundPopupHtml(pair, ll) {
+  const bpData = loadAllBauprojekt()[pair.id] || {};
+  const col = getMassnahmeColor(bpData);
+  const massLabel = getMassnahmeLabel(bpData);
+  const lat = ll.lat.toFixed(6), lng = ll.lng.toFixed(6);
+  const E = pair.rs?.e || '', N = pair.rs?.n || '';
+  const linkGeoAdmin   = `https://map.geo.admin.ch/#/map?lang=de&center=${E},${N}&z=17&bgLayer=ch.swisstopo.swissimage&crosshair=marker`;
+  const linkGoogleMaps = `https://www.google.com/maps?q=${lat},${lng}`;
+  const linkStreetView = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
+  return `<div class="map-popup" style="min-width:210px;">
+    <div class="map-popup-header" style="background:${col};">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Mast ${pair.mast || '?'} &ndash; ${massLabel}
+    </div>
+    <div class="map-popup-body">
+      <div class="map-popup-row"><span class="map-popup-label">LV95 E</span><span class="map-popup-val">${E}</span></div>
+      <div class="map-popup-row"><span class="map-popup-label">LV95 N</span><span class="map-popup-val">${N}</span></div>
+      ${bpData.fundtyp ? `<div class="map-popup-row"><span class="map-popup-label">Typ</span><span class="map-popup-val">${bpData.fundtyp}</span></div>` : ''}
+    </div>
+    <div class="map-popup-links">
+      <a class="map-popup-link" href="${linkGeoAdmin}" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        geo.admin
+      </a>
+      <a class="map-popup-link" href="${linkGoogleMaps}" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Google Maps
+      </a>
+      <a class="map-popup-link" href="${linkStreetView}" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+        Street View
+      </a>
+    </div>
+  </div>`;
+}
+
 function addGhostMarkers(currentPair) {
   // Vorhandene Ghost-Marker entfernen
   ghostMarkers.forEach(m => m.remove());
   ghostMarkers = [];
   if (!leafletMap) return;
 
-  const idx = PAIRS.findIndex(p => p.id === currentPair.id);
+  // Nur Nachbarn derselben Phase anzeigen
+  const phasePairs = _activePhase === 'baugrund'
+    ? PAIRS.filter(p => !p._phase || p._phase === 'baugrund')
+    : PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
+  const idx = phasePairs.findIndex(p => p.id === currentPair.id);
   // ±3 Nachbarn anzeigen
   const neighbors = [];
   for (let d = -3; d <= 3; d++) {
     if (d === 0) continue;
-    const nb = PAIRS[idx + d];
+    const nb = phasePairs[idx + d];
     if (nb) neighbors.push(nb);
   }
 
@@ -3997,11 +4038,16 @@ function addMarkers(pair) {
   };
 
   if (rsAktiv) {
+    // In Bauprojektphase: Massnahme-Farbe + vereinfachtes Popup (kein Entsperren-Button)
+    const rsMarkerColor = isBP ? getMassnahmeColor(loadAllBauprojekt()[pair.id] || {}) : '#2b6cb0';
     rsMarker = L.marker([rsLL.lat, rsLL.lng], {
-      icon: mkLeaderIcon(rsLabel,'#2b6cb0', false, rsOff.dx, rsOff.dy),
+      icon: mkLeaderIcon(rsLabel, rsMarkerColor, false, rsOff.dx, rsOff.dy),
       zIndexOffset:100, draggable:false
     }).addTo(leafletMap)
-      .bindPopup(() => mkMarkerPopupHtml(rsLabel, pair.rs.e, pair.rs.n, rsLL), { maxWidth: 300 });
+      .bindPopup(() => isBP
+        ? mkFundPopupHtml(pair, rsLL)
+        : mkMarkerPopupHtml(rsLabel, pair.rs.e, pair.rs.n, rsLL),
+        { maxWidth: 300 });
     addLongPress(rsMarker, () => unlockMarker(rsMarker, 'RS'));
     rsMarker.on('dragstart', () => { if (pendingDrag) cancelDrag(); });
     rsMarker.on('dragend', () => {
@@ -8373,12 +8419,20 @@ function initModalMap(center) {
   modalMapLeaflet.getContainer().style.cursor = 'crosshair';
 
   // Vorhandene Koordinaten anzeigen (Edit-Modus)
-  const rsE  = parseInt(document.getElementById('m-rs-e').value);
-  const rsN  = parseInt(document.getElementById('m-rs-n').value);
-  const rksE = parseInt(document.getElementById('m-rks-e').value);
-  const rksN = parseInt(document.getElementById('m-rks-n').value);
-  if (rsE  && rsN)  placeModalMarker('rs',  lv95ToWgs84(rsE,  rsN));
-  if (rksE && rksN) placeModalMarker('rks', lv95ToWgs84(rksE, rksN));
+  const isFundPhase = _activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung';
+  if (isFundPhase) {
+    // In Bauprojekt/Ausführung: nur EIN Fundamentmarker
+    const fundE = parseInt(document.getElementById('m-fund-e')?.value || document.getElementById('m-rs-e').value);
+    const fundN = parseInt(document.getElementById('m-fund-n')?.value || document.getElementById('m-rs-n').value);
+    if (fundE && fundN) placeModalMarker('rs', lv95ToWgs84(fundE, fundN));
+  } else {
+    const rsE  = parseInt(document.getElementById('m-rs-e').value);
+    const rsN  = parseInt(document.getElementById('m-rs-n').value);
+    const rksE = parseInt(document.getElementById('m-rks-e').value);
+    const rksN = parseInt(document.getElementById('m-rks-n').value);
+    if (rsE  && rsN)  placeModalMarker('rs',  lv95ToWgs84(rsE,  rsN));
+    if (rksE && rksN) placeModalMarker('rks', lv95ToWgs84(rksE, rksN));
+  }
 }
 
 function placeModalMarker(type, latlng) {
@@ -8428,8 +8482,9 @@ function syncModalMarkerFromInput(type) {
 
 function onModalMapClick(e) {
   placeModalMarker(modalPickMode, e.latlng);
-  // Nach RS-Setzung automatisch auf RKS umschalten
-  if (modalPickMode === 'rs') setModalPickMode('rks');
+  // Nach RS-Setzung automatisch auf RKS umschalten (nur in Baugrundphase)
+  const isFundPhase = _activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung';
+  if (!isFundPhase && modalPickMode === 'rs') setModalPickMode('rks');
 }
 
 function setModalPickMode(mode) {
