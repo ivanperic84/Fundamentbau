@@ -618,6 +618,12 @@
   }
   #overview-map-toolbar::-webkit-scrollbar { display: none; }
 
+  /* Übersichtskarten-Legende */
+  #ov-legend-body.ov-legend-collapsed { display: none; }
+  @media (max-width: 480px) {
+    #ov-legend-body { display: none; } /* auf Smartphones standardmäßig zugeklappt */
+  }
+
   /* List view */
   #list-wrap { display: none; padding: 0 20px 16px; overflow-x: auto; }
   .list-table { width: 100%; border-collapse: collapse; font-size: 12px; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
@@ -5086,6 +5092,24 @@ function redrawRefLayer() {
 let currentOverviewView = 'karten';
 let overviewMap = null;
 let overviewMarkers = [];
+
+// Farbgebung Massnahme für Fundamentstandorte
+function getMassnahmeColor(bpData) {
+  if ((bpData.fundtyp || '').startsWith('spezial-prov')) return '#16a34a'; // Provisorium grün
+  if (bpData.bestand === 'neu')                          return '#dc2626'; // Neubau rot
+  if (bpData.massnahme === 'abbruch')                    return '#ca8a04'; // Abbruch gelb
+  if (bpData.massnahme === 'sicherung')                  return '#ea580c'; // Sicherung orange
+  if (bpData.bestand === 'bestand')                      return '#6b7280'; // Bestand grau
+  return '#9ca3af'; // nicht kategorisiert
+}
+function getMassnahmeLabel(bpData) {
+  if ((bpData.fundtyp || '').startsWith('spezial-prov')) return 'Provisorium';
+  if (bpData.bestand === 'neu')                          return 'Neubau';
+  if (bpData.massnahme === 'abbruch')                    return 'Abbruch';
+  if (bpData.massnahme === 'sicherung')                  return 'Sicherung';
+  if (bpData.bestand === 'bestand')                      return 'Bestand';
+  return 'Nicht kategorisiert';
+}
 let overviewGpsMarker = null, overviewGpsCircle = null, overviewWatchId = null;
 
 // Übersichtskarte: aktive Basis-Karte
@@ -5170,6 +5194,23 @@ function getInfoLabelForPair(pairId, mode) {
 
 function refreshOverviewMarkerLabels() {
   if (!overviewMap || !overviewMarkers?.length) return;
+
+  // Bauprojekt/Ausführung: Marker sind nach Massnahme eingefärbt — keine Umfärbung durch Toolbar
+  if (_activePhase !== 'baugrund') {
+    const allBp = loadAllBauprojekt();
+    overviewMarkers.forEach(({ pairId, rs }) => {
+      if (!rs) return;
+      const bpData = allBp[pairId] || {};
+      const col = getMassnahmeColor(bpData);
+      const p = PAIRS.find(x => x.id === pairId);
+      const mastLabel = p?.mast || '?';
+      rs.setIcon(L.divIcon({
+        html: `<div style="background:${col};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);line-height:1;">${mastLabel}</div>`,
+        iconSize:[28,28], iconAnchor:[14,14], className:''
+      }));
+    });
+    return;
+  }
 
   const mode = _overviewInfoLayer || 'status';
 
@@ -5515,87 +5556,154 @@ function initOverviewMap() {
   // Basis-Karte setzen (zuletzt gewählte Kartenart)
   setOverviewBaseLayer(overviewBaseLayerKey);
 
-  // Sondagen-Marker nur in der Baugrundphase anzeigen
-  if (_activePhase !== 'baugrund') {
-    const placeholder = L.control({ position: 'topleft' });
-    placeholder.onAdd = () => {
-      const div = L.DomUtil.create('div');
-      div.style.cssText = 'background:white;padding:12px 16px;border-radius:8px;font-size:13px;color:#6b7280;box-shadow:0 1px 6px rgba(0,0,0,0.15);margin-top:60px;';
-      div.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">📋 ${PHASEN_CONFIG[_activePhase]?.label || _activePhase}</div>
-        <div style="font-size:11px;">Sondagestandorte nicht verfügbar.<br>Fundamentstandorte hier erfassen.</div>`;
-      return div;
-    };
-    placeholder.addTo(overviewMap);
-    return;
+  // Info-Layer-Select nur in Baugrundphase sinnvoll (Bauprojekt = feste Massnahme-Farben)
+  const infoSel = document.getElementById('ov-info-select');
+  if (infoSel) infoSel.style.display = _activePhase === 'baugrund' ? '' : 'none';
+
+  const isBaugrundOv = _activePhase === 'baugrund';
+
+  if (isBaugrundOv) {
+    // ── Baugrundphase: Sondagen-Marker nach Status ──────────────────────
+    const statusColor = { geplant:'#6b7280', abklaerung:'#d97706', abgeschlossen:'#059669' };
+
+    PAIRS.filter(p => !p._phase || p._phase === 'baugrund').forEach(p => {
+      const pd  = getPairData(p.id);
+      const col = statusColor[pd.status] || '#6b7280';
+      const rsLL  = lv95ToWgs84(p.rs.e,  p.rs.n);
+      const rksLL = lv95ToWgs84(p.rks.e, p.rks.n);
+
+      const mkIcon = (label) => L.divIcon({
+        html: `<div style="background:${col};color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);">${label}</div>`,
+        iconSize:[26,26], iconAnchor:[13,13], className:''
+      });
+      const mkBsIcon = () => L.divIcon({
+        html: `<div style="background:#b45309;color:white;border-radius:4px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);">BS</div>`,
+        iconSize:[26,26], iconAnchor:[13,13], className:''
+      });
+      const mkOvPopup = (type, km) => `
+        <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;">
+          <div style="background:${col};color:white;padding:7px 10px 6px;border-radius:7px 7px 0 0;font-size:12px;font-weight:700;white-space:nowrap;">
+            ${p.bezeichnung||'Standort '+p.id} &ndash; ${type}
+          </div>
+          <div style="padding:7px 10px 4px;font-size:11px;line-height:1.6;">
+            <div>KM ${km.toFixed(3)}</div>
+            <div>${statusLabel(pd.status)}</div>
+          </div>
+          <div style="padding:4px 10px 8px;border-top:1px solid #f0f2f5;">
+            <a href="#" onclick="showDetail(${p.id});return false;" style="font-size:11px;font-weight:600;color:#1d4ed8;text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Öffnen
+            </a>
+          </div>
+        </div>`;
+      const mRS = L.marker([rsLL.lat, rsLL.lng], { icon: mkIcon('RS') }).addTo(overviewMap)
+        .bindPopup(() => mkOvPopup('RS', p.km_rs), { maxWidth: 220 });
+      const markers = { pairId: p.id, rs: mRS };
+      if (p.rks?.e && p.rks?.n) {
+        const mRKS = L.marker([rksLL.lat, rksLL.lng], { icon: mkIcon('RKS') }).addTo(overviewMap)
+          .bindPopup(() => mkOvPopup('RKS', p.km_rks), { maxWidth: 220 });
+        markers.rks = mRKS;
+      }
+      if (p.bs?.e && p.bs?.n) {
+        const bsLL = lv95ToWgs84(p.bs.e, p.bs.n);
+        const mBS = L.marker([bsLL.lat, bsLL.lng], { icon: mkBsIcon() }).addTo(overviewMap)
+          .bindPopup(() => mkOvPopup('BS', p.km_rs), { maxWidth: 220 });
+        markers.bs = mBS;
+      }
+      overviewMarkers.push(markers);
+    });
+
+    // Legende: Status
+    _addOverviewLegend(overviewMap, 'status');
+
+  } else {
+    // ── Bauprojekt / Ausführungsphase: Fundamentstandorte nach Massnahme ──
+    const allBpData = loadAllBauprojekt();
+
+    PAIRS.filter(p => p._phase && p._phase !== 'baugrund').forEach(p => {
+      if (!p.rs?.e || !p.rs?.n) return;
+      const bpData   = allBpData[p.id] || {};
+      const col      = getMassnahmeColor(bpData);
+      const massLabel= getMassnahmeLabel(bpData);
+      const mastLabel= p.mast || '?';
+      const ll       = lv95ToWgs84(p.rs.e, p.rs.n);
+
+      const mkIcon = () => L.divIcon({
+        html: `<div style="background:${col};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);line-height:1;">${mastLabel}</div>`,
+        iconSize:[28,28], iconAnchor:[14,14], className:''
+      });
+
+      const popup = `
+        <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;">
+          <div style="background:${col};color:white;padding:7px 10px 6px;border-radius:7px 7px 0 0;font-size:12px;font-weight:700;white-space:nowrap;">
+            Mast ${mastLabel} &ndash; ${massLabel}
+          </div>
+          <div style="padding:7px 10px 4px;font-size:11px;line-height:1.6;">
+            ${p.km_rs ? `<div>KM ${fmt(p.km_rs)}</div>` : ''}
+            ${bpData.fundtyp ? `<div>Typ: ${bpData.fundtyp}</div>` : ''}
+          </div>
+          <div style="padding:4px 10px 8px;border-top:1px solid #f0f2f5;">
+            <a href="#" onclick="showDetail(${p.id});return false;" style="font-size:11px;font-weight:600;color:#1d4ed8;text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Öffnen
+            </a>
+          </div>
+        </div>`;
+
+      const mFund = L.marker([ll.lat, ll.lng], { icon: mkIcon() }).addTo(overviewMap)
+        .bindPopup(popup, { maxWidth: 220 });
+      overviewMarkers.push({ pairId: p.id, rs: mFund });
+    });
+
+    // Legende: Massnahme
+    _addOverviewLegend(overviewMap, 'massnahme');
   }
+}
 
-  const statusColor = { geplant:'#6b7280', abklaerung:'#d97706', abgeschlossen:'#059669' };
-
-  PAIRS.forEach(p => {
-    const pd = getPairData(p.id);
-    const col = statusColor[pd.status];
-    const center = pairCenter(p);
-    const rsLL  = lv95ToWgs84(p.rs.e,  p.rs.n);
-    const rksLL = lv95ToWgs84(p.rks.e, p.rks.n);
-    const isBP  = _activePhase === 'bauprojekt';
-    const rsLabel  = isBP ? (p.mast || 'F') : 'RS';
-    const rksLabel = isBP ? null : 'RKS';
-
-    const mkIcon = (label) => L.divIcon({
-      html: `<div style="background:${col};color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);">${label}</div>`,
-      iconSize:[26,26], iconAnchor:[13,13], className:''
-    });
-    const mkBsIcon = () => L.divIcon({
-      html: `<div style="background:#b45309;color:white;border-radius:4px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);">BS</div>`,
-      iconSize:[26,26], iconAnchor:[13,13], className:''
-    });
-
-    const mkOvPopup = (type, km) => `
-      <div style="font-family:'Segoe UI',system-ui,sans-serif;min-width:180px;">
-        <div style="background:${col};color:white;padding:7px 10px 6px;border-radius:7px 7px 0 0;font-size:12px;font-weight:700;white-space:nowrap;">
-          ${p.bezeichnung||'Standort '+p.id} &ndash; ${type}
-        </div>
-        <div style="padding:7px 10px 4px;font-size:11px;line-height:1.6;">
-          <div>KM ${km.toFixed(3)}</div>
-          <div>${statusLabel(pd.status)}</div>
-        </div>
-        <div style="padding:4px 10px 8px;border-top:1px solid #f0f2f5;">
-          <a href="#" onclick="showDetail(${p.id});return false;" style="font-size:11px;font-weight:600;color:#1d4ed8;text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Öffnen
-          </a>
-        </div>
-      </div>`;
-    const mRS  = L.marker([rsLL.lat,  rsLL.lng],  { icon: mkIcon(rsLabel)  }).addTo(overviewMap)
-      .bindPopup(() => mkOvPopup(rsLabel,  p.km_rs),  { maxWidth: 220 });
-    const markers = { pairId: p.id, rs: mRS };
-    if (!isBP) {
-      const mRKS = L.marker([rksLL.lat, rksLL.lng], { icon: mkIcon(rksLabel) }).addTo(overviewMap)
-        .bindPopup(() => mkOvPopup(rksLabel, p.km_rks), { maxWidth: 220 });
-      markers.rks = mRKS;
-    }
-    if (!isBP && p.bs && p.bs.e && p.bs.n) {
-      const bsLL = lv95ToWgs84(p.bs.e, p.bs.n);
-      const mBS = L.marker([bsLL.lat, bsLL.lng], { icon: mkBsIcon() }).addTo(overviewMap)
-        .bindPopup(() => mkOvPopup('BS', p.km_rs), { maxWidth: 220 });
-      markers.bs = mBS;
-    }
-    overviewMarkers.push(markers);
-  });
-
-  // Legend
-  const legend = L.control({ position: 'topleft' });
+// Legende zur Übersichtskarte hinzufügen — kollabierbar auf kleinen Screens
+function _addOverviewLegend(map, type) {
+  const legend = L.control({ position: 'bottomleft' });
   legend.onAdd = () => {
-    const div = L.DomUtil.create('div', 'ov-legend');
-    div.id = 'ov-legend-box';
-    div.style.cssText = 'background:white;padding:8px 12px;border-radius:8px;font-size:11px;box-shadow:0 1px 6px rgba(0,0,0,0.15);line-height:1.9;margin-top:90px;max-width:180px;';
+    const div = L.DomUtil.create('div');
+    div.style.cssText = 'background:white;border-radius:8px;font-size:11px;box-shadow:0 1px 6px rgba(0,0,0,0.18);max-width:170px;overflow:hidden;';
+
+    const dot = (col) => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${col};margin-right:6px;flex-shrink:0;"></span>`;
+
+    let rows = '';
+    if (type === 'status') {
+      rows = `
+        ${dot('#dc2626')} Nicht begonnen<br>
+        ${dot('#d97706')} In Abklärung<br>
+        ${dot('#059669')} Abgeschlossen`;
+      // Hinweis: Status-Legende bleibt mit alten Farben kompatibel
+      rows = `
+        ${dot('#6b7280')} Geplant<br>
+        ${dot('#d97706')} In Abklärung<br>
+        ${dot('#059669')} Abgeschlossen`;
+    } else {
+      rows = `
+        ${dot('#dc2626')} Neubau<br>
+        ${dot('#ca8a04')} Abbruch<br>
+        ${dot('#ea580c')} Sicherung<br>
+        ${dot('#6b7280')} Bestand<br>
+        ${dot('#16a34a')} Provisorium`;
+    }
+
+    // Header mit Toggle
     div.innerHTML = `
-      <div style="font-weight:700;margin-bottom:4px;">Status</div>
-      <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6b7280;margin-right:5px;"></span>Geplant</div>
-      <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#d97706;margin-right:5px;"></span>In Abklärung</div>
-      <div><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:5px;"></span>Abgeschlossen</div>`;
+      <div id="ov-legend-header" onclick="this.parentElement.querySelector('#ov-legend-body').classList.toggle('ov-legend-collapsed')"
+           style="padding:6px 10px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+        <span>${type === 'massnahme' ? 'Massnahme' : 'Status'}</span>
+        <span style="font-size:10px;color:#9ca3af;">▾</span>
+      </div>
+      <div id="ov-legend-body" style="padding:7px 10px 8px;line-height:2;">
+        ${rows}
+      </div>`;
+
+    // Stop-Propagation damit Karten-Klicks nicht durchgehen
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
     return div;
   };
-  legend.addTo(overviewMap);
+  legend.addTo(map);
 }
 
 function toggleOverviewGPS() {
