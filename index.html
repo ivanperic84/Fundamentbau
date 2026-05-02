@@ -1199,6 +1199,15 @@
                 style="padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;cursor:pointer;font-weight:600;color:#374151;">+</button>
             </div>
           </div>
+
+          <!-- Mailvorlage Begehung -->
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;">
+            <button onclick="openBriefModal(currentPairId,'preview','begehung')"
+              style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Einladungsmail
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1239,7 +1248,7 @@
               <textarea class="feld-textarea" id="fremd-notiz" placeholder="Notizen zur Abklärung..." style="min-height:45px;font-size:12px;"></textarea>
             </div>
             <div style="display:flex;gap:6px;margin-top:8px;">
-              <button onclick="openBriefModal(currentPairId,'preview')" id="anfrage-btn" style="flex:1;padding:4px 11px;border-radius:6px;border:1px solid #3b82f6;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s;">
+              <button onclick="openBriefModal(currentPairId,'preview','anfrage')" id="anfrage-btn" style="flex:1;padding:4px 11px;border-radius:6px;border:1px solid #3b82f6;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.15s;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 Nutzungsanfrage senden
               </button>
@@ -8838,8 +8847,10 @@ function deleteKontakt() {
 }
 
 // ============================================================
-// ANTWORTSCHREIBEN — Template + Bausteine
+// MAILVORLAGEN — Template + Bausteine
 // ============================================================
+
+// Nutzungsanfrage (Baugrund)
 const DEFAULT_LETTER_TEMPLATE =
 `Betreff: Geotechnische Voruntersuchung – Rammsondierung {{standort_name}}
 
@@ -8872,25 +8883,68 @@ Subunternehmer Geologie:
 Freundliche Grüsse
 {{pl_name}}`;
 
-function loadLetterTemplate() {
-  const saved = localStorage.getItem(LETTER_KEY);
-  return (saved !== null) ? saved : DEFAULT_LETTER_TEMPLATE;
+// Einladung Begehung
+const DEFAULT_BEGEHUNG_TEMPLATE =
+`Betreff: Einladung Begehung – {{standort_name}} / KM {{standort_km}}
+
+Guten Tag
+
+Im Rahmen des Projekts «{{projekt}}» möchten wir Sie zur Begehung des Standorts {{standort_name}} (KM {{standort_km}}) einladen.
+
+Datum / Zeit: [Datum] · [Uhrzeit]
+Treffpunkt: {{standort_name}}, KM {{standort_km}}
+
+Bitte teilen Sie uns bis [Rückmeldedatum] mit, ob Sie an der Begehung teilnehmen können.
+
+Ansprechperson:
+{{pl_name}}, {{pl_firma}}
+{{pl_tel}} · {{pl_mobile}}
+{{pl_email}}
+
+Freundliche Grüsse
+{{pl_name}}`;
+
+// Konfiguration aller Mailvorlagen-Typen
+const MAIL_TYPES = {
+  anfrage:  { label: 'Nutzungsanfrage',    key: () => LETTER_KEY,                             default: DEFAULT_LETTER_TEMPLATE   },
+  begehung: { label: 'Einladung Begehung', key: () => 'sp_letter_begehung__' + _activeId,    default: DEFAULT_BEGEHUNG_TEMPLATE  },
+};
+
+let _activeBriefType = 'anfrage'; // aktiver Vorlagentyp
+
+function loadLetterTemplate(type) {
+  const cfg = MAIL_TYPES[type || _activeBriefType];
+  const saved = localStorage.getItem(cfg.key());
+  return (saved !== null) ? saved : cfg.default;
 }
 function saveBriefTemplate() {
-  localStorage.setItem(LETTER_KEY, document.getElementById('brief-template-input').value);
+  const cfg = MAIL_TYPES[_activeBriefType];
+  localStorage.setItem(cfg.key(), document.getElementById('brief-template-input').value);
 }
 
 let _activeBausteine = new Set(); // aktive optionale Blöcke
 
-// pairId: Standort vorauswählen (optional); tab: 'template' oder 'preview'
-function openBriefModal(pairId, tab) {
-  // Template laden
-  document.getElementById('brief-template-input').value = loadLetterTemplate();
+// pairId: Standort vorauswählen; tab: 'template'|'preview'; type: Vorlagentyp
+function openBriefModal(pairId, tab, type) {
+  _activeBriefType = type || 'anfrage';
+  const cfg = MAIL_TYPES[_activeBriefType];
 
-  // Standort-Dropdown befüllen
+  // Modaltitel aktualisieren
+  const titleEl = document.getElementById('brief-modal-title');
+  if (titleEl) titleEl.textContent = '✉ ' + cfg.label;
+
+  // Template laden
+  document.getElementById('brief-template-input').value = loadLetterTemplate(_activeBriefType);
+
+  // Standort-Dropdown befüllen (Mast Nr für BP/AF, Bezeichnung für Baugrund)
+  const isBP = _activePhase !== 'baugrund';
   const sel = document.getElementById('brief-standort-select');
   sel.innerHTML = '<option value="">— Kein Standort gewählt —</option>' +
-    PAIRS.map(p => `<option value="${p.id}">${p.bezeichnung || 'Standort ' + p.id}${p.km_rs ? ' · KM ' + p.km_rs.toFixed(3) : ''}</option>`).join('');
+    PAIRS.map(p => {
+      const name = isBP ? `Mast ${p.mast || p.id}` : (p.bezeichnung || 'Standort ' + p.id);
+      const km   = p.km_rs ? ' · KM ' + parseFloat(p.km_rs).toFixed(3) : '';
+      return `<option value="${p.id}">${name}${km}</option>`;
+    }).join('');
 
   // Standort vorauswählen, falls übergeben
   if (pairId) sel.value = pairId;
@@ -8901,7 +8955,7 @@ function openBriefModal(pairId, tab) {
     document.getElementById('bs-' + k).classList.remove('active');
   });
 
-  showBriefTab(tab || 'template');
+  showBriefTab(tab || 'preview');
   document.getElementById('brief-modal').classList.add('open');
 }
 function closeBriefModal() {
@@ -12551,7 +12605,7 @@ function deleteFundament() {
 <!-- MODAL: Antwortschreiben -->
 <div class="modal-overlay" id="brief-modal" onclick="if(event.target===this)closeBriefModal()">
   <div class="modal" style="width:680px;max-height:92vh;overflow-y:auto;">
-    <h2>✉ Antwortmail erstellen</h2>
+    <h2 id="brief-modal-title">✉ Nutzungsanfrage</h2>
 
     <!-- Tabs: Template bearbeiten / Vorschau -->
     <div style="display:flex;gap:0;margin-bottom:14px;border-radius:7px;overflow:hidden;border:1px solid #e5e7eb;">
