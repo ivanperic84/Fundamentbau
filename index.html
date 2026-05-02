@@ -7435,6 +7435,9 @@ function openCreateView(id) {
     document.getElementById('c-gleis').value        = p.gleis || 'L';
     document.getElementById('c-strecke').value      = p.strecke    || '';
     const _csnr = document.getElementById('c-streckennr'); if (_csnr) _csnr.value = p.streckennr || '';
+    const _cgh  = document.getElementById('c-gelaendehoehe'); if (_cgh) _cgh.value = p.gelaendehoehe ?? '';
+    const _csol = document.getElementById('c-sohle-mueM');   if (_csol) _csol.value = p.sohle_mueM ?? '';
+    const _cfkp = document.getElementById('c-fundkopf-mueM'); if (_cfkp) _cfkp.value = p.fundkopf_mueM ?? '';
     document.getElementById('c-zugang').value       = p.zugang    || '';
     // Bauprojekt-Felder
     document.getElementById('c-ausfuehrung').value    = p.ausfuehrung || '';
@@ -7469,7 +7472,7 @@ function openCreateView(id) {
   } else {
     ['c-bezeichnung','c-mast','c-km-rs','c-km-rks','c-tiefe','c-rs-e','c-rs-n',
      'c-rks-e','c-rks-n','c-bs-e','c-bs-n','c-bs-km','c-bs-tiefe','c-bs-abbruch','c-bs-bemerkung',
-     'c-zugang','c-strecke','c-streckennr','c-ausfuehrung',
+     'c-zugang','c-strecke','c-streckennr','c-gelaendehoehe','c-sohle-mueM','c-fundkopf-mueM','c-ausfuehrung',
      'c-massnahme','c-sicherung-link','c-sicherung-bemerkung','c-fundtyp',
      'c-nachweis-link','c-nachweisgruppe','c-neigung','c-boden'
     ].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
@@ -7624,6 +7627,7 @@ function fillCreateCoords(type, latlng) {
     const fl2 = document.getElementById('create-fund-coord-lbl2');
     if (fl2) fl2.textContent = 'E ' + lv95.e + ' / N ' + lv95.n;
     lookupSbbKm(latlng.lat, latlng.lng, 'rs');
+    fillGelaendehoeheCreate(lv95.e, lv95.n); // Geländehöhe automatisch abfragen
   } else if (type === 'rks') {
     document.getElementById('c-rks-e').value = lv95.e;
     document.getElementById('c-rks-n').value = lv95.n;
@@ -7634,6 +7638,64 @@ function fillCreateCoords(type, latlng) {
     const bsN = document.getElementById('c-bs-n'); if (bsN) bsN.value = lv95.n;
     const bsLbl = document.getElementById('create-bs-coord-lbl');
     if (bsLbl) bsLbl.textContent = 'BS: E ' + lv95.e + ' / N ' + lv95.n;
+  }
+}
+
+// ----------------------------------------------------------------
+// GeoAdmin Geländehöhe (m ü. M.) — swisstopo REST API
+// Eingabe: LV95-Koordinaten (E, N) → gibt Höhe in m ü. M. zurück
+// ----------------------------------------------------------------
+async function fetchGelaendehoehe(e, n) {
+  const url = `https://api3.geo.admin.ch/rest/services/height?easting=${e}&northing=${n}&sr=2056`;
+  const res = await fetch(url, { mode: 'cors' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const h = parseFloat(data.height);
+  if (isNaN(h)) throw new Error('Kein Höhenwert');
+  return h;
+}
+
+// Geländehöhe in Erfassungsmaske befüllen (nach Marker-Setzung)
+async function fillGelaendehoeheCreate(e, n) {
+  const el = document.getElementById('c-gelaendehoehe');
+  if (!el) return;
+  el.placeholder = '⏳ Höhe wird abgefragt…';
+  el.style.background = '#f0f9ff';
+  try {
+    const h = await fetchGelaendehoehe(e, n);
+    el.value = h.toFixed(1);
+    el.style.background = '#f0fdf4';
+    el.placeholder = '';
+    updateSohleMueM(); // Sohle neu berechnen
+  } catch (err) {
+    el.style.background = '#fff7ed';
+    el.placeholder = 'Höhe nicht verfügbar';
+    console.warn('GeoAdmin Höhe Fehler:', err);
+  }
+}
+
+// 🔄 Refresh-Button: Geländehöhe aus aktuellen Markerkoordinaten neu abfragen
+async function refreshGelaendehoeheCreate() {
+  const isBP = _activePhase !== 'baugrund';
+  const eEl = document.getElementById(isBP ? 'c-fund-e2' : 'c-rs-e');
+  const nEl = document.getElementById(isBP ? 'c-fund-n2' : 'c-rs-n');
+  const e = parseInt(eEl?.value), n = parseInt(nEl?.value);
+  if (!e || !n) { alert('Bitte zuerst einen Standort auf der Karte setzen.'); return; }
+  await fillGelaendehoeheCreate(e, n);
+}
+
+// Sohle m ü. M. = Geländehöhe − Einbindetiefe (Tiefe Soll)
+function updateSohleMueM() {
+  const gelaende = parseFloat(document.getElementById('c-gelaendehoehe')?.value);
+  const tiefe    = parseFloat(document.getElementById('c-tiefe')?.value) || parseFloat(document.getElementById('c-sohle-tiefe')?.value);
+  const sohlEl   = document.getElementById('c-sohle-mueM');
+  if (!sohlEl) return;
+  if (!isNaN(gelaende) && !isNaN(tiefe) && tiefe > 0) {
+    sohlEl.value = (gelaende - tiefe).toFixed(1);
+    sohlEl.style.background = '#f0fdf4';
+  } else {
+    sohlEl.value = '';
+    sohlEl.style.background = '';
   }
 }
 
@@ -8006,6 +8068,9 @@ function saveCreate() {
     gleis:             isBP ? '' : v('c-gleis'),
     strecke:           v('c-strecke').trim(),
     streckennr:        v('c-streckennr').trim(),
+    gelaendehoehe:     parseFloat(v('c-gelaendehoehe')) || null,
+    sohle_mueM:        parseFloat(v('c-sohle-mueM'))    || null,
+    fundkopf_mueM:     parseFloat(v('c-fundkopf-mueM')) || null,
     zugang:            v('c-zugang'),
     // Bauprojekt-Felder
     ausfuehrung:       v('c-ausfuehrung'),
@@ -8851,6 +8916,11 @@ function applyCreatePhase() {
   const fBP = document.getElementById('cs-felder-bauprojekt');
   if (fBG) fBG.style.display = isBG ? '' : 'none';
   if (fBP) fBP.style.display = (isBP || isAF) ? '' : 'none';
+  // Sohle + Fundamentkopf nur in BP/AF
+  const sohleWrap   = document.getElementById('cs-sohle-wrap');
+  const fundkopfWrap = document.getElementById('cs-fundkopf-wrap');
+  if (sohleWrap)    sohleWrap.style.display    = (isBP || isAF) ? '' : 'none';
+  if (fundkopfWrap) fundkopfWrap.style.display = (isBP || isAF) ? '' : 'none';
 
   // Picker-Titel
   const mBPBtn = document.getElementById('create-btn-fund2');
@@ -9960,7 +10030,7 @@ function renderBgProfileGrid() {
         ${p.bodentyp ? `<span style="background:#eff6ff;color:#2563eb;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;margin-right:4px;">${p.bodentyp === 'fein' ? 'Feinkörnig' : 'Grobkörnig'}</span>` : ''}
         ${p.uscs ? `<span style="background:#f3f4f6;padding:1px 6px;border-radius:3px;font-size:10px;margin-right:4px;">${p.uscs}</span>` : ''}
         ${p.me ? `ME ${p.me} MPa` : ''} ${p.phi ? `· φ'k ${p.phi}°` : ''}
-        ${p.gwMueM ? `· GW ${p.gwMueM} m ü.M.` : ''} ${p.neigung ? `· ${p.neigung}` : ''}
+        ${p.gwTiefe ? `· GW bei ${p.gwTiefe} m` : ''} ${p.gwMueM ? `(${p.gwMueM} m ü.M.)` : ''}
       </div>
       <div style="margin-top:5px;font-size:11px;">${dot}${beurteilung.label}</div>
     </div>`;
@@ -9972,9 +10042,14 @@ function renderBgZuweisungList() {
   if (!container) return;
   const profile  = loadBgProfile();
   const zuweisungen = loadBgZuweisungen();
-  if (PAIRS.length === 0) { container.innerHTML = '<div style="font-size:12px;color:#9ca3af;">Keine Standorte vorhanden.</div>'; return; }
+  // Zuweisung nur für Fundamentstandorte (Bauprojekt/Ausführung), nicht für Sondagen
+  const fundamente = PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
+  if (fundamente.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:#9ca3af;">Noch keine Fundamentstandorte vorhanden. Diese werden im Bauprojekt erfasst.</div>';
+    return;
+  }
 
-  container.innerHTML = PAIRS.map(p => {
+  container.innerHTML = fundamente.map(p => {
     const assignedId = zuweisungen[p.id] || '';
     const assigned = profile.find(pr => pr.id === assignedId);
     return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:white;border:1px solid #e5e7eb;border-radius:7px;">
@@ -10006,7 +10081,6 @@ function assignBgProfil(pairId, profilId) {
         bkMe:          profil.me || '',
         bkPhi:         profil.phi || '',
         bkGrundwasser: profil.grundwasser || '',
-        neigung:       profil.neigung || '',
         bgProfilId:    profilId,
       };
       saveAllBauprojekt(all);
@@ -10042,12 +10116,12 @@ function openBaugrundProfilModal(id) {
     v('bg-prof-me',         p.me);
     v('bg-prof-phi',        p.phi);
     v('bg-prof-grundwasser',p.grundwasser);
+    v('bg-prof-gw-tiefe',   p.gwTiefe);
     v('bg-prof-gw-mueM',    p.gwMueM);
-    v('bg-prof-neigung',    p.neigung);
     v('bg-prof-bemerkung',  p.bemerkung);
   } else {
-    ['bg-prof-name','bg-prof-beschrieb','bg-prof-uscs','bg-prof-me','bg-prof-phi','bg-prof-bemerkung'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    v('bg-prof-bodentyp',''); v('bg-prof-grundwasser',''); v('bg-prof-neigung','');
+    ['bg-prof-name','bg-prof-beschrieb','bg-prof-uscs','bg-prof-me','bg-prof-phi','bg-prof-gw-tiefe','bg-prof-bemerkung'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    v('bg-prof-bodentyp',''); v('bg-prof-grundwasser','');
     const gwEl = document.getElementById('bg-prof-gw-mueM'); if (gwEl) gwEl.value = '';
   }
   updateBgProfilBeurteilung();
@@ -10099,8 +10173,8 @@ function saveBaugrundProfil() {
     me:          v('bg-prof-me'),
     phi:         v('bg-prof-phi'),
     grundwasser: v('bg-prof-grundwasser'),
+    gwTiefe:     v('bg-prof-gw-tiefe'),
     gwMueM:      v('bg-prof-gw-mueM'),
-    neigung:     v('bg-prof-neigung'),
     bemerkung:   v('bg-prof-bemerkung'),
   };
   const list = loadBgProfile();
@@ -11405,6 +11479,25 @@ function deleteFundament() {
           </div>
         </div>
         <div id="strecke-hinweis" style="display:none;font-size:11px;padding:5px 8px;border-radius:6px;margin-top:4px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;line-height:1.4;"></div>
+        <!-- Geländehöhe (alle Phasen) -->
+        <div class="create-row" style="margin-top:8px;">
+          <div class="create-field">
+            <label class="create-lbl">Geländehöhe <span style="color:#9ca3af;font-weight:400;font-size:10px;">(m ü.M., auto)</span></label>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <input class="create-input" id="c-gelaendehoehe" type="number" step="0.1" placeholder="wird abgefragt…" style="flex:1;min-width:0;" oninput="updateSohleMueM()">
+              <button onclick="refreshGelaendehoeheCreate()" title="Geländehöhe von swisstopo abfragen" style="flex:0 0 auto;padding:5px 7px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
+            </div>
+          </div>
+          <!-- Sohle m ü.M. — nur in Bauprojekt/Ausführung sichtbar -->
+          <div class="create-field" id="cs-sohle-wrap" style="display:none;">
+            <label class="create-lbl">Sohle <span style="color:#9ca3af;font-weight:400;font-size:10px;">(m ü.M., berechnet)</span></label>
+            <input class="create-input" id="c-sohle-mueM" type="number" step="0.1" placeholder="= Gelände − Tiefe">
+          </div>
+          <div class="create-field" id="cs-fundkopf-wrap" style="display:none;">
+            <label class="create-lbl">Fundamentkopf <span style="color:#9ca3af;font-weight:400;font-size:10px;">(m ü.M.)</span></label>
+            <input class="create-input" id="c-fundkopf-mueM" type="number" step="0.1" placeholder="später / Excel">
+          </div>
+        </div>
       </div>
 
       <!-- BAUGRUND-spezifische Felder -->
@@ -12281,22 +12374,22 @@ function deleteFundament() {
         <input class="modal-input" id="bg-prof-phi" type="number" step="0.5" placeholder="z.B. 30">
       </div>
       <div class="modal-field">
-        <label>Grundwasser</label>
-        <select class="modal-input" id="bg-prof-grundwasser">
+        <label>Grundwasser (Antreffsituation)</label>
+        <select class="modal-input" id="bg-prof-grundwasser" onchange="updateBgProfilBeurteilung()">
           <option value="">— wählen —</option>
-          <option value="ok">Unterhalb Fundament</option>
-          <option value="nok">Oberhalb / im Fundamentbereich</option>
+          <option value="nicht_angetroffen">Nicht angetroffen</option>
+          <option value="angetroffen">Angetroffen (gemessen)</option>
+          <option value="gespannt">Gespannt / artesisch</option>
           <option value="unbekannt">Unbekannt</option>
         </select>
       </div>
       <div class="modal-field">
-        <label>Geländeneigung</label>
-        <select class="modal-input" id="bg-prof-neigung">
-          <option value="">— wählen —</option>
-          <option value="≤14°">≤ 14°</option>
-          <option value="14–33°">14° – 33°</option>
-          <option value=">33°">&gt; 33°</option>
-        </select>
+        <label>GW Tiefe ab Gelände (m)</label>
+        <input class="modal-input" id="bg-prof-gw-tiefe" type="number" step="0.1" min="0" placeholder="z.B. 3.5" oninput="updateBgProfilBeurteilung()">
+      </div>
+      <div class="modal-field">
+        <label>GW-Kote (m ü. M.)</label>
+        <input class="modal-input" id="bg-prof-gw-mueM" type="number" step="0.1" placeholder="z.B. 425.0" oninput="updateBgProfilBeurteilung()">
       </div>
       <!-- Automatische Beurteilung -->
       <div class="modal-field full">
