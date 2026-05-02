@@ -2440,42 +2440,86 @@ function renderCards() {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
 
-  // Bauprojekt / Ausführung: Fundamentstandorte als Kacheln anzeigen
+  // Bauprojekt / Ausführung: Fundamentstandorte als Kacheln (analog Baugrundphase)
   if (_activePhase !== 'baugrund') {
+    const allBp = loadAllBauprojekt();
+    const fundPairs = getFilteredSorted(); // bereits nach Phase gefiltert
+
+    fundPairs.forEach(p => {
+      const pd       = getPairData(p.id);
+      const bpData   = allBp[p.id] || {};
+      const col      = getMassnahmeColor(bpData);
+      const massLabel= getMassnahmeLabel(bpData);
+      const fundtyp  = bpData.fundtyp || '';
+      const neigung  = bpData.neigung || '';
+      const kmVal    = p.km_rs || p.km_rks;
+      const km       = kmVal ? parseFloat(kmVal).toFixed(3) : '—';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.backgroundImage = `url(${cardTileUrl(p)})`;
+      const cardBg = { geplant: 'rgba(255,255,255,0.78)', abklaerung: 'rgba(255,248,220,0.78)', abgeschlossen: 'rgba(236,253,245,0.78)' };
+      card.style.backgroundColor = cardBg[pd.status] || cardBg.geplant;
+
+      const cardHandler = (e) => {
+        if (e.target.closest('.qs-picker') || e.target.closest('.qs-badge') || e.target.closest('.card-actions')) return;
+        showDetail(p.id);
+      };
+      card.addEventListener('click', cardHandler);
+      let _tX = 0, _tY = 0, _tMoved = false;
+      card.addEventListener('touchstart', (e) => { _tX = e.touches[0].clientX; _tY = e.touches[0].clientY; _tMoved = false; }, { passive: true });
+      card.addEventListener('touchmove',  (e) => { if (Math.abs(e.touches[0].clientX-_tX)>8||Math.abs(e.touches[0].clientY-_tY)>8) _tMoved=true; }, { passive: true });
+      card.addEventListener('touchend',   (e) => {
+        if (_tMoved) return;
+        if (e.target.closest('.qs-picker')||e.target.closest('.qs-badge')||e.target.closest('.card-actions')) return;
+        e.preventDefault(); e.stopPropagation(); showDetail(p.id);
+      }, { passive: false });
+
+      card.innerHTML = `
+        <div class="card-actions">
+          <button class="card-action-btn edit" title="Bearbeiten" onclick="event.stopPropagation();openModal(${p.id})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="card-action-btn del" title="Löschen" onclick="event.stopPropagation();deletePair(${p.id})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+        <div class="card-top">
+          <div class="card-id">Mast ${p.mast || '—'}</div>
+          <div class="card-tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${massLabel}</div>
+        </div>
+        <div class="card-km">KM ${km}${fundtyp ? ' · ' + fundtyp : ''}${neigung ? ' · ' + neigung : ''}</div>
+        <div class="card-zugang">${p.zugang || p.bezeichnung || ''}</div>
+        <div class="card-footer" style="flex-direction:column;align-items:stretch;gap:6px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="card-metas">
+              ${pd.comment ? '<span class="card-comment-icon has-comment" title="Kommentar vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' : ''}
+              ${pd.sketch ? '<span title="Skizze vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
+              ${(pd.fotos||[]).length ? '<span title="Fotos vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>' : ''}
+            </div>
+            ${liveDistances[p.id] != null ? '<span class="dist-badge">'+formatDist(liveDistances[p.id])+'</span>' : ''}
+          </div>
+          <div class="qs-wrap" onclick="event.stopPropagation()">
+            <button class="qs-badge qs-${pd.status}" onclick="toggleQsPicker(${p.id},this)">
+              ${statusLabel(pd.status)}<span class="qs-chevron">▾</span>
+            </button>
+            <div class="qs-picker" id="qs-picker-${p.id}">
+              <button class="qs-opt qs-geplant ${pd.status==='geplant'?'qs-opt-active':''}" onclick="quickStatus(${p.id},'geplant')">Geplant<span class="qs-check">✓</span></button>
+              <button class="qs-opt qs-abklaerung ${pd.status==='abklaerung'?'qs-opt-active':''}" onclick="quickStatus(${p.id},'abklaerung')">In Abklärung<span class="qs-check">✓</span></button>
+              <button class="qs-opt qs-abgeschlossen ${pd.status==='abgeschlossen'?'qs-opt-active':''}" onclick="quickStatus(${p.id},'abgeschlossen')">Abgeschlossen<span class="qs-check">✓</span></button>
+            </div>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    // "+ Neuer Fundamentstandort" am Ende
     const addCard = document.createElement('div');
     addCard.className = 'card card-add';
     addCard.title = 'Neuen Fundamentstandort erfassen';
     addCard.onclick = () => openCreateView();
     addCard.innerHTML = '<div class="card-add-icon">+</div><div class="card-add-label">Neuer Fundamentstandort</div>';
     grid.appendChild(addCard);
-
-    const allBp = loadAllBauprojekt();
-    const fundPairs = PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
-    fundPairs.forEach(p => {
-      const bpData   = allBp[p.id] || {};
-      const col      = getMassnahmeColor(bpData);
-      const massLabel= getMassnahmeLabel(bpData);
-      const fundtyp  = bpData.fundtyp || '';
-      const kmVal    = p.km_rs || p.km_rks;
-      const km       = kmVal ? parseFloat(kmVal).toFixed(3) : '—';
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.style.cssText = `background:#fff;cursor:pointer;border-top:4px solid ${col};`;
-      card.onclick = () => showDetail(p.id);
-
-      card.innerHTML = `
-        <div style="padding:10px 12px 8px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-size:15px;font-weight:700;color:#1a3a5c;">${p.mast || '—'}</span>
-            <span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:${col}22;color:${col};border:1px solid ${col}55;">${massLabel}</span>
-          </div>
-          <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">KM ${km}</div>
-          ${fundtyp ? `<div style="font-size:11px;color:#374151;font-weight:600;">${fundtyp}</div>` : ''}
-          ${p.bezeichnung ? `<div style="font-size:10px;color:#9ca3af;margin-top:3px;">${p.bezeichnung}</div>` : ''}
-        </div>`;
-      grid.appendChild(card);
-    });
     return;
   }
 
