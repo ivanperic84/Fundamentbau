@@ -10565,18 +10565,41 @@ function renderBgZuweisungList() {
     return;
   }
 
+  const allBp = loadAllBauprojekt();
   container.innerHTML = fundamente.map(p => {
     const assignedId = zuweisungen[p.id] || '';
-    const assigned = profile.find(pr => pr.id === assignedId);
-    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:white;border:1px solid #e5e7eb;border-radius:7px;">
-      <div style="min-width:60px;font-size:12px;font-weight:700;color:#1a3a5c;">Mast ${p.mast || p.id}</div>
-      <div style="font-size:11px;color:#6b7280;flex:1;">KM ${p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—'}</div>
+    const assigned   = profile.find(pr => pr.id === assignedId);
+    const bpData     = allBp[p.id] || {};
+    const massCol    = getMassnahmeColor(bpData);
+    const massLbl    = getMassnahmeLabel(bpData);
+    const massSet    = bpData.bestand || (bpData.fundtyp || '').startsWith('spezial-prov');
+    const fundtyp    = bpData.fundtyp || p.fundtyp || '';
+    const km         = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—';
+
+    // Status-Badge rechts
+    const statusBadge = assigned ? (() => {
+      const b = beurteileBgProfil(assigned);
+      if (b.ok === true)  return `<span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#16a34a;font-weight:700;white-space:nowrap;background:#dcfce7;padding:3px 8px;border-radius:5px;">✓ Erfüllt</span>`;
+      if (b.ok === false) return `<span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#dc2626;font-weight:700;white-space:nowrap;background:#fee2e2;padding:3px 8px;border-radius:5px;" title="${b.label}">✗ Nicht erfüllt</span>`;
+      return `<span style="font-size:10px;color:#9ca3af;font-weight:600;white-space:nowrap;background:#f3f4f6;padding:3px 8px;border-radius:5px;">— k.A.</span>`;
+    })() : `<span style="font-size:10px;color:#d1d5db;white-space:nowrap;padding:3px 8px;">—</span>`;
+
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:white;border:1px solid #e5e7eb;border-radius:8px;border-left:3px solid ${massSet ? massCol : '#e5e7eb'};">
+      <div style="min-width:160px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <span style="font-size:12px;font-weight:700;color:#1a3a5c;">Mast ${p.mast || p.id}</span>
+          ${massSet ? `<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;background:${massCol}22;color:${massCol};border:1px solid ${massCol}44;">${massLbl}</span>` : ''}
+        </div>
+        <div style="font-size:10px;color:#9ca3af;">
+          KM ${km}${fundtyp ? ` · ${fundtyp}` : ''}
+        </div>
+      </div>
       <select onchange="assignBgProfil(${p.id},this.value)"
-        style="flex:2;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:inherit;background:white;">
+        style="flex:1;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:inherit;background:white;">
         <option value="">— kein Profil —</option>
         ${profile.map(pr => `<option value="${pr.id}" ${assignedId === pr.id ? 'selected' : ''}>${pr.name}</option>`).join('')}
       </select>
-      ${assigned ? (() => { const b = beurteileBgProfil(assigned); const ok = b.ok; return ok === true ? `<span style="font-size:10px;color:#16a34a;font-weight:700;white-space:nowrap;">✓ ${assigned.name.substring(0,15)}</span>` : ok === false ? `<span style="font-size:10px;color:#dc2626;font-weight:700;white-space:nowrap;" title="${b.label}">✗ ${assigned.name.substring(0,15)}</span>` : `<span style="font-size:10px;color:#9ca3af;font-weight:700;white-space:nowrap;">– ${assigned.name.substring(0,15)}</span>`; })() : ''}
+      ${statusBadge}
     </div>`;
   }).join('');
 }
