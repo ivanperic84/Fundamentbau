@@ -1,0 +1,6 @@
+# .gitignore
+*.pdf
+*.pdf:Zone.Identifier
+*.html:Zone.Identifier
+Backup/
+.claude/
