@@ -6011,6 +6011,11 @@ let modalEditId = null;
 
 function openModal(id) {
   if (!id) { openCreateView(); return; }
+  // Bauprojekt / Ausführung: Create-View als Edit-View nutzen (vollständige Karte)
+  if (_activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung') {
+    openCreateView(id);
+    return;
+  }
 
   modalEditId = id || null;
   const isBP = _activePhase === 'bauprojekt';
@@ -7694,6 +7699,11 @@ function openCreateView(id) {
   let mapCenter;
   if (id) {
     const p = PAIRS.find(x => x.id === id);
+    // Bauprojekt-Felder: autoritativer Speicher ist loadAllBauprojekt() (Sidebar schreibt nur dorthin)
+    const isBPedit = _activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung';
+    const bpStored = isBPedit ? (loadAllBauprojekt()[id] || {}) : {};
+    const bp = k => bpStored[k] ?? p[k] ?? ''; // BP-Speicher hat Vorrang vor PAIRS
+
     document.getElementById('c-bezeichnung').value  = p.bezeichnung || '';
     document.getElementById('c-tag').value          = p.tag   || '';
     const _cnacht = document.getElementById('c-nacht'); if (_cnacht) _cnacht.value = p.nacht || '';
@@ -7707,17 +7717,17 @@ function openCreateView(id) {
     const _csnr = document.getElementById('c-streckennr'); if (_csnr) _csnr.value = p.streckennr || '';
     const _cgh  = document.getElementById('c-gelaendehoehe'); if (_cgh) _cgh.value = p.gelaendehoehe ?? '';
     document.getElementById('c-zugang').value       = p.zugang    || '';
-    // Bauprojekt-Felder
+    // Bauprojekt-Felder (aus BP-Speicher, da Sidebar direkt dort speichert)
     document.getElementById('c-ausfuehrung').value    = p.ausfuehrung || '';
-    document.getElementById('c-bestand').value        = p.bestand || 'neu';
-    document.getElementById('c-massnahme').value      = p.massnahme || '';
-    document.getElementById('c-sicherung-link').value = p.sicherungLink || '';
-    document.getElementById('c-sicherung-bemerkung').value = p.sicherungBemerkung || '';
-    document.getElementById('c-fundtyp').value        = p.fundtyp || '';
-    document.getElementById('c-nachweis-link').value  = p.nachweisLink || '';
-    document.getElementById('c-nachweisgruppe').value = p.nachweisgruppe || '';
-    document.getElementById('c-neigung').value        = p.neigung || '';
-    document.getElementById('c-boden').value          = p.boden || '';
+    document.getElementById('c-bestand').value        = bp('bestand') || 'neu';
+    document.getElementById('c-massnahme').value      = bp('massnahme');
+    document.getElementById('c-sicherung-link').value = bp('sicherungLink');
+    document.getElementById('c-sicherung-bemerkung').value = bp('sicherungBemerkung');
+    document.getElementById('c-fundtyp').value        = bp('fundtyp');
+    document.getElementById('c-nachweis-link').value  = bp('nachweisLink');
+    document.getElementById('c-nachweisgruppe').value = bp('nachweisgruppe');
+    document.getElementById('c-neigung').value        = bp('neigung');
+    document.getElementById('c-boden').value          = bp('boden');
     // Koordinaten
     document.getElementById('c-rs-e').value  = p.rs?.e || '';
     document.getElementById('c-rs-n').value  = p.rs?.n || '';
@@ -7760,13 +7770,26 @@ function openCreateView(id) {
     }
   }
 
-  // Labels zurücksetzen
-  document.getElementById('create-rs-coord-lbl').textContent = 'RS: –';
-  document.getElementById('create-rks-coord-lbl').textContent = 'RKS: –';
-  const fundLbl = document.getElementById('create-fund-coord-lbl');
-  if (fundLbl) fundLbl.textContent = 'Koordinaten: –';
-  const bsLbl = document.getElementById('create-bs-coord-lbl');
-  if (bsLbl) bsLbl.textContent = 'BS: –';
+  // Koordinaten-Labels: im Edit-Modus vorhandene Werte anzeigen
+  if (id) {
+    const p2 = PAIRS.find(x => x.id === id);
+    const isBPe = _activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung';
+    if (isBPe && p2?.rs?.e) {
+      const fl = document.getElementById('create-fund-coord-lbl');
+      if (fl) fl.textContent = `E ${p2.rs.e} / N ${p2.rs.n}`;
+    } else {
+      if (p2?.rs?.e)  document.getElementById('create-rs-coord-lbl').textContent  = `RS: E ${p2.rs.e} / N ${p2.rs.n}`;
+      if (p2?.rks?.e) document.getElementById('create-rks-coord-lbl').textContent = `RKS: E ${p2.rks.e} / N ${p2.rks.n}`;
+      if (p2?.bs?.e)  { const bl = document.getElementById('create-bs-coord-lbl'); if (bl) bl.textContent = `BS: E ${p2.bs.e} / N ${p2.bs.n}`; }
+    }
+  } else {
+    document.getElementById('create-rs-coord-lbl').textContent = 'RS: –';
+    document.getElementById('create-rks-coord-lbl').textContent = 'RKS: –';
+    const fundLbl = document.getElementById('create-fund-coord-lbl');
+    if (fundLbl) fundLbl.textContent = 'Koordinaten: –';
+    const bsLbl = document.getElementById('create-bs-coord-lbl');
+    if (bsLbl) bsLbl.textContent = 'BS: –';
+  }
   document.getElementById('create-dist-box').style.display = 'none';
   document.getElementById('create-dist-map-badge').style.display = 'none';
   document.getElementById('create-map-search').value = '';
