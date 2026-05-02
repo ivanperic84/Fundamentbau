@@ -1004,7 +1004,7 @@
       <button onclick="bulkDelete()" style="padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#fee2e2;color:#b91c1c;">✕ Löschen</button>
       <button onclick="bulkClear()" style="margin-left:auto;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;font-size:12px;background:transparent;color:white;">Auswahl aufheben</button>
     </div>
-    <table class="list-table">
+    <table class="list-table" id="list-table">
       <thead>
         <tr>
           <th style="width:36px;"><input type="checkbox" id="select-all-cb" onclick="toggleSelectAll(this)" title="Alle auswählen"></th>
@@ -10703,15 +10703,13 @@ const LIST_COLUMNS = {
     { key: 'status', label: 'Status',  render: p => { const s=getPairData(p.id).status||'geplant'; return `<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${s==='abgeschlossen'?'#dcfce7':s==='abklaerung'?'#fef3c7':'#f3f4f6'};color:${s==='abgeschlossen'?'#166534':s==='abklaerung'?'#92400e':'#6b7280'};">${statusLabel(s)}</span>`; } },
   ],
   bauprojekt: [
-    { key: 'mast',     label: 'Mast',     render: p => p.mast || '—' },
-    { key: 'km',       label: 'KM',       render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
+    { key: 'km',       label: 'KM',          render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
     { key: 'fundtyp',  label: 'Fundamenttyp', render: p => { const bp=loadAllBauprojekt()[p.id]||{}; return bp.fundtyp||p.fundtyp||'—'; } },
-    { key: 'bestand',  label: 'Bestand/Neu',  render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const b=bp.bestand||p.bestand||''; return b==='neu'?'Neu':b==='bestand'?'Bestand':'—'; } },
-    { key: 'neigung',  label: 'Neigung',  render: p => { const bp=loadAllBauprojekt()[p.id]||{}; return bp.neigung||p.neigung||'—'; } },
-    { key: 'boden',    label: 'Baugrund', render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const grenz=BK_GRENZWERTE[bp.bkBodentyp||'fein']; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
+    { key: 'bestand',  label: 'Bestand/Neu',  render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const b=bp.bestand||p.bestand||''; return b==='neu'?'Neu':b==='prov'?'Prov.':b==='bestand'?'Bestand':'—'; } },
+    { key: 'neigung',  label: 'Neigung',      render: p => { const bp=loadAllBauprojekt()[p.id]||{}; return bp.neigung||p.neigung||'—'; } },
+    { key: 'boden',    label: 'Baugrund',     render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const grenz=BK_GRENZWERTE[bp.bkBodentyp||'fein']; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
   ],
   ausfuehrung: [
-    { key: 'mast',    label: 'Mast',    render: p => p.mast || '—' },
     { key: 'km',      label: 'KM',      render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
     { key: 'aushub',  label: 'Aushub',  render: p => { const af=loadAllAusfuehrung()[p.id]||{}; const s=af.protokoll||''; return s==='ja'?'<span style="color:#16a34a;font-weight:600;">Erstellt</span>':s==='pendent'?'<span style="color:#f59e0b;font-weight:600;">Pendent</span>':s==='nein'?'<span style="color:#dc2626;font-weight:600;">Nein</span>':'—'; } },
     { key: 'material',label: 'Material',render: p => { const af=loadAllAusfuehrung()[p.id]||{}; const s=af.matStatus||''; return s==='geliefert'?'<span style="color:#16a34a;font-weight:600;">Geliefert</span>':s==='bestellt'?'<span style="color:#f59e0b;font-weight:600;">Bestellt</span>':s?s:'—'; } },
