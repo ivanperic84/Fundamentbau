@@ -5782,7 +5782,8 @@ function openModal(id) {
     document.getElementById('m-tiefe').value       = p.tiefe || '';
     const mSchlitz = document.getElementById('m-schlitz'); if (mSchlitz) mSchlitz.value = p.schlitz || '';
     document.getElementById('m-gleis').value       = p.gleis || 'L';
-    document.getElementById('m-strecke').value     = p.strecke || '';
+    document.getElementById('m-strecke').value     = p.strecke    || '';
+    const _msnr = document.getElementById('m-streckennr'); if (_msnr) _msnr.value = p.streckennr || '';
     document.getElementById('m-rs-e').value        = p.rs?.e || '';
     document.getElementById('m-rs-n').value        = p.rs?.n || '';
     document.getElementById('m-rks-e').value       = p.rks?.e || '';
@@ -5840,7 +5841,8 @@ function saveModal() {
     tiefe:  parseFloat(v('m-tiefe')) || 5,
     schlitz: parseFloat(document.getElementById('m-schlitz')?.value) || 0,
     gleis:  v('m-gleis'),
-    strecke:  v('m-strecke').trim(),
+    strecke:    v('m-strecke').trim(),
+    streckennr: (document.getElementById('m-streckennr')?.value || '').trim(),
     rs:  rsE && rsN ? { e: rsE, n: rsN } : undefined,
     rks: rksE && rksN ? { e: rksE, n: rksN } : undefined,
     zugang: v('m-zugang'),
@@ -7429,8 +7431,9 @@ function openCreateView(id) {
     document.getElementById('c-tiefe').value        = p.tiefe || '';
     const schlitzEl = document.getElementById('c-schlitz'); if (schlitzEl) schlitzEl.value = p.schlitz || '';
     document.getElementById('c-gleis').value        = p.gleis || 'L';
-    document.getElementById('c-strecke').value      = p.strecke || '';
-    document.getElementById('c-zugang').value       = p.zugang || '';
+    document.getElementById('c-strecke').value      = p.strecke    || '';
+    const _csnr = document.getElementById('c-streckennr'); if (_csnr) _csnr.value = p.streckennr || '';
+    document.getElementById('c-zugang').value       = p.zugang    || '';
     // Bauprojekt-Felder
     document.getElementById('c-ausfuehrung').value    = p.ausfuehrung || '';
     document.getElementById('c-bestand').value        = p.bestand || 'neu';
@@ -7464,7 +7467,7 @@ function openCreateView(id) {
   } else {
     ['c-bezeichnung','c-mast','c-km-rs','c-km-rks','c-tiefe','c-rs-e','c-rs-n',
      'c-rks-e','c-rks-n','c-bs-e','c-bs-n','c-bs-km','c-bs-tiefe','c-bs-abbruch','c-bs-bemerkung',
-     'c-zugang','c-strecke','c-ausfuehrung',
+     'c-zugang','c-strecke','c-streckennr','c-ausfuehrung',
      'c-massnahme','c-sicherung-link','c-sicherung-bemerkung','c-fundtyp',
      'c-nachweis-link','c-nachweisgruppe','c-neigung','c-boden'
     ].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
@@ -7646,12 +7649,12 @@ async function lookupSbbKm(lat, lng, type) {
   kmField.style.background = '#f0f9ff';
 
   try {
-    // 2 nächste Punkte holen (für Interpolation)
-    // Felder: km (war: km_anzeige), liniename (war: linie_text) — Stand API v2.1
+    // 5 nächste Punkte holen — für Interpolation und Abschnittsgrenz-Erkennung
+    // Felder: km, liniename, linienr — Stand API v2.1
     const url = `https://data.sbb.ch/api/explore/v2.1/catalog/datasets/linienkilometrierung/records`
-      + `?limit=2`
+      + `?limit=5`
       + `&order_by=distance(geo_point_2d,geom'POINT(${lng}%20${lat})')`
-      + `&select=km,geo_point_2d,liniename`;
+      + `&select=km,geo_point_2d,liniename,linienr`;
 
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) throw new Error('API ' + res.status);
@@ -7665,14 +7668,29 @@ async function lookupSbbKm(lat, lng, type) {
     const km1 = parseFloat(p1.km);
     const lat1 = p1.geo_point_2d.lat;
     const lng1 = p1.geo_point_2d.lon;
-    const linie = p1.liniename || '';
+    const linie   = p1.liniename || '';
+    const linienr = p1.linienr   != null ? String(p1.linienr) : '';
 
     let kmResult;
     let hinweis = '';
 
-    if (data.results.length >= 2) {
-      const p2 = data.results[1];
-      const km2 = parseFloat(p2.km);
+    // Suche zweiten Punkt auf demselben KM-Abschnitt (kein Abschnittssprung).
+    // Erkennungskriterium: KM-Differenz / physische Distanz < 5
+    // (bei Abschnittssprung KM 66→0 wäre das Verhältnis >> 100)
+    let p2 = null;
+    for (let i = 1; i < data.results.length; i++) {
+      const cand     = data.results[i];
+      const candKm   = parseFloat(cand.km);
+      const candLat  = cand.geo_point_2d.lat;
+      const candLng  = cand.geo_point_2d.lon;
+      const physDist = haversine(lat1, lng1, candLat, candLng); // km
+      const kmDiff   = Math.abs(candKm - km1);
+      // Akzeptiere als gültigen Nachbarpunkt wenn Verhältnis konsistent
+      if (physDist > 0 && kmDiff / physDist < 5) { p2 = cand; break; }
+    }
+
+    if (p2) {
+      const km2  = parseFloat(p2.km);
       const lat2 = p2.geo_point_2d.lat;
       const lng2 = p2.geo_point_2d.lon;
 
@@ -7691,8 +7709,9 @@ async function lookupSbbKm(lat, lng, type) {
         hinweis = `⚠️ Nächster KM-Punkt: ${km1.toFixed(3)} (${linie}) — bitte prüfen!`;
       }
     } else {
+      // Abschnittsgrenze erkannt (z.B. KM-Neustart bei 0) — nur Nächstpunkt verwenden
       kmResult = km1;
-      hinweis = `⚠️ Nur 1 KM-Punkt gefunden: ${km1.toFixed(3)} (${linie}) — bitte prüfen!`;
+      hinweis = `⚠️ Abschnittsgrenze erkannt — Nächster KM-Punkt: ${km1.toFixed(3)} (${linie}) — bitte manuell prüfen!`;
     }
 
     // KM-Feld befüllen
@@ -7703,8 +7722,8 @@ async function lookupSbbKm(lat, lng, type) {
     // Hinweis anzeigen
     showKmHinweis(type, hinweis);
 
-    // Strecke direkt aus liniename befüllen (bereits aus der KM-Antwort bekannt)
-    if (type === 'rs') fillStreckeFromLiniename(linie, 'create');
+    // Strecke + Streckennr. aus KM-Antwort befüllen
+    if (type === 'rs') fillSbbAutoFields(linie, linienr, 'create');
 
   } catch (err) {
     kmField.style.background = '#fff7ed';
@@ -7731,14 +7750,20 @@ function showKmHinweis(type, text) {
 }
 
 // ----------------------------------------------------------------
-// SBB Strecke-Feld aus bereits bekanntem Liniennamen befüllen
-// Wird direkt aus der KM-Antwort aufgerufen (kein extra API-Call)
+// SBB-Felder Strecke + Streckennr. aus KM-Antwort befüllen
+// Wird direkt aus lookupSbbKm / lookupSbbKmModal aufgerufen
 // ----------------------------------------------------------------
+function fillSbbAutoFields(liniename, linienr, context) {
+  const pfx = context === 'create' ? 'c-' : 'm-';
+  const streckeField    = document.getElementById(pfx + 'strecke');
+  const streckennrField = document.getElementById(pfx + 'streckennr');
+  if (streckeField    && liniename) { streckeField.value    = liniename; }
+  if (streckennrField && linienr)   { streckennrField.value = linienr;   }
+}
+
+// Rückwärtskompatibilität (intern noch genutzt durch lookupSbbStreckeModal)
 function fillStreckeFromLiniename(liniename, context) {
-  const streckeField = document.getElementById(context === 'create' ? 'c-strecke' : 'm-strecke');
-  if (!streckeField || !liniename) return;
-  streckeField.value = liniename;
-  streckeField.placeholder = 'z.B. Weinfelden–Sulgen';
+  fillSbbAutoFields(liniename, '', context);
 }
 
 // Strecke/Gleis manuell via 🔍-Button im Modal abfragen (Betriebspunkte-Datensatz)
@@ -7781,29 +7806,38 @@ async function lookupSbbKmModal(type) {
 
   try {
     const url = `https://data.sbb.ch/api/explore/v2.1/catalog/datasets/linienkilometrierung/records`
-      + `?limit=2`
+      + `?limit=5`
       + `&order_by=distance(geo_point_2d,geom'POINT(${ll.lng}%20${ll.lat})')`
-      + `&select=km,geo_point_2d,liniename`;
+      + `&select=km,geo_point_2d,liniename,linienr`;
 
     const res = await fetch(url, { mode: "cors" });
     if (!res.ok) throw new Error('API ' + res.status);
     const data = await res.json();
     if (!data.results || data.results.length === 0) throw new Error('Keine Daten');
 
-    const p1 = data.results[0];
-    const km1 = parseFloat(p1.km);
-    const lat1 = p1.geo_point_2d.lat;
-    const lng1 = p1.geo_point_2d.lon;
-    const linie = p1.liniename || '';
+    const p1      = data.results[0];
+    const km1     = parseFloat(p1.km);
+    const lat1    = p1.geo_point_2d.lat;
+    const lng1    = p1.geo_point_2d.lon;
+    const linie   = p1.liniename || '';
+    const linienr = p1.linienr   != null ? String(p1.linienr) : '';
     let kmResult, hinweis;
 
-    if (data.results.length >= 2) {
-      const p2 = data.results[1];
-      const km2 = parseFloat(p2.km);
-      const lat2 = p2.geo_point_2d.lat;
-      const lng2 = p2.geo_point_2d.lon;
+    // Abschnittsgrenz-Erkennung: zweiten Punkt auf gleichem Abschnitt suchen
+    let p2 = null;
+    for (let i = 1; i < data.results.length; i++) {
+      const cand     = data.results[i];
+      const physDist = haversine(lat1, lng1, cand.geo_point_2d.lat, cand.geo_point_2d.lon);
+      const kmDiff   = Math.abs(parseFloat(cand.km) - km1);
+      if (physDist > 0 && kmDiff / physDist < 5) { p2 = cand; break; }
+    }
+
+    if (p2) {
+      const km2    = parseFloat(p2.km);
+      const lat2   = p2.geo_point_2d.lat;
+      const lng2   = p2.geo_point_2d.lon;
       const segLen = haversine(lat1, lng1, lat2, lng2);
-      const d1 = haversine(ll.lat, ll.lng, lat1, lng1);
+      const d1     = haversine(ll.lat, ll.lng, lat1, lng1);
       if (segLen > 0) {
         const t = Math.max(0, Math.min(1, d1 / segLen));
         kmResult = km1 + t * (km2 - km1);
@@ -7813,17 +7847,43 @@ async function lookupSbbKmModal(type) {
         hinweis = `⚠️ Nächster KM-Punkt: ${km1.toFixed(3)} (${linie}) — bitte prüfen!`;
       }
     } else {
+      // Abschnittsgrenze erkannt — nur Nächstpunkt verwenden
       kmResult = km1;
-      hinweis = `⚠️ Nur 1 KM-Punkt gefunden: ${km1.toFixed(3)} (${linie}) — bitte prüfen!`;
+      hinweis = `⚠️ Abschnittsgrenze erkannt — Nächster KM-Punkt: ${km1.toFixed(3)} (${linie}) — bitte manuell prüfen!`;
     }
 
     if (kmField) { kmField.value = kmResult.toFixed(3); kmField.style.background = '#f0fdf4'; }
     if (hinweisEl) { hinweisEl.textContent = hinweis; hinweisEl.style.display = ''; setTimeout(() => { hinweisEl.style.display = 'none'; }, 12000); }
+    // Strecke + Streckennr. im Modal aktualisieren (nur bei RS-Abfrage)
+    if (type === 'rs') fillSbbAutoFields(linie, linienr, 'modal');
   } catch(err) {
     if (kmField) kmField.style.background = '#fff7ed';
     if (hinweisEl) { hinweisEl.textContent = `⚠️ Abfrage fehlgeschlagen (${err.message}) — bitte manuell eintragen.`; hinweisEl.style.display = ''; }
     console.warn('SBB KM Modal Fehler:', err);
   }
+}
+
+// ----------------------------------------------------------------
+// 🔄 Refresh-Funktion: KM + Strecke + Streckennr. aus aktueller Markerposition neu abfragen
+// Wird über den 🔄-Button in der Erfassungsmaske aufgerufen
+// ----------------------------------------------------------------
+function refreshSbbCreate() {
+  // Koordinaten: bevorzugt aus gesetztem Marker, sonst aus Koordinatenfeldern
+  let lat, lng;
+  if (createRsMarker) {
+    const ll = createRsMarker.getLatLng();
+    lat = ll.lat; lng = ll.lng;
+  } else {
+    const isBP = _activePhase !== 'baugrund';
+    const eId  = isBP ? 'c-fund-e2' : 'c-rs-e';
+    const nId  = isBP ? 'c-fund-n2' : 'c-rs-n';
+    const e = parseInt(document.getElementById(eId)?.value);
+    const n = parseInt(document.getElementById(nId)?.value);
+    if (!e || !n) { alert('Bitte zuerst einen Standort auf der Karte setzen.'); return; }
+    const ll = lv95ToWgs84(e, n);
+    lat = ll.lat; lng = ll.lng;
+  }
+  lookupSbbKm(lat, lng, 'rs');
 }
 
 function syncCreateMarkerFromInput(type) {
@@ -7939,6 +7999,7 @@ function saveCreate() {
     schlitz:           parseFloat(v('c-schlitz')) || 0,
     gleis:             isBP ? '' : v('c-gleis'),
     strecke:           v('c-strecke').trim(),
+    streckennr:        v('c-streckennr').trim(),
     zugang:            v('c-zugang'),
     // Bauprojekt-Felder
     ausfuehrung:       v('c-ausfuehrung'),
@@ -11315,14 +11376,27 @@ function deleteFundament() {
             <input class="create-input" id="c-mast" placeholder="z.B. 14">
           </div>
           <div class="create-field">
-            <label class="create-lbl">KM</label>
-            <input class="create-input" id="c-km-rs" type="number" step="0.001" placeholder="optional">
+            <label class="create-lbl">KM <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <input class="create-input" id="c-km-rs" type="number" step="0.001" placeholder="optional" style="flex:1;min-width:0;">
+              <button onclick="refreshSbbCreate()" title="KM, Strecke &amp; Streckennr. von SBB neu abfragen" style="flex:0 0 auto;padding:5px 7px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
+            </div>
           </div>
         </div>
         <div class="create-row" style="margin-bottom:8px;">
           <div class="create-field">
-            <label class="create-lbl">Strecke</label>
-            <input class="create-input" id="c-strecke" placeholder="wird abgefragt…">
+            <label class="create-lbl">Strecke <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <input class="create-input" id="c-strecke" placeholder="wird abgefragt…" style="flex:1;min-width:0;">
+              <button onclick="refreshSbbCreate()" title="Strecke von SBB neu abfragen" style="flex:0 0 auto;padding:5px 7px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
+            </div>
+          </div>
+          <div class="create-field">
+            <label class="create-lbl">Streckennr. <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
+            <div style="display:flex;gap:4px;align-items:center;">
+              <input class="create-input" id="c-streckennr" placeholder="z.B. 850" style="flex:1;min-width:0;">
+              <button onclick="refreshSbbCreate()" title="Streckennr. von SBB neu abfragen" style="flex:0 0 auto;padding:5px 7px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
+            </div>
           </div>
         </div>
         <div id="strecke-hinweis" style="display:none;font-size:11px;padding:5px 8px;border-radius:6px;margin-top:4px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;line-height:1.4;"></div>
@@ -11556,18 +11630,25 @@ function deleteFundament() {
         <input class="modal-input" id="m-mast" placeholder="z.B. 14">
       </div>
       <div class="modal-field">
-        <label>KM</label>
+        <label>KM <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
         <div style="display:flex;gap:6px;align-items:center;">
           <input class="modal-input" id="m-km-rs" type="number" step="0.001" placeholder="z.B. 60.430" style="flex:1;">
-          <button onclick="lookupSbbKmModal('rs')" title="KM von SBB Open Data abfragen" style="padding:6px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:11px;white-space:nowrap;color:#374151;">🔍 KM</button>
+          <button onclick="lookupSbbKmModal('rs')" title="KM, Strecke &amp; Streckennr. von SBB neu abfragen" style="padding:6px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
         </div>
         <div id="km-hinweis-modal-rs" style="display:none;font-size:11px;padding:5px 8px;border-radius:6px;margin-top:4px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;line-height:1.4;"></div>
       </div>
       <div class="modal-field">
-        <label>Strecke</label>
+        <label>Strecke <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
         <div style="display:flex;gap:6px;align-items:center;">
           <input class="modal-input" id="m-strecke" placeholder="z.B. Weinfelden–Sulgen" style="flex:1;">
-          <button onclick="lookupSbbStreckeModal()" title="Strecke & Gleis von SBB abfragen" style="padding:6px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:11px;white-space:nowrap;color:#374151;">🔍</button>
+          <button onclick="lookupSbbKmModal('rs')" title="Strecke von SBB neu abfragen" style="padding:6px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Streckennr. <span style="color:#9ca3af;font-weight:400;font-size:10px;">(SBB auto)</span></label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="modal-input" id="m-streckennr" placeholder="z.B. 850" style="flex:1;">
+          <button onclick="lookupSbbKmModal('rs')" title="Streckennr. von SBB neu abfragen" style="padding:6px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:13px;line-height:1;">🔄</button>
         </div>
       </div>
       <div id="strecke-hinweis-modal" style="display:none;grid-column:1/-1;font-size:11px;padding:5px 8px;border-radius:6px;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;line-height:1.4;"></div>
