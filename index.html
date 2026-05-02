@@ -10546,7 +10546,7 @@ function renderBgZuweisungList() {
         <option value="">— kein Profil —</option>
         ${profile.map(pr => `<option value="${pr.id}" ${assignedId === pr.id ? 'selected' : ''}>${pr.name}</option>`).join('')}
       </select>
-      ${assigned ? `<span style="font-size:10px;color:#16a34a;font-weight:700;white-space:nowrap;">✓ ${assigned.name.substring(0,15)}</span>` : ''}
+      ${assigned ? (() => { const b = beurteileBgProfil(assigned); const ok = b.ok; return ok === true ? `<span style="font-size:10px;color:#16a34a;font-weight:700;white-space:nowrap;">✓ ${assigned.name.substring(0,15)}</span>` : ok === false ? `<span style="font-size:10px;color:#dc2626;font-weight:700;white-space:nowrap;" title="${b.label}">✗ ${assigned.name.substring(0,15)}</span>` : `<span style="font-size:10px;color:#9ca3af;font-weight:700;white-space:nowrap;">– ${assigned.name.substring(0,15)}</span>`; })() : ''}
     </div>`;
   }).join('');
 }
