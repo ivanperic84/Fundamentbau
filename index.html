@@ -1504,9 +1504,10 @@
           <!-- Bestand / Neu -->
           <div style="margin-bottom:10px;">
             <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Bestand / Neu</label>
-            <select id="bp-bestand" onchange="saveBauprojektFeld()" style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
+            <select id="bp-bestand" onchange="saveBauprojektFeld();updateBpBestandUI()" style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
               <option value="">— wählen —</option>
               <option value="neu">Neu zu bauen</option>
+              <option value="prov">Provisorium</option>
               <option value="bestand">Bestand (vorhanden)</option>
             </select>
           </div>
@@ -1546,7 +1547,6 @@
                 <option value="spezial-rhs">RHS1</option>
                 <option value="spezial-kunstbau">Mast auf Kunstbau</option>
                 <option value="spezial-mauer">Mast an Mauer</option>
-                <option value="spezial-prov">Provisorium</option>
                 <option value="spezial-fels">Felsiger Baugrund</option>
                 <option value="spezial-brunnen">Brunnenring</option>
               </optgroup>
@@ -1715,26 +1715,63 @@
         </h3>
         <div class="sb-body collapsed">
 
-          <!-- GIS-Abfrage geo.admin.ch -->
+          <!-- GIS-Abfrage geo.admin.ch: Naturschutz -->
           <div style="margin-bottom:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
               <label style="font-size:11px;font-weight:600;color:#374151;">GIS-Daten (geo.admin.ch)</label>
-              <button onclick="queryGisNaturschutz()" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;">Aktualisieren</button>
+              <div style="display:flex;gap:5px;align-items:center;">
+                <a id="ns-gis-map-link" href="#" target="_blank"
+                   style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #3b82f6;background:#eff6ff;color:#1d4ed8;cursor:pointer;text-decoration:none;white-space:nowrap;">↗ Karte</a>
+                <button onclick="queryGisNaturschutz()" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;">Aktualisieren</button>
+              </div>
             </div>
             <div id="ns-gis-result" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:11px;color:#6b7280;line-height:1.6;">
               Wird beim Öffnen automatisch abgefragt…
             </div>
           </div>
 
-          <!-- GIS-Abfrage Altlasten -->
+          <!-- GIS-Abfrage Altlasten (KbS) -->
           <div style="margin-bottom:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
               <label style="font-size:11px;font-weight:600;color:#374151;">Altlasten (KbS)</label>
-              <button onclick="queryGisAltlasten()" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;">Aktualisieren</button>
+              <div style="display:flex;gap:5px;align-items:center;">
+                <a id="ns-alt-map-link" href="#" target="_blank"
+                   style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #3b82f6;background:#eff6ff;color:#1d4ed8;cursor:pointer;text-decoration:none;white-space:nowrap;">↗ Karte</a>
+                <button onclick="queryGisAltlasten()" style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;cursor:pointer;">Aktualisieren</button>
+              </div>
             </div>
             <div id="ns-gis-altlasten" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:11px;color:#6b7280;line-height:1.6;">
               Wird beim Öffnen automatisch abgefragt…
             </div>
+          </div>
+
+          <!-- Grundwasser -->
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <label style="font-size:11px;font-weight:600;color:#374151;">Grundwasser</label>
+              <a id="ns-gw-map-link" href="#" target="_blank"
+                 style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #3b82f6;background:#eff6ff;color:#1d4ed8;cursor:pointer;text-decoration:none;white-space:nowrap;">↗ Karte</a>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;">
+                <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px;">Mittl. GW-Kote (m ü.M.)</label>
+                <input type="number" id="ns-gw-kote" step="0.1" oninput="saveNaturschutz()"
+                       placeholder="z.B. 430.5"
+                       style="width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;">
+              </div>
+              <div style="flex:1;">
+                <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px;">Schwankung ± (m)</label>
+                <input type="number" id="ns-gw-schwankung" step="0.1" oninput="saveNaturschutz()"
+                       placeholder="z.B. 1.5"
+                       style="width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;">
+              </div>
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:6px;">
+              <input type="checkbox" id="ns-gw-relevant" onchange="saveNaturschutz()"> GW relevant / zu beachten
+            </label>
+            <textarea id="ns-gw-bemerkung" rows="2" oninput="saveNaturschutz()"
+              placeholder="Hinweise zum Grundwasser (Quelle, Messstelle, Abklärung)…"
+              style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
           </div>
 
           <!-- Schutzzone / Inventar -->
@@ -2813,14 +2850,21 @@ function exitMapFullscreen() {
   }
 }
 
+// Gibt die zur aktiven Phase gehörenden Pairs zurück (für Navigation + Zählung)
+function getPhasePairs() {
+  if (_activePhase === 'baugrund') return PAIRS.filter(p => !p._phase || p._phase === 'baugrund');
+  return PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
+}
+
 function navigatePair(dir) {
   if (pendingDrag) cancelDrag();
   lockMarkers();
-  const idx = PAIRS.findIndex(p => p.id === currentPairId);
+  const phasePairs = getPhasePairs();
+  const idx = phasePairs.findIndex(p => p.id === currentPairId);
   const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= PAIRS.length) return;
+  if (newIdx < 0 || newIdx >= phasePairs.length) return;
   saveSketchToStorage();
-  currentPairId = PAIRS[newIdx].id;
+  currentPairId = phasePairs[newIdx].id;
   renderDetail();
   updateMapToCurrentPair();
   // Vollbild-Modus aufrechterhalten — Leaflet nach Neu-Render informieren
@@ -2889,12 +2933,17 @@ function renderDetail() {
   const pd = getPairData(currentPairId);
   const idx = PAIRS.findIndex(p => p.id === currentPairId);
 
+  const phasePairs  = getPhasePairs();
+  const phaseIdx    = phasePairs.findIndex(p => p.id === currentPairId);
+  const phaseLabel  = _activePhase !== 'baugrund'
+    ? `Mast ${pair.mast || pair.id}`
+    : (pair.bezeichnung || 'Standort ' + pair.id);
   const navLabel = document.getElementById('pair-nav-label');
-  if (navLabel) navLabel.textContent = `${pair.bezeichnung || 'Standort '+pair.id} / ${PAIRS.length}`;
+  if (navLabel) navLabel.textContent = `${phaseLabel} / ${phasePairs.length}`;
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
-  if (prevBtn) prevBtn.disabled = idx === 0;
-  if (nextBtn) nextBtn.disabled = idx === PAIRS.length - 1;
+  if (prevBtn) prevBtn.disabled = phaseIdx <= 0;
+  if (nextBtn) nextBtn.disabled = phaseIdx >= phasePairs.length - 1;
 
   renderMetaSection(pair);
   const zugangText = document.getElementById('zugang-text');
@@ -3984,21 +4033,6 @@ function addMarkers(pair) {
   const rsAktiv  = !!(pair.rs?.e  && pair.rs?.n);
   const rksAktiv = !!(pair.rks?.e && pair.rks?.n);
 
-  // Ausführungsphase: Fundamentmarker mit Mastnummer (Leader-Icon wie BP)
-  if (isAF) {
-    const fundLL = pair.fund?.e && pair.fund?.n ? lv95ToWgs84(pair.fund.e, pair.fund.n)
-                 : (rsAktiv ? lv95ToWgs84(pair.rs.e, pair.rs.n) : null);
-    if (!fundLL) return;
-    const mastLabel = pair.mast || '?';
-    rsMarker = L.marker([fundLL.lat, fundLL.lng], {
-      icon: mkLeaderIcon(mastLabel, '#1a3a5c', false, 0, -44),
-      zIndexOffset: 100, draggable: false
-    }).addTo(leafletMap)
-      .bindPopup(`<b>Mast ${mastLabel}</b><br>Fundamentstandort<br>${pair.fund?.e ? `E ${pair.fund.e} / N ${pair.fund.n}` : 'Koordinaten aus RS'}`, { maxWidth: 250 });
-    leafletMap.setView([fundLL.lat, fundLL.lng], leafletMap.getZoom());
-    return;
-  }
-
   // Label: Bauprojekt → Mastnummer, Baugrund → RS/RKS/BS
   const rsLabel  = isBP ? (pair.mast || 'F') : 'RS';
   const rksLabel = isBP ? (pair.mast || 'F') : 'RKS';
@@ -4103,6 +4137,23 @@ function addMarkers(pair) {
       className: ''
     });
   };
+
+  // Ausführungsphase: Marker NACH mkLeaderIcon setzen (const-Deklaration muss zuerst ausgewertet sein)
+  if (isAF) {
+    const fundLL = pair.fund?.e && pair.fund?.n ? lv95ToWgs84(pair.fund.e, pair.fund.n)
+                 : (rsAktiv ? lv95ToWgs84(pair.rs.e, pair.rs.n) : null);
+    if (!fundLL) return;
+    const bpData = loadAllBauprojekt()[pair.id] || {};
+    const col    = getMassnahmeColor(bpData);
+    rsMarker = L.marker([fundLL.lat, fundLL.lng], {
+      icon: mkLeaderIcon(pair.mast || '?', col, false, 0, -44),
+      zIndexOffset: 100, draggable: false
+    }).addTo(leafletMap)
+      .bindPopup(() => mkFundPopupHtml(pair, fundLL), { maxWidth: 300 });
+    leafletMap.setView([fundLL.lat, fundLL.lng], leafletMap.getZoom());
+    addGhostMarkers(pair);
+    return;
+  }
 
   if (rsAktiv) {
     // In Bauprojektphase: Massnahme-Farbe + vereinfachtes Popup (kein Entsperren-Button)
@@ -5245,7 +5296,8 @@ let overviewMarkers = [];
 
 // Farbgebung Massnahme für Fundamentstandorte
 function getMassnahmeColor(bpData) {
-  if ((bpData.fundtyp || '').startsWith('spezial-prov')) return '#16a34a'; // Provisorium grün
+  // Provisorium: bestand='prov' (neu) oder Legacy fundtyp='spezial-prov'
+  if (bpData.bestand === 'prov' || (bpData.fundtyp || '').startsWith('spezial-prov')) return '#16a34a'; // grün
   if (bpData.bestand === 'neu')                          return '#dc2626'; // Neubau rot
   if (bpData.massnahme === 'abbruch')                    return '#ca8a04'; // Abbruch gelb
   if (bpData.massnahme === 'sicherung')                  return '#ea580c'; // Sicherung orange
@@ -5253,7 +5305,7 @@ function getMassnahmeColor(bpData) {
   return '#9ca3af'; // nicht kategorisiert
 }
 function getMassnahmeLabel(bpData) {
-  if ((bpData.fundtyp || '').startsWith('spezial-prov')) return 'Provisorium';
+  if (bpData.bestand === 'prov' || (bpData.fundtyp || '').startsWith('spezial-prov')) return 'Provisorium';
   if (bpData.bestand === 'neu')                          return 'Neubau';
   if (bpData.massnahme === 'abbruch')                    return 'Abbruch';
   if (bpData.massnahme === 'sicherung')                  return 'Sicherung';
@@ -8417,8 +8469,8 @@ function saveCreate() {
   }
   savePairs();
 
-  // Bauprojekt-Felder auch im separaten BP-Speicher sichern (wird von Sidebar gelesen)
-  if (isBP) {
+  // BP- und AF-Felder im separaten BP-Speicher sichern (Sidebar + Ref-Sektion lesen daraus)
+  if (isBP || _activePhase === 'ausfuehrung') {
     const all = loadAllBauprojekt();
     all[savedId] = {
       ...(all[savedId] || {}),
@@ -9261,6 +9313,7 @@ function applyCreatePhase() {
 
 function onCreateBestandChange() {
   const val = document.getElementById('c-bestand')?.value;
+  // Massnahme-Wrap nur bei "Bestand" (nicht bei Provisorium oder Neubau)
   const massnahmeWrap = document.getElementById('c-massnahme-wrap');
   if (massnahmeWrap) massnahmeWrap.style.display = val === 'bestand' ? '' : 'none';
   if (val !== 'bestand') {
@@ -9485,7 +9538,7 @@ function updateBpBestandUI() {
   const bestand   = document.getElementById('bp-bestand')?.value;
   const massnahme = document.getElementById('bp-massnahme')?.value;
 
-  // Massnahme-Wrap
+  // Massnahme-Wrap nur bei "Bestand" (nicht bei Provisorium oder Neubau)
   const massnahmeWrap = document.getElementById('bp-massnahme-wrap');
   if (massnahmeWrap) massnahmeWrap.style.display = bestand === 'bestand' ? '' : 'none';
 
@@ -9699,43 +9752,49 @@ function updateBpNachweisAndBoden() {
 }
 
 // ── GIS-Abfrage Naturschutz (geo.admin.ch) ──────────────────
-// Abgefragte Layer:
-//   ch.bafu.gewaesserschutz           — Gewässerschutzzonen Ao/Au/Zu/Zo
-//   ch.bafu.bundesinventare-bln       — BLN-Inventar
-//   ch.bafu.schutzgebiete-npa         — Nationalpark / Naturschutzgebiet Bund
-//   ch.are.gewaesserraum              — Gewässerraum (ARE)
+// Identify-API unterstützt nur Layer mit GeoTable (Vektordaten).
+// ch.are.gewaesserraum liefert HTTP 400 — daher nur im Kartenlink.
 const GIS_NS_LAYERS = [
-  { id: 'ch.bafu.gewaesserschutz',        label: 'Gewässerschutzzone',    key: 'gwschutz' },
-  { id: 'ch.bafu.bundesinventare-bln',    label: 'BLN-Inventar',          key: 'bln'      },
-  { id: 'ch.bafu.schutzgebiete-npa',      label: 'Naturschutz (Bund)',    key: 'npa'      },
-  { id: 'ch.are.gewaesserraum',           label: 'Gewässerraum',          key: 'gwr'      },
+  { id: 'ch.bafu.gewaesserschutz',        label: 'Gewässerschutzzone', key: 'gwschutz' },
+  { id: 'ch.bafu.bundesinventare-bln',    label: 'BLN-Inventar',       key: 'bln'      },
+  { id: 'ch.bafu.schutzgebiete-npa',      label: 'Naturschutz (Bund)', key: 'npa'      },
 ];
+// Layer nur per Kartenlink (kein Identify-Support): ch.are.gewaesserraum
+
+// Aktualisiert die drei ↗ Karte-Links mit den aktuellen Koordinaten
+function updateGisMapLinks(e, n) {
+  if (!e || !n) return;
+  const z = 12;
+  const nsEl  = document.getElementById('ns-gis-map-link');
+  const altEl = document.getElementById('ns-alt-map-link');
+  const gwEl  = document.getElementById('ns-gw-map-link');
+  if (nsEl)  nsEl.href  = `https://map.geo.admin.ch/#/map?lang=de&center=${e},${n}&z=${z}&layers=ch.bafu.gewaesserschutz,ch.bafu.bundesinventare-bln,ch.bafu.schutzgebiete-npa,ch.are.gewaesserraum`;
+  if (altEl) altEl.href = `https://map.geo.admin.ch/#/map?lang=de&center=${e},${n}&z=${z}&layers=ch.bafu.kataster-belasteter-standorte-kbs`;
+  if (gwEl)  gwEl.href  = `https://map.geo.admin.ch/#/map?lang=de&center=${e},${n}&z=11&layers=ch.bafu.hydrogeologie-grundwasservorkommen,ch.bafu.grundwasserstand-messstellen`;
+}
 
 async function queryGisNaturschutz() {
   const resultEl = document.getElementById('ns-gis-result');
   if (!resultEl) return;
 
-  // Koordinaten des aktuellen Standorts
   const pair = PAIRS.find(p => p.id === currentPairId);
-  if (!pair || !pair.rs?.e || !pair.rs?.n) {
+  if (!pair?.rs?.e || !pair?.rs?.n) {
     resultEl.textContent = 'Keine Koordinaten vorhanden.';
     return;
   }
-
-  const e = pair.rs.e;
-  const n = pair.rs.n;
+  const e = pair.rs.e, n = pair.rs.n;
 
   resultEl.innerHTML = '<span style="color:#9ca3af;">Wird abgefragt…</span>';
 
   const layerIds = GIS_NS_LAYERS.map(l => l.id).join(',');
-  const url = `https://api.geo.admin.ch/rest/services/all/MapServer/identify`
+  const url = `https://api3.geo.admin.ch/rest/services/all/MapServer/identify`
     + `?geometry=${e},${n}`
     + `&geometryType=esriGeometryPoint`
     + `&sr=2056`
     + `&layers=all:${layerIds}`
     + `&mapExtent=${e-1000},${n-1000},${e+1000},${n+1000}`
     + `&imageDisplay=1000,1000,96`
-    + `&tolerance=10`
+    + `&tolerance=50`
     + `&lang=de`
     + `&returnGeometry=false`;
 
@@ -9746,17 +9805,17 @@ async function queryGisNaturschutz() {
     const results = data.results || [];
 
     if (results.length === 0) {
-      resultEl.innerHTML = '<span style="color:#16a34a;">Keine Schutzzonen an diesem Standort gefunden.</span>';
+      resultEl.innerHTML = '<span style="color:#16a34a;">Keine Schutzzonen an diesem Standort gefunden.</span>'
+        + '<div style="font-size:10px;color:#9ca3af;margin-top:4px;">Gewässerraum: bitte ↗ Karte prüfen.</div>';
       return;
     }
 
-    // Ergebnisse gruppieren nach Layer
+    // Ergebnisse nach Layer gruppieren
     const found = {};
     results.forEach(r => {
       const layerMeta = GIS_NS_LAYERS.find(l => l.id === r.layerBodId);
       const label = layerMeta?.label || r.layerName || r.layerBodId;
       if (!found[label]) found[label] = [];
-      // Relevante Attribute extrahieren
       const props = r.properties || {};
       const detail = props.sgz_typ || props.art || props.klasse || props.zone_bez
         || props.name || props.bezeichnung || props.objectid || '';
@@ -9772,17 +9831,17 @@ async function queryGisNaturschutz() {
       </div>`;
     });
 
-    resultEl.innerHTML = `<div style="font-size:10px;color:#9ca3af;margin-bottom:5px;font-style:italic;">Quelle: geo.admin.ch — ⚠️ Zur Kontrolle empfohlen</div>`
-      + lines.join('');
+    resultEl.innerHTML = `<div style="font-size:10px;color:#9ca3af;margin-bottom:5px;font-style:italic;">Quelle: api3.geo.admin.ch — ⚠️ Zur Kontrolle empfohlen</div>`
+      + lines.join('')
+      + `<div style="font-size:10px;color:#9ca3af;margin-top:5px;">Gewässerraum: bitte ↗ Karte prüfen.</div>`;
 
     // Checkboxen automatisch setzen
     if (found['BLN-Inventar'])        { const el = document.getElementById('ns-bln');       if (el && !el.checked) { el.checked = true; saveNaturschutz(); } }
-    if (found['Gewässerraum'])         { const el = document.getElementById('ns-gewaesser'); if (el && !el.checked) { el.checked = true; saveNaturschutz(); } }
     if (found['Gewässerschutzzone'])   { const el = document.getElementById('ns-gewaesser'); if (el && !el.checked) { el.checked = true; saveNaturschutz(); } }
     if (found['Naturschutz (Bund)'])   { const el = document.getElementById('ns-nsg');       if (el && !el.checked) { el.checked = true; saveNaturschutz(); } }
 
   } catch(err) {
-    resultEl.innerHTML = `<span style="color:#b45309;">Abfrage fehlgeschlagen (${err.message}) — bitte manuell prüfen.</span>`;
+    resultEl.innerHTML = `<span style="color:#b45309;">Abfrage fehlgeschlagen (${err.message}) — bitte ↗ Karte prüfen.</span>`;
     console.warn('GIS Naturschutz Fehler:', err);
   }
 }
@@ -11322,49 +11381,61 @@ function toggleKontaktSection() {
 }
 
 // ── GIS-Abfrage Altlasten (KbS) ──────────────────────────────
+// KbS-Layer haben keine GeoTable → kein Identify-Support.
+// Stattdessen WMS GetFeatureInfo mit BBOX um den Standort.
 const GIS_ALTLASTEN_LAYERS = [
-  { id: 'ch.bafu.kataster-belasteter-standorte-kbs',        label: 'KbS (BAFU)'         },
-  { id: 'ch.bav.kataster-belasteter-standorte-oev_v2_0',    label: 'KbS öV (BAV v2)'    },
-  { id: 'ch.bazl.kataster-belasteter-standorte-oev',        label: 'KbS öV (BAZL)'      },
+  { id: 'ch.bafu.kataster-belasteter-standorte-kbs',     label: 'KbS (BAFU)'      },
+  { id: 'ch.bav.kataster-belasteter-standorte-oev_v2_0', label: 'KbS öV (BAV)'    },
 ];
 
 async function queryGisAltlasten() {
   const resultEl = document.getElementById('ns-gis-altlasten');
   if (!resultEl) return;
   const pair = PAIRS.find(p => p.id === currentPairId);
-  if (!pair || !pair.rs?.e || !pair.rs?.n) { resultEl.textContent = 'Keine Koordinaten vorhanden.'; return; }
+  if (!pair?.rs?.e || !pair?.rs?.n) { resultEl.textContent = 'Keine Koordinaten vorhanden.'; return; }
   const e = pair.rs.e, n = pair.rs.n;
   resultEl.innerHTML = '<span style="color:#9ca3af;">Wird abgefragt…</span>';
-  const layerIds = GIS_ALTLASTEN_LAYERS.map(l => l.id).join(',');
-  const url = `https://api.geo.admin.ch/rest/services/all/MapServer/identify`
-    + `?geometry=${e},${n}&geometryType=esriGeometryPoint&sr=2056`
-    + `&layers=all:${layerIds}&mapExtent=${e-1000},${n-1000},${e+1000},${n+1000}`
-    + `&imageDisplay=1000,1000,96&tolerance=10&lang=de&returnGeometry=false`;
-  try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const results = data.results || [];
-    if (results.length === 0) {
-      resultEl.innerHTML = '<span style="color:#16a34a;">Keine belasteten Standorte in der Nähe.</span>';
-      return;
-    }
-    const lines = results.map(r => {
-      const layerMeta = GIS_ALTLASTEN_LAYERS.find(l => l.id === r.layerBodId);
-      const label = layerMeta?.label || r.layerName || r.layerBodId;
-      const props = r.properties || {};
-      const name   = props.standortname || props.name || props.bezeichnung || '';
-      const status = props.statuscode   || props.status_de || props.zustand || '';
-      const detail = [name, status].filter(Boolean).join(' — ');
-      return `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px;">
-        <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;margin-top:3px;flex-shrink:0;"></span>
-        <span><strong>${label}</strong>${detail ? ': ' + detail : ''}</span>
-      </div>`;
-    });
-    resultEl.innerHTML = `<div style="font-size:10px;color:#9ca3af;margin-bottom:5px;font-style:italic;">Quelle: geo.admin.ch (KbS) — ⚠️ Zur Kontrolle empfohlen</div>` + lines.join('');
-  } catch(err) {
-    resultEl.innerHTML = `<span style="color:#b45309;">Abfrage fehlgeschlagen (${err.message}) — bitte manuell prüfen.</span>`;
+
+  // Suchradius 500m — WMS GetFeatureInfo mit EPSG:2056
+  const r = 500;
+  const bbox = `${e-r},${n-r},${e+r},${n+r}`;
+  const allResults = [];
+
+  for (const layer of GIS_ALTLASTEN_LAYERS) {
+    try {
+      const url = `https://wms.geo.admin.ch/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo`
+        + `&QUERY_LAYERS=${layer.id}&LAYERS=${layer.id}`
+        + `&INFO_FORMAT=application/json`
+        + `&CRS=EPSG:2056&WIDTH=101&HEIGHT=101&I=50&J=50`
+        + `&BBOX=${bbox}&FEATURE_COUNT=20`;
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) continue;
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('json')) continue;
+      const data = await res.json();
+      (data.features || []).forEach(f => {
+        const props = f.properties || {};
+        const name   = props.standortname || props.name || props.bezeichnung || '';
+        const status = props.statuscode   || props.status_de || props.zustand || '';
+        allResults.push({ label: layer.label, name, status });
+      });
+    } catch { /* Layer überspringen */ }
   }
+
+  if (allResults.length === 0) {
+    resultEl.innerHTML = '<span style="color:#16a34a;">Keine belasteten Standorte im Umkreis 500 m gefunden.</span>'
+      + '<div style="font-size:10px;color:#9ca3af;margin-top:4px;">Zur Kontrolle bitte ↗ Karte prüfen.</div>';
+    return;
+  }
+
+  const lines = allResults.map(({ label, name, status }) => {
+    const detail = [name, status].filter(Boolean).join(' — ');
+    return `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:3px;">
+      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc2626;margin-top:3px;flex-shrink:0;"></span>
+      <span><strong>${label}</strong>${detail ? ': ' + detail : ''}</span>
+    </div>`;
+  });
+  resultEl.innerHTML = `<div style="font-size:10px;color:#9ca3af;margin-bottom:5px;font-style:italic;">Quelle: wms.geo.admin.ch (KbS) — ⚠️ Zur Kontrolle empfohlen</div>` + lines.join('');
 }
 
 function loadNaturschutzFelder(pairId) {
@@ -11383,6 +11454,14 @@ function loadNaturschutzFelder(pairId) {
   v('ns-bewilligung-status',      d.bewilligungStatus);
   v('ns-bewilligung-link',        d.bewilligungLink);
   v('ns-bemerkung',               d.bemerkung);
+  // Grundwasser
+  cb('ns-gw-relevant',   d.gwRelevant);
+  v('ns-gw-kote',        d.gwKote);
+  v('ns-gw-schwankung',  d.gwSchwankung);
+  v('ns-gw-bemerkung',   d.gwBemerkung);
+  // GIS-Kartenlinks mit aktuellen Koordinaten setzen
+  const pair = PAIRS.find(p => p.id === pairId);
+  if (pair?.rs?.e && pair?.rs?.n) updateGisMapLinks(pair.rs.e, pair.rs.n);
   updateNaturschutzUI();
 }
 
@@ -11403,6 +11482,11 @@ function saveNaturschutz() {
     bewilligungStatus:      v('ns-bewilligung-status'),
     bewilligungLink:        v('ns-bewilligung-link'),
     bemerkung:              v('ns-bemerkung'),
+    // Grundwasser
+    gwRelevant:             cb('ns-gw-relevant'),
+    gwKote:                 v('ns-gw-kote'),
+    gwSchwankung:           v('ns-gw-schwankung'),
+    gwBemerkung:            v('ns-gw-bemerkung'),
   };
   saveAllNaturschutz(all);
   updateNaturschutzUI();
@@ -11967,6 +12051,7 @@ function deleteFundament() {
             <label class="create-lbl">Bestand / Neu</label>
             <select class="create-input" id="c-bestand" onchange="onCreateBestandChange()">
               <option value="neu">Neu zu bauen</option>
+              <option value="prov">Provisorium</option>
               <option value="bestand">Bestand</option>
             </select>
           </div>
@@ -12009,7 +12094,6 @@ function deleteFundament() {
             <option value="spezial-rhs">RHS1</option>
             <option value="spezial-kunstbau">Mast auf Kunstbau</option>
             <option value="spezial-mauer">Mast an Mauer</option>
-            <option value="spezial-prov">Provisorium</option>
             <option value="spezial-fels">Felsiger Baugrund</option>
             <option value="spezial-brunnen">Brunnenring</option>
           </select>
