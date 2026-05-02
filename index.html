@@ -2172,6 +2172,11 @@ function setPhase(phase) {
     overviewMap.remove();
     overviewMap = null;
   }
+  // Karte-View sofort neu initialisieren (zeigt Platzhalter wenn nicht Baugrundphase)
+  if (currentOverviewView === 'karte') {
+    initOverviewMap();
+    setTimeout(resizeOverviewMap, 50);
+  }
   // Detailansicht: NICHT automatisch neu laden — User bleibt wo er ist
   // (Phasenwechsel nur in Übersicht erlaubt, s. updatePhaseSelectState)
 }
@@ -5615,6 +5620,11 @@ function zoomToOverviewGPS() {
 }
 
 function refreshOverviewMap() {
+  // Sondagen-Marker nur in der Baugrundphase anzeigen
+  if (_activePhase !== 'baugrund') {
+    if (!overviewMap) { initOverviewMap(); setTimeout(resizeOverviewMap, 50); }
+    return;
+  }
   if (!overviewMap) { initOverviewMap(); return; }
   const visible = new Set(getFilteredSorted().map(p => p.id));
   overviewMarkers.forEach(({ pairId, rs, rks }) => {
