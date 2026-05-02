@@ -2394,20 +2394,14 @@ function renderCards() {
   grid.innerHTML = '';
 
   // Sondagen-Kacheln nur in der Baugrundphase anzeigen.
-  // Bauprojekt / Ausführung haben eigene Standorte (Fundamentstandorte),
-  // die nicht mit den Sondagen identisch sind.
+  // Bauprojekt / Ausführung: nur die Erfassungskachel für Fundamentstandorte anzeigen.
   if (_activePhase !== 'baugrund') {
-    grid.innerHTML = `
-      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:#9ca3af;">
-        <div style="font-size:32px;margin-bottom:12px;">📋</div>
-        <div style="font-size:15px;font-weight:600;color:#6b7280;margin-bottom:6px;">
-          Kachelansicht nicht verfügbar
-        </div>
-        <div style="font-size:13px;line-height:1.5;">
-          In der Phase <strong>${PHASEN_CONFIG[_activePhase]?.label || _activePhase}</strong>
-          werden Standorte über die <strong>Karte</strong> oder <strong>Liste</strong> verwaltet.
-        </div>
-      </div>`;
+    const addCard = document.createElement('div');
+    addCard.className = 'card card-add';
+    addCard.title = 'Neuen Fundamentstandort erfassen';
+    addCard.onclick = () => openCreateView();
+    addCard.innerHTML = '<div class="card-add-icon">+</div><div class="card-add-label">Neuer Fundamentstandort</div>';
+    grid.appendChild(addCard);
     return;
   }
 
