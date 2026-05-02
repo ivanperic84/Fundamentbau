@@ -2484,7 +2484,7 @@ function renderCards() {
 
     fundPairs.forEach(p => {
       const pd       = getPairData(p.id);
-      const bpData   = allBp[p.id] || {};
+      const bpData   = { ...p, ...(allBp[p.id] || {}) };
       const col      = getMassnahmeColor(bpData);
       const massLabel= getMassnahmeLabel(bpData);
       const fundtyp  = bpData.fundtyp || '';
