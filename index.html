@@ -891,6 +891,8 @@
 </div>
 <!-- PHASEN-BANNER -->
 <div style="background:#162d47;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 16px;display:flex;align-items:center;gap:10px;">
+  <button onclick="openProjektModal()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Projekte <span style="font-size:9px;opacity:0.7;">▼</span></button>
+  <span style="width:1px;height:18px;background:rgba(255,255,255,0.15);flex-shrink:0;"></span>
   <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Phase</span>
   <select id="phase-banner" onchange="setPhase(this.value)" style="
     background: rgba(255,255,255,0.12);
@@ -959,7 +961,6 @@
           <button class="view-btn" id="vbtn-karte" onclick="setOverviewView('karte')" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Karte</button>
           <button class="view-btn" id="vbtn-baugrund" onclick="setOverviewView('baugrund')" style="display:none;">Baugrund</button>
           <button class="export-btn undo-btn" onclick="undo()" disabled title="Rückgängig (Ctrl+Z)" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg> Rückgängig</button>
-          <button class="export-btn" onclick="openProjektModal()" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Projekte <span style="font-size:9px;opacity:0.7;">▼</span></button>
           <!-- Versteckte Datei-Inputs für Import (aufgerufen aus Projekterfassung-Modal) -->
           <input type="file" id="import-daten-file" accept=".json" style="display:none" onchange="importAppDaten(this)">
           <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)">
@@ -2211,11 +2212,11 @@ function setPhase(phase) {
   renderPhaseOverlay();
   updateHeaderSub();
   renderContacts();
-  // Baugrund-Tab nur in Baugrundphase
+  // Baugrund-Tab in Baugrund- und Bauprojektphase sichtbar
   const bgBtn = document.getElementById('vbtn-baugrund');
-  if (bgBtn) bgBtn.style.display = phase === 'baugrund' ? '' : 'none';
+  if (bgBtn) bgBtn.style.display = (phase === 'baugrund' || phase === 'bauprojekt') ? '' : 'none';
   // Falls Baugrund-Tab aktiv war und Phase wechselt → zurück zu Kacheln
-  if (phase !== 'baugrund' && currentOverviewView === 'baugrund') setOverviewView('karten');
+  if (phase !== 'baugrund' && phase !== 'bauprojekt' && currentOverviewView === 'baugrund') setOverviewView('karten');
   // Liste neu rendern falls aktiv
   if (currentOverviewView === 'liste') renderList();
   // In der Übersicht: Karten neu rendern
@@ -9304,9 +9305,9 @@ try {
   renderPhaseBanner();
   renderPhaseOverlay();
   setTimeout(updatePhaseSelectState, 100);
-  // Baugrund-Tab nur in Baugrundphase sichtbar
+  // Baugrund-Tab in Baugrund- und Bauprojektphase sichtbar
   const bgBtn = document.getElementById('vbtn-baugrund');
-  if (bgBtn) bgBtn.style.display = _activePhase === 'baugrund' ? '' : 'none';
+  if (bgBtn) bgBtn.style.display = (_activePhase === 'baugrund' || _activePhase === 'bauprojekt') ? '' : 'none';
 
 } catch(e) {
   document.getElementById('overview-view').style.display = 'block';
