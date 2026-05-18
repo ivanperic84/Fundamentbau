@@ -76,7 +76,8 @@
   }
 
   /* Cards */
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; grid-auto-rows: 1fr; align-items: stretch; }
+  .cards-grid .card { min-height: 170px; height: 100%; box-sizing: border-box; }
   .card {
     background-color: rgba(255,255,255,0.78); background-blend-mode: lighten;
     background-size: cover; background-position: center;
@@ -170,7 +171,7 @@
     box-shadow: 0 2px 12px rgba(0,0,0,0.22);
   }
   .detail-sidebar {
-    width: 310px; min-width: 310px; background: #f0f2f5;
+    width: 370px; min-width: 370px; background: #f0f2f5;
     overflow-y: auto; border-right: 1px solid #e0e4ea; display: flex; flex-direction: column;
     gap: 6px; padding: 6px 8px;
   }
@@ -563,19 +564,6 @@
   .modal-btn.cancel:hover { background: #f1f5f9; border-color: #94a3b8; }
   .modal-sep { grid-column: 1/-1; border: none; border-top: 1px solid #f0f2f5; margin: 4px 0; }
 
-  /* Card action buttons */
-  .card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; }
-  .card:hover .card-actions { display: flex; }
-  .card-action-btn {
-    width: 26px; height: 26px; border-radius: 5px; border: none; cursor: pointer;
-    font-size: 13px; display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.95); box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    transition: all 0.15s;
-  }
-  .card-action-btn:hover { transform: scale(1.1); }
-  .card-action-btn.edit:hover { background: #dbeafe; }
-  .card-action-btn.del:hover  { background: #fee2e2; }
-  .card-action-btn.tag:hover  { background: #f5f3ff; }
 
   /* Card tag picker */
   .card-tag-picker {
@@ -792,14 +780,14 @@
 
   /* ── Kontakte & Brief ──────────────────────────────── */
   .kontakt-section {
-    padding: 16px 20px; border-top: 1px solid #e0e4ea; background: white;
+    padding: 6px 20px; border-top: 1px solid #e0e4ea; background: white;
   }
   .kontakt-section-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px; cursor: pointer; user-select: none;
+    margin-bottom: 0; cursor: pointer; user-select: none;
   }
   .kontakt-section-header h3 {
-    font-size: 13px; font-weight: 700; color: #1a3a5c;
+    font-size: 12px; font-weight: 600; color: #1a3a5c;
     display: flex; align-items: center; gap: 7px;
   }
   .kontakt-section-actions { display: flex; gap: 8px; align-items: center; }
@@ -900,20 +888,60 @@
     .create-sidebar { width: 100%; min-width: 0; height: 50vh; border-right: none; border-bottom: 1px solid #e0e4ea; }
     .create-main { height: 50vh; }
   }
+  /* Modal-Box (für Alle-Notizen, Schnellnotiz etc.) */
+  .modal-box {
+    background: white; border-radius: 12px; width: 100%; max-height: 90vh;
+    overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-bottom: 1px solid #f0f2f5;
+  }
+  .modal-title {
+    font-size: 14px; font-weight: 700; color: #1a3a5c;
+  }
+  .modal-close {
+    background: none; border: none; font-size: 16px; color: #9ca3af;
+    cursor: pointer; padding: 2px 6px; line-height: 1;
+  }
+  .modal-close:hover { color: #374151; }
+
+  /* Alle-Notizen Phasenfilter */
+  .an-filter-btn {
+    padding: 4px 12px; border-radius: 5px; border: 1px solid #e5e7eb;
+    background: white; color: #6b7280; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .an-filter-active {
+    background: #1a3a5c; color: white; border-color: #1a3a5c;
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
+<div class="header" style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0;">
+  <div style="flex-shrink:0;padding-right:20px;">
     <div class="header-title" style="display:flex;align-items:center;gap:8px;">
-      <span id="app-title-text" onclick="startEditTitle()" title="Titel bearbeiten" style="cursor:pointer;">Projekt A</span>
-      <input id="app-title-input" type="text" style="display:none;font-size:17px;font-weight:600;color:white;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:6px;padding:2px 8px;outline:none;width:260px;" onblur="saveTitle()" onkeydown="if(event.key==='Enter')saveTitle();if(event.key==='Escape')cancelEditTitle();">
-      <span onclick="startEditTitle()" title="Titel bearbeiten" style="opacity:0.6;cursor:pointer;display:flex;align-items:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+      <span id="app-title-text">Projekt A</span>
+      <button onclick="openProjektKenndatenModal()" title="Projektkenndaten bearbeiten"
+        style="background:none;border:none;color:rgba(255,255,255,0.55);cursor:pointer;padding:2px;display:flex;align-items:center;transition:color 0.15s;"
+        onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
     </div>
     <div class="header-sub" id="header-sub">31 Standorte · RS &amp; RKS · Programm T1–T12</div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;">
+  <!-- Phasen-Controls — mittlere Spalte, nimmt restlichen Platz, kein Springen -->
+  <div id="phasen-banner" style="display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;">
+    <span id="projekte-btn-wrap" style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <button onclick="openProjektModal()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Projekte <span style="font-size:9px;opacity:0.7;">▼</span></button>
+      <span style="width:1px;height:18px;background:rgba(255,255,255,0.15);flex-shrink:0;"></span>
+    </span>
+    <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;flex-shrink:0;">Phase</span>
+    <select id="phase-banner" onchange="setPhase(this.value)" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:white;font-size:12px;font-weight:600;font-family:inherit;padding:5px 24px 5px 10px;border-radius:6px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22><path fill=%22rgba(255,255,255,0.6)%22 d=%22M0 0l5 6 5-6z%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;flex-shrink:0;width:180px;"></select>
+    <span id="phase-overlay" style="font-size:10px;color:rgba(255,255,255,0.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;padding-left:20px;">
     <button class="back-btn" id="back-btn" onclick="showOverview()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polyline points="15 18 9 12 15 6"/></svg> Übersicht</button>
     <!-- Verlaufs-Navigation -->
     <button id="banner-nav-prev" onclick="navBack()" title="Zurück"
@@ -930,32 +958,6 @@
     <button onclick="openAppSettingsModal()" title="App-Einstellungen" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">⚙</button>
     <button onclick="appRefresh()" title="App neu laden" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;width:32px;height:32px;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">↺</button>
   </div>
-</div>
-<!-- PHASEN-BANNER -->
-<div id="phasen-banner" style="background:#162d47;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 16px;display:flex;align-items:center;gap:10px;overflow-x:auto;scrollbar-width:none;">
-  <button onclick="openProjektModal()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.22);color:white;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Projekte <span style="font-size:9px;opacity:0.7;">▼</span></button>
-  <span style="width:1px;height:18px;background:rgba(255,255,255,0.15);flex-shrink:0;"></span>
-  <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">Phase</span>
-  <select id="phase-banner" onchange="setPhase(this.value)" style="
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.25);
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: inherit;
-    padding: 5px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-    padding-right: 24px;
-    background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22><path fill=%22rgba(255,255,255,0.6)%22 d=%22M0 0l5 6 5-6z%22/></svg>');
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-  ">
-  </select>
-  <span id="phase-overlay" style="font-size:10px;color:rgba(255,255,255,0.45);margin-left:4px;"></span>
 </div>
 
 <!-- OVERVIEW -->
@@ -986,6 +988,23 @@
       <input class="search-input" id="search-input" type="search" placeholder="Standort suchen (Name, KM, Mast)…" oninput="onSearchInput(this.value)">
     </div>
   </div>
+  <!-- Sammelaktionen-Bar (Kacheln + Liste) -->
+  <div id="bulk-bar" style="display:none; align-items:center; gap:10px; padding:8px 12px; margin-bottom:8px; background:#1a3a5c; border-radius:8px; color:white; font-size:13px; flex-wrap:wrap;">
+    <span id="bulk-count" style="font-weight:700;"></span>
+    <span style="opacity:0.4;">|</span>
+    <span style="font-size:12px; opacity:0.8;">Status setzen:</span>
+    <span id="bulk-status-btns"><!-- Dynamisch --></span>
+    <span style="opacity:0.4;">|</span>
+    <span style="font-size:12px; opacity:0.8;">Tag:</span>
+    <select id="bulk-custom-tag-select" style="padding:4px 8px;border-radius:5px;border:none;font-size:12px;">
+      <option value="">– Tag wählen –</option>
+    </select>
+    <button onclick="bulkToggleCustomTag()" style="padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#e0f2fe;color:#0369a1;">Zuweisen</button>
+    <span style="opacity:0.4;">|</span>
+    <button onclick="bulkDelete()" style="padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#fee2e2;color:#b91c1c;">✕ Löschen</button>
+    <button onclick="bulkClear()" style="margin-left:auto;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;font-size:12px;background:transparent;color:white;">Auswahl aufheben</button>
+  </div>
+
   <div class="overview">
     <div class="overview-header" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -1027,26 +1046,11 @@
       </select>
     </div>
     <div class="cards-grid" id="cards-grid"></div>
+    <div id="notiz-section"></div>
   </div>
 
   <!-- List view -->
   <div id="list-wrap">
-    <!-- Bulk action bar -->
-    <div id="bulk-bar" style="display:none; align-items:center; gap:10px; padding:8px 12px; margin-bottom:8px; background:#1a3a5c; border-radius:8px; color:white; font-size:13px; flex-wrap:wrap;">
-      <span id="bulk-count" style="font-weight:700;"></span>
-      <span style="opacity:0.4;">|</span>
-      <span style="font-size:12px; opacity:0.8;">Status setzen:</span>
-      <span id="bulk-status-btns"><!-- Dynamisch --></span>
-      <span style="opacity:0.4;">|</span>
-      <span style="font-size:12px; opacity:0.8;">Tag:</span>
-      <select id="bulk-custom-tag-select" style="padding:4px 8px;border-radius:5px;border:none;font-size:12px;">
-        <option value="">– Tag wählen –</option>
-      </select>
-      <button onclick="bulkToggleCustomTag()" style="padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#e0f2fe;color:#0369a1;">Zuweisen</button>
-      <span style="opacity:0.4;">|</span>
-      <button onclick="bulkDelete()" style="padding:4px 12px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:#fee2e2;color:#b91c1c;">✕ Löschen</button>
-      <button onclick="bulkClear()" style="margin-left:auto;padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,0.3);cursor:pointer;font-size:12px;background:transparent;color:white;">Auswahl aufheben</button>
-    </div>
     <!-- Listen-Toolbar: Eintragszahl + Export + Spalten-Picker -->
     <div id="list-toolbar" style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 8px;gap:8px;">
       <span id="list-count" style="font-size:11px;color:#6b7280;"></span>
@@ -1106,6 +1110,17 @@
       <button id="btn-overview-gps-zoom" onclick="zoomToOverviewGPS()" title="Zu meinem Standort"
         style="display:none;width:32px;height:32px;border-radius:7px;border:none;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.18);cursor:pointer;align-items:center;justify-content:center;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+
+    <!-- Bottom-right: Schnellnotiz FAB -->
+    <div style="position:absolute;bottom:70px;right:10px;z-index:1000;">
+      <button onclick="openSchnellNotizModal()" title="Schnellnotiz erfassen"
+        style="width:44px;height:44px;border-radius:50%;border:none;background:#1a3a5c;color:white;box-shadow:0 2px 10px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
       </button>
     </div>
 
@@ -1658,24 +1673,12 @@
       <div id="ereignisse-list-wrap" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div><!-- /tab-content-ereignisse -->
 
-    <!-- Meilensteine -->
+    <!-- Meilensteine + Bauprogramm kombiniert -->
     <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-top:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div>
-          <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.05em;">Meilensteine</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">Projektweite Fixtermine (Bauprogramm)</div>
-        </div>
-        <button onclick="openMeilensteinModal(null)"
-          style="padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">
-          + Meilenstein
-        </button>
-      </div>
-      <div id="termine-meilensteine-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
-
-    <!-- Bauprogramm-Übersicht -->
-    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-top:16px;">
-      <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Bauprogramm</div>
+      <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px;">Termine</div>
+      <div style="font-size:10px;font-weight:700;color:#b0b8c4;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Meilensteine</div>
+      <div id="termine-meilensteine-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+      <div style="font-size:10px;font-weight:700;color:#b0b8c4;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Baupakete</div>
       <div id="termine-bauprogramm-list" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
 
@@ -1732,9 +1735,9 @@
   <!-- Kontakte & Antwortschreiben -->
   <div class="kontakt-section" id="kontakt-section">
     <div class="kontakt-section-header" onclick="toggleKontaktSection()">
-      <h3>Projektbeteiligte <span class="sb-chevron" id="kontakt-chevron">▾</span></h3>
+      <h3>Projektbeteiligte <span class="sb-chevron" id="kontakt-chevron" style="transform:rotate(-90deg);">▾</span></h3>
     </div>
-    <div id="kontakt-section-body">
+    <div id="kontakt-section-body" style="display:none;padding-top:10px;">
       <div class="kontakt-grid" id="kontakt-grid">
         <!-- wird per JS befüllt -->
       </div>
@@ -1753,7 +1756,16 @@
       <div class="pair-nav">
         <button class="pair-nav-btn" id="prev-btn" onclick="navigatePair(-1)">◀ Zurück</button>
         <span id="pair-nav-label" style="font-size:13px;font-weight:600;"></span>
-        <button class="pair-nav-btn" id="next-btn" onclick="navigatePair(1)">Weiter ▶</button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button class="pair-nav-btn" id="next-btn" onclick="navigatePair(1)">Weiter ▶</button>
+          <button id="sb-collapse-all-btn" onclick="toggleAllSections()"
+            title="Alle Gruppen auf-/zuklappen"
+            style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid #dde3ea;background:white;cursor:pointer;color:#6b7280;padding:0;flex-shrink:0;">
+            <svg id="sb-collapse-all-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <!-- Auto-Save Indikator -->
       <div class="autosave-toast"><span id="autosave-badge">✓ Gespeichert</span></div>
@@ -1778,12 +1790,27 @@
       <div class="sidebar-section" id="sec-begehung">
         <h3 onclick="toggleSection('sec-begehung')">
           <span>Begehung</span>
-          <span style="display:flex;align-items:center;gap:6px;">
+          <span style="display:flex;align-items:center;gap:4px;">
             <span id="begehung-status-dot"></span>
+            <label onclick="event.stopPropagation()" title="Foto aus Galerie" style="cursor:pointer;color:#6b7280;display:flex;align-items:center;padding:5px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <input type="file" accept="image/*" style="display:none" multiple onchange="addFotosBegehung(this)">
+            </label>
+            <button onclick="event.stopPropagation();openCameraBegehung()" title="Foto aufnehmen" style="cursor:pointer;background:none;border:none;padding:5px;color:#6b7280;display:flex;align-items:center;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
             <span class="sb-chevron">▾</span>
           </span>
         </h3>
         <div class="sb-body collapsed">
+          <!-- Ereignis aus Terminen laden -->
+          <div style="margin-bottom:10px;">
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Aus Termin übernehmen</label>
+            <select id="beg-ereignis-vorlage" onchange="begLadeEreignis(this.value)"
+              style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:inherit;background:white;color:#6b7280;">
+              <option value="">— Begehung aus Terminen wählen —</option>
+            </select>
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
             <div>
               <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Datum</label>
@@ -1834,12 +1861,12 @@
             </div>
           </div>
 
-          <!-- Mailvorlage Begehung -->
+          <!-- PDF Export -->
           <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;">
-            <button onclick="openBriefModal(currentPairId,'preview','begehung')"
+            <button onclick="openBegehungPdfModal()"
               style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              Einladungsmail
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              PDF Export
             </button>
           </div>
         </div>
@@ -1867,61 +1894,12 @@
           <span class="sb-chevron">▾</span>
         </h3>
         <div class="sb-body">
-          <div style="display:flex;flex-direction:column;gap:7px;">
-            <!-- Sperrmuster-Zuweisung (monochrom) -->
-            <div>
-              <div class="sb-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                <span>Sperrmuster</span>
-                <a href="#" onclick="setOverviewView('bauprogramm');setTimeout(()=>document.getElementById('sperrmuster-grid')?.scrollIntoView({behavior:'smooth'}),350);return false;"
-                   style="font-size:10px;color:#6b7280;text-decoration:none;">Bibliothek ↗</a>
-              </div>
-              <select class="feld-input ausf-sperrmuster-sel" id="ausf-sperrmuster"
-                onchange="onAusfSperrmusterChange()" style="font-size:12px;width:100%;">
-                <option value="">— kein Sperrmuster —</option>
-              </select>
-            </div>
-            <!-- Intervall (auto aus Sperrmuster) -->
-            <div>
-              <div class="sb-label">Intervall</div>
-              <input class="feld-input" id="ausf-intervall" type="text" readonly
-                placeholder="—" style="font-size:12px;background:#f9fafb;color:#6b7280;cursor:default;">
-            </div>
-            <!-- Schichttyp -->
-            <div>
-              <div class="sb-label">Schichttyp</div>
-              <select class="feld-input" id="ausf-schichttyp" onchange="saveAusfPlanung()" style="font-size:12px;width:100%;">
-                <option value="">— wählen —</option>
-                <option value="tag">Tagarbeit</option>
-                <option value="nacht">Nachtarbeit</option>
-                <option value="gemischt">Gemischt</option>
-              </select>
-            </div>
-            <!-- Anzahl Schichten (auto-berechnet, manuelle Überschreibung) -->
-            <div id="ausf-schichten-wrap">
-              <div class="sb-label">Anzahl Schichten</div>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <input class="feld-input" id="ausf-anzahl-schichten" type="number" min="1" max="99"
-                  placeholder="Auto" oninput="onAusfSchichtenInput()" onchange="saveAusfPlanung()"
-                  style="font-size:12px;flex:1;">
-                <span id="ausf-schichten-auto-label" style="font-size:10px;color:#6b7280;white-space:nowrap;"></span>
-              </div>
-              <div id="ausf-schichten-manual-hint" style="display:none;font-size:10px;color:#f59e0b;margin-top:2px;">
-                Manuell überschrieben (Auto: <span id="ausf-schichten-auto-val">—</span>)
-              </div>
-            </div>
-            <!-- Baugruppe (auto aus Bauprogramm, ausgeblendet wenn nicht definiert) -->
-            <div id="ausf-baugruppe-wrap" style="display:none;">
-              <div class="sb-label">Baugruppe</div>
-              <div id="ausf-baugruppe-display"
-                style="font-size:12px;background:#f9fafb;color:#374151;padding:5px 8px;border-radius:6px;border:1px solid #e5e7eb;">—</div>
-            </div>
-            <!-- Arbeitsgerät (auto aus Bauprogramm, ausgeblendet wenn nicht definiert) -->
-            <div id="ausf-geraet-wrap" style="display:none;">
-              <div class="sb-label">Arbeitsgerät</div>
-              <div id="ausf-geraet-display"
-                style="font-size:12px;background:#f9fafb;color:#374151;padding:5px 8px;border-radius:6px;border:1px solid #e5e7eb;">—</div>
-            </div>
-            <!-- Betriebliche Einschränkungen (ohne Emojis) -->
+          <div style="display:flex;flex-direction:column;gap:8px;">
+
+            <!-- Baupaket-Block: read-only aus Bauprogramm -->
+            <div id="ausf-bp-block"></div>
+
+            <!-- Betriebliche Einschränkungen (standort-spezifisch, editierbar) -->
             <div>
               <div class="sb-label" style="margin-bottom:4px;">Betriebliche Einschränkungen</div>
               <div style="display:flex;flex-direction:column;gap:4px;">
@@ -1943,16 +1921,12 @@
                 </label>
               </div>
             </div>
-            <!-- Bemerkung -->
-            <div>
-              <div class="sb-label">Bemerkung Ausführung</div>
-              <textarea class="feld-textarea" id="ausf-bemerkung" rows="2" placeholder="Besonderheiten, Vorgaben…"
-                onchange="saveAusfPlanung()" style="font-size:12px;min-height:38px;"></textarea>
-            </div>
-            <!-- In Termine übernehmen -->
-            <button onclick="ausfPlanungZuTermin()"
-              style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
-              In Termine übernehmen
+
+            <!-- Einschränkungen global übernehmen -->
+            <button onclick="ausfEinschraenkungenGlobal()"
+              style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Auf alle Standorte übernehmen
             </button>
           </div>
         </div>
@@ -2052,6 +2026,42 @@
         </h3>
         <div class="sb-body">
           <div id="skizze-thumbs-wrap" style="display:flex;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <!-- Notizen (alle Phasen) -->
+      <div class="sidebar-section" id="sec-notizen">
+        <h3 onclick="toggleSection('sec-notizen')">
+          <span>Notizen</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <button onclick="event.stopPropagation();notizNeu()" title="Neue Notiz"
+              style="cursor:pointer;background:none;border:none;padding:6px;color:#6b7280;display:flex;align-items:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <span class="sb-chevron">▾</span>
+          </span>
+        </h3>
+        <div class="sb-body">
+          <!-- Eingabebereich (versteckt bis geöffnet) -->
+          <div id="notiz-input-wrap" style="display:none;margin-bottom:8px;">
+            <textarea id="notiz-input" rows="3" placeholder="Notiz eingeben…"
+              style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button onclick="notizSpeichern()"
+                style="flex:1;padding:5px 0;border-radius:5px;border:none;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>
+              <button onclick="notizAbbrechen()"
+                style="width:32px;padding:5px 0;border-radius:5px;border:1px solid #e5e7eb;background:white;font-size:13px;cursor:pointer;">✕</button>
+            </div>
+          </div>
+          <!-- Notizen-Kacheln -->
+          <div id="notizen-grid" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+          <!-- Alle anzeigen Link -->
+          <div id="notizen-alle-btn-wrap" style="margin-top:6px;display:none;">
+            <button onclick="openAlleNotizenModal()"
+              style="font-size:11px;color:#6b7280;background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit;">Alle Notizen anzeigen</button>
+          </div>
         </div>
       </div>
 
@@ -2296,6 +2306,9 @@
               <option value="">— wählen —</option>
             </select>
           </div>
+
+          <!-- FT-Profil Info (read-only, aus Fundamenttypen-Bibliothek) -->
+          <div id="bp-ft-info"></div>
 
           <!-- Nachweis nur bei Spezial und Neubau -->
           <div id="bp-nachweis-wrap" style="display:none;margin-bottom:10px;">
@@ -2960,6 +2973,7 @@ let TITEL_KEY      = 'sp_titel__'    + _activeId;
 let CONTACTS_KEY   = 'sp_contacts__' + _activeId;
 let LETTER_KEY     = 'sp_letter__'   + _activeId;
 let PHASE_KEY      = 'sp_phase__'    + _activeId;
+let KENNDATEN_KEY  = 'sp_kenndaten__'+ _activeId;
 
 // ============================================================
 // PHASEN-KONFIGURATION
@@ -3057,15 +3071,14 @@ function setPhase(phase) {
   // (Phasenwechsel nur in Übersicht erlaubt, s. updatePhaseSelectState)
 }
 
-// Phase-Dropdown ausgrauen wenn nicht in der Übersicht
+// Phase-Dropdown ist in allen Ansichten aktiv
 function updatePhaseSelectState() {
-  const inOverview = document.getElementById('overview-view')?.style.display !== 'none';
   const sel = document.getElementById('phase-banner');
   if (!sel) return;
-  sel.disabled = !inOverview;
-  sel.style.opacity = inOverview ? '1' : '0.45';
-  sel.style.cursor  = inOverview ? 'pointer' : 'not-allowed';
-  sel.title = inOverview ? '' : 'Phasenwechsel nur in der Übersicht möglich';
+  sel.disabled = false;
+  sel.style.opacity = '1';
+  sel.style.cursor  = 'pointer';
+  sel.title = '';
 }
 
 // Phasen-Banner rendern
@@ -3639,214 +3652,254 @@ function hasFelddaten(id) {
 
 function renderCards() {
   renderFilterButtons();
-  const grid = document.getElementById('cards-grid');
+  const grid  = document.getElementById('cards-grid');
   grid.innerHTML = '';
+  const phase = _activePhase;
+  const allBp = loadAllBauprojekt();
 
-  // Bauprojekt / Ausführung: Fundamentstandorte als Kacheln (analog Baugrundphase)
-  if (_activePhase !== 'baugrund') {
-    const allBp = loadAllBauprojekt();
-    const fundPairs = getFilteredSorted(); // bereits nach Phase gefiltert
+  getFilteredSorted().forEach(p => {
+    const pd     = getPairData(p.id);
+    const bpData = { ...p, ...(allBp[p.id] || {}) };
+    const kmVal  = p.km_rs || p.km_rks;
+    const km     = kmVal ? parseFloat(kmVal).toFixed(3) : '—';
 
-    fundPairs.forEach(p => {
-      const pd       = getPairData(p.id);
-      const bpData   = { ...p, ...(allBp[p.id] || {}) };
-      const col      = getMassnahmeColor(bpData);
-      const massLabel= getMassnahmeLabel(bpData);
-      const fundtyp  = bpData.fundtyp || '';
-      const neigung  = bpData.neigung || '';
-      const kmVal    = p.km_rs || p.km_rks;
-      const km       = kmVal ? parseFloat(kmVal).toFixed(3) : '—';
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.style.backgroundImage = `url(${cardTileUrl(p)})`;
-      card.style.backgroundColor = getCardBg(pd.status);
-
-      const cardHandler = (e) => {
-        if (e.target.closest('.qs-picker') || e.target.closest('.qs-badge') || e.target.closest('.card-actions') || e.target.closest('.card-tag-picker')) return;
-        showDetail(p.id);
-      };
-      card.addEventListener('click', cardHandler);
-      let _tX = 0, _tY = 0, _tMoved = false;
-      card.addEventListener('touchstart', (e) => { _tX = e.touches[0].clientX; _tY = e.touches[0].clientY; _tMoved = false; }, { passive: true });
-      card.addEventListener('touchmove',  (e) => { if (Math.abs(e.touches[0].clientX-_tX)>8||Math.abs(e.touches[0].clientY-_tY)>8) _tMoved=true; }, { passive: true });
-      card.addEventListener('touchend',   (e) => {
-        if (_tMoved) return;
-        if (e.target.closest('.qs-picker')||e.target.closest('.qs-badge')||e.target.closest('.card-actions')||e.target.closest('.card-tag-picker')) return;
-        e.preventDefault(); e.stopPropagation(); showDetail(p.id);
-      }, { passive: false });
-
-      // Massnahme-Badge nur anzeigen wenn ein Wert gesetzt ist
-      const massnahmeSet = bpData.massnahme || bpData.bestand || (bpData.fundtyp || '').startsWith('spezial-prov');
-      const massnahmeBadge = massnahmeSet
-        ? `<div class="card-tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${massLabel}</div>`
-        : '';
-      // Fundamenttyp-Badge (nur wenn gesetzt)
-      const fundtypBadge = fundtyp
-        ? `<div class="card-tag" style="background:#1a3a5c18;color:#1a3a5c;border:1px solid #1a3a5c33;">${fundtyp}</div>`
-        : '';
-      // Baupaket + Schicht-Badge nur in Ausführungsphase
-      let bpSchichtBadge = '';
-      if (_activePhase === 'ausfuehrung' && typeof loadSchichtZuw === 'function') {
-        const _bpZCard = loadSchichtZuw()[p.id];
-        if (_bpZCard?.paketId) {
-          const _pak = (typeof loadBaupakete === 'function' ? loadBaupakete() : []).find(x => x.id === _bpZCard.paketId);
-          const _pakCol = _pak?.farbe || '#1a3a5c';
-          const _schNr  = _bpZCard.schichtNr ? ' S' + _bpZCard.schichtNr : '';
-          bpSchichtBadge = `<div class="card-tag" style="background:${_pakCol}22;color:${_pakCol};border:1px solid ${_pakCol}44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${_pak?.name||''}${_schNr}">${(_pak?.name||'').slice(0,10)}${_schNr}</div>`;
-        }
-      }
-
-      card.innerHTML = `
-        <div class="card-actions">
-          <button class="card-action-btn tag" title="Tags zuordnen" onclick="event.stopPropagation();toggleCardTagPicker(${p.id},this)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          </button>
-          <button class="card-action-btn edit" title="Bearbeiten" onclick="event.stopPropagation();openQuickEdit(${p.id})">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="card-action-btn del" title="Löschen" onclick="event.stopPropagation();deletePair(${p.id})">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
-        <div class="card-tag-picker" id="card-tag-picker-${p.id}">
-          <div class="card-tag-picker-label">Tags</div>
-          ${customTags.length
-            ? customTags.map(t => {
-                const active = (getPairData(p.id).tags||[]).includes(t.id);
-                return `<label class="card-tag-picker-item">
-                  <input type="checkbox" ${active?'checked':''} onchange="togglePairTag(${p.id},'${t.id}')">
-                  <span style="color:${t.color}">${t.name}</span>
-                </label>`;
-              }).join('')
-            : '<span style="font-size:11px;color:#9ca3af;">Noch keine Tags.</span>'
-          }
-        </div>
-        <div class="card-top">
-          <div class="card-id">Mast ${p.mast || '—'}</div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">
-            ${massnahmeBadge}${fundtypBadge}${bpSchichtBadge}
-          </div>
-        </div>
-        <div class="card-km" style="margin-bottom:2px;">KM ${km}${neigung ? ' · Neig. ' + neigung : ''}</div>
-        <div class="card-zugang">${bpData.boden ? 'Boden: ' + bpData.boden : (p.bezeichnung || '')}</div>
-        ${(pd.tags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${(pd.tags||[]).map(tid=>{const t=customTags.find(x=>x.id===tid);return t?`<span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;background:${t.color}22;color:${t.color};">${t.name}</span>`:''}).join('')}</div>` : ''}
-        <div class="card-footer">
-          <div class="qs-wrap" onclick="event.stopPropagation()">
-            <button class="qs-badge" style="${qsBadgeStyle(pd.status)}" onclick="toggleQsPicker(${p.id},this)">
-              ${statusLabel(pd.status)}<span class="qs-chevron">▾</span>
-            </button>
-            <div class="qs-picker" id="qs-picker-${p.id}">
-              ${buildQsOpts(p.id, pd.status)}
-            </div>
-          </div>
-          <div class="card-metas">
-            ${pd.comment ? '<span class="card-comment-icon has-comment" title="Kommentar vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' : ''}
-            ${pd.sketch ? '<span title="Skizze vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
-            ${(pd.fotos||[]).length ? '<span title="Fotos vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>' : ''}
-            ${liveDistances[p.id] != null ? '<span class="dist-badge">'+formatDist(liveDistances[p.id])+'</span>' : ''}
-          </div>
-        </div>`;
-      grid.appendChild(card);
-    });
-
-    // "+ Neuer Fundamentstandort" am Ende
-    const addCard = document.createElement('div');
-    addCard.className = 'card card-add';
-    addCard.title = 'Neuen Fundamentstandort erfassen';
-    addCard.onclick = () => openCreateView();
-    addCard.innerHTML = '<div class="card-add-icon">+</div><div class="card-add-label">Neuer Fundamentstandort</div>';
-    grid.appendChild(addCard);
-    return;
-  }
-
-  const filtered = getFilteredSorted();
-  filtered.forEach(p => {
-    const pd = getPairData(p.id);
     const card = document.createElement('div');
     card.className = 'card';
     card.style.backgroundImage = `url(${cardTileUrl(p)})`;
     card.style.backgroundColor = getCardBg(pd.status);
+
+    // Click-Handler (alle Phasen identisch)
     const cardHandler = (e) => {
-      if (e.target.closest('.qs-picker') || e.target.closest('.qs-badge') || e.target.closest('.card-actions') || e.target.closest('.card-tag-picker')) return;
+      if (e.target.closest('.qs-picker')||e.target.closest('.qs-badge')||e.target.closest('.card-actions')||e.target.closest('.card-tag-picker')) return;
       showDetail(p.id);
     };
     card.addEventListener('click', cardHandler);
-    // Mobile: touchstart/touchend mit Bewegungserkennung
-    let _touchStartX = 0, _touchStartY = 0, _touchMoved = false;
-    card.addEventListener('touchstart', (e) => {
-      _touchStartX = e.touches[0].clientX;
-      _touchStartY = e.touches[0].clientY;
-      _touchMoved = false;
-    }, { passive: true });
-    card.addEventListener('touchmove', (e) => {
-      if (Math.abs(e.touches[0].clientX - _touchStartX) > 8 || Math.abs(e.touches[0].clientY - _touchStartY) > 8) {
-        _touchMoved = true;
-      }
-    }, { passive: true });
-    card.addEventListener('touchend', (e) => {
-      if (_touchMoved) return;
-      if (e.target.closest('.qs-picker') || e.target.closest('.qs-badge') || e.target.closest('.card-actions') || e.target.closest('.card-tag-picker')) return;
-      e.preventDefault();
-      e.stopPropagation();
-      showDetail(p.id);
+    let _tX = 0, _tY = 0, _tMoved = false;
+    card.addEventListener('touchstart', (e) => { _tX = e.touches[0].clientX; _tY = e.touches[0].clientY; _tMoved = false; }, { passive: true });
+    card.addEventListener('touchmove',  (e) => { if (Math.abs(e.touches[0].clientX-_tX)>8||Math.abs(e.touches[0].clientY-_tY)>8) _tMoved=true; }, { passive: true });
+    card.addEventListener('touchend',   (e) => {
+      if (_tMoved) return;
+      if (e.target.closest('.qs-picker')||e.target.closest('.qs-badge')||e.target.closest('.card-actions')||e.target.closest('.card-tag-picker')) return;
+      e.preventDefault(); e.stopPropagation(); showDetail(p.id);
     }, { passive: false });
-    const idx = PAIRS.findIndex(x => x.id === p.id);
+
+    // --- Phase-spezifische Inhalte ---
+    let badgesHtml = '';
+    let infoLine   = `KM ${km}`;
+    let subtitle   = '';
+    let metasHtml  = '';
+
+    if (phase === 'baugrund') {
+      // Sondiertyp-Badge (RS / RKS / RS+RKS)
+      const hasRs  = !!(p.lat_rs  && p.lng_rs);
+      const hasRks = !!(p.lat_rks && p.lng_rks);
+      const typLbl = hasRs && hasRks ? 'RS+RKS' : hasRs ? 'RS' : hasRks ? 'RKS' : (p.sondiertyp || '');
+      if (typLbl) badgesHtml += `<div class="card-tag" style="background:#1a3a5c18;color:#1a3a5c;border:1px solid #1a3a5c33;">${typLbl}</div>`;
+      // Sondiertag-Badge
+      if (p.tag) badgesHtml += `<div class="card-tag" style="background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;">${tagLabel(p.tag)}</div>`;
+
+      infoLine += (p.tiefe ? ` · ${p.tiefe} m Soll` : '') + (p.gleis ? ` · Gleis ${p.gleis}` : '');
+      subtitle  = p.zugang || p.bezeichnung || '';
+
+      metasHtml = `
+        ${hasSicherheit(p.id) ? '<span class="card-warn" title="Sicherheitsangaben"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>' : ''}
+        ${hasFelddaten(p.id) ? '<span title="Felddaten vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span>' : ''}
+        ${pd.sketch ? '<span title="Skizze"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
+        ${(pd.fotos||[]).length ? '<span title="Fotos"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>' : ''}
+        <span class="card-comment-icon ${pd.comment?'has-comment':''}" title="${pd.comment?'Kommentar':''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        ${liveDistances[p.id] != null ? '<span class="dist-badge">'+formatDist(liveDistances[p.id])+'</span>' : ''}`;
+
+    } else {
+      // Bauprojekt / Ausführung
+      const col         = getMassnahmeColor(bpData);
+      const massLabel   = getMassnahmeLabel(bpData);
+      const fundtyp     = bpData.fundtyp || '';
+      const neigung     = bpData.neigung || '';
+      const massnahmeSet = bpData.massnahme || bpData.bestand || (bpData.fundtyp||'').startsWith('spezial-prov');
+      if (massnahmeSet) badgesHtml += `<div class="card-tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${massLabel}</div>`;
+      if (fundtyp)      badgesHtml += `<div class="card-tag" style="background:#1a3a5c18;color:#1a3a5c;border:1px solid #1a3a5c33;">${fundtyp}</div>`;
+      // Baupaket + Schicht-Badge (nur Ausführung)
+      if (phase === 'ausfuehrung' && typeof loadSchichtZuw === 'function') {
+        const z = loadSchichtZuw()[p.id];
+        if (z?.paketId) {
+          const pak = (typeof loadBaupakete === 'function' ? loadBaupakete() : []).find(x => x.id === z.paketId);
+          const pc  = pak?.farbe || '#1a3a5c';
+          const sn  = z.schichtNr ? ' S' + z.schichtNr : '';
+          badgesHtml += `<div class="card-tag" style="background:${pc}22;color:${pc};border:1px solid ${pc}44;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(pak?.name||'')+sn}">${(pak?.name||'').slice(0,10)}${sn}</div>`;
+        }
+      }
+      if (neigung) infoLine += ` · Neig. ${neigung}`;
+      subtitle = bpData.boden ? `Boden: ${bpData.boden}` : (p.bezeichnung || '');
+
+      metasHtml = `
+        <span class="card-comment-icon ${pd.comment?'has-comment':''}" title="${pd.comment?'Kommentar':''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        ${pd.sketch ? '<span title="Skizze"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
+        ${(pd.fotos||[]).length ? '<span title="Fotos"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>' : ''}
+        ${liveDistances[p.id] != null ? '<span class="dist-badge">'+formatDist(liveDistances[p.id])+'</span>' : ''}`;
+    }
+
+    // Notiz-Icon — nur wenn Notizen vorhanden (wie Skizze/Foto-Icons)
+    const noteCount = (loadAllNotizen()[p.id] || []).length;
+    if (noteCount) metasHtml += `<span title="${noteCount} Notiz${noteCount > 1 ? 'en' : ''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>`;
+
+    // Custom-Tags-Chips + "+Tag"-Button
+    const tagChips = (pd.tags||[]).map(tid => {
+      const t = customTags.find(x => x.id === tid);
+      return t ? `<span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;background:${t.color}22;color:${t.color};">${t.name}</span>` : '';
+    }).join('');
+    const customTagsHtml = `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center;">
+      ${tagChips}
+      <span onclick="event.stopPropagation();toggleCardTagPicker(${p.id},this)"
+        style="padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600;color:#9ca3af;
+               border:1px solid #e5e7eb;cursor:pointer;line-height:1.4;transition:color 0.15s,border-color 0.15s;"
+        onmouseover="this.style.color='#6b7280';this.style.borderColor='#9ca3af'" onmouseout="this.style.color='#9ca3af';this.style.borderColor='#e5e7eb'">+Tag</span>
+    </div>`;
+
     card.innerHTML = `
-      <div class="card-actions">
-        <button class="card-action-btn tag" title="Tags zuordnen" onclick="event.stopPropagation();toggleCardTagPicker(${p.id},this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></button>
-        <button class="card-action-btn edit" title="Bearbeiten" onclick="event.stopPropagation();openQuickEdit(${p.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="card-action-btn del" title="Löschen" onclick="event.stopPropagation();deletePair(${p.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-      </div>
       <div class="card-tag-picker" id="card-tag-picker-${p.id}">
         <div class="card-tag-picker-label">Tags</div>
-        ${customTags.length
-          ? customTags.map(t => {
-              const active = (getPairData(p.id).tags||[]).includes(t.id);
-              return `<label class="card-tag-picker-item">
-                <input type="checkbox" ${active?'checked':''} onchange="togglePairTag(${p.id},'${t.id}')">
-                <span style="color:${t.color}">${t.name}</span>
-              </label>`;
-            }).join('')
-          : '<span style="font-size:11px;color:#9ca3af;">Noch keine Tags.</span>'
-        }
+        ${customTags.length ? customTags.map(t => { const active=(getPairData(p.id).tags||[]).includes(t.id); return `<label class="card-tag-picker-item"><input type="checkbox" ${active?'checked':''} onchange="togglePairTag(${p.id},'${t.id}')"><span style="color:${t.color}">${t.name}</span></label>`; }).join('') : '<span style="font-size:11px;color:#9ca3af;">Noch keine Tags.</span>'}
       </div>
       <div class="card-top">
-        <div class="card-id">${p.bezeichnung || 'Standort '+p.id}</div>
-        <div class="card-tag">${tagLabel(p.tag)}</div>
+        <div class="card-id">Mast ${p.mast || '—'}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;">${badgesHtml}</div>
       </div>
-      <div class="card-km">KM ${p.km_rs.toFixed(3)} · Mast ${p.mast} · ${p.tiefe} m Soll · Gleis ${p.gleis}</div>
-      <div class="card-zugang">${p.zugang}</div>
-      ${(pd.tags||[]).length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${(pd.tags||[]).map(tid=>{const t=customTags.find(x=>x.id===tid);return t?`<span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;background:${t.color}22;color:${t.color};">${t.name}</span>`:''}).join('')}</div>` : ''}
+      <div class="card-km">${infoLine}</div>
+      ${subtitle ? `<div class="card-zugang">${subtitle}</div>` : ''}
+      ${customTagsHtml}
       <div class="card-footer">
         <div class="qs-wrap" onclick="event.stopPropagation()">
-          <button class="qs-badge" style="${qsBadgeStyle(pd.status)}" onclick="toggleQsPicker(${p.id},this)">
-            ${statusLabel(pd.status)}<span class="qs-chevron">▾</span>
-          </button>
-          <div class="qs-picker" id="qs-picker-${p.id}">
-            ${buildQsOpts(p.id, pd.status)}
-          </div>
+          <button class="qs-badge" style="${qsBadgeStyle(pd.status)}" onclick="toggleQsPicker(${p.id},this)">${statusLabel(pd.status)}<span class="qs-chevron">▾</span></button>
+          <div class="qs-picker" id="qs-picker-${p.id}">${buildQsOpts(p.id, pd.status)}</div>
         </div>
-        <div class="card-metas">
-          ${hasSicherheit(p.id) ? '<span class="card-warn" title="Sicherheitsangaben vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>' : ''}
-          ${hasFelddaten(p.id) ? '<span title="Felddaten vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span>' : ''}
-          ${pd.sketch ? '<span title="Skizze vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
-          ${(pd.fotos||[]).length ? '<span title="Fotos vorhanden"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>' : ''}
-          <span class="card-comment-icon ${pd.comment?'has-comment':''}" title="${pd.comment?'Kommentar vorhanden':''}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-          ${liveDistances[p.id] != null ? '<span class="dist-badge">'+formatDist(liveDistances[p.id])+'</span>' : ''}
-        </div>
+        <div class="card-metas">${metasHtml}</div>
       </div>`;
     grid.appendChild(card);
   });
-  // Kein Leertext — leeres Grid ist selbsterklärend
 
-  // "+ Neuer Standort" Kachel immer am Ende des Grids
+  // "+ Neuer Standort" Kachel am Ende
   const addCard = document.createElement('div');
   addCard.className = 'card card-add';
-  addCard.title = 'Neuen Standort erfassen';
+  addCard.title = phase === 'baugrund' ? 'Neuen Standort erfassen' : 'Neuen Fundamentstandort erfassen';
   addCard.onclick = () => openCreateView();
-  addCard.innerHTML = '<div class="card-add-icon">+</div><div class="card-add-label">Neuer Standort</div>';
+  addCard.innerHTML = `<div class="card-add-icon">+</div><div class="card-add-label">${phase === 'baugrund' ? 'Neuer Standort' : 'Neuer Fundamentstandort'}</div>`;
   grid.appendChild(addCard);
+
+  renderNotizSection();
+}
+
+// ============================================================
+// NOTIZEN-SEKTION (Kachelansicht, mit Filter)
+// ============================================================
+let _notizFilterPhase  = 'alle';
+let _notizFilterSearch = '';
+
+function setNotizPhaseFilter(val) {
+  _notizFilterPhase = val;
+  renderNotizSection();
+}
+
+function renderNotizSection() {
+  const wrap = document.getElementById('notiz-section');
+  if (!wrap) return;
+
+  // Alle Notizen sammeln (mastgebunden + mastunabhängig)
+  const notAll   = loadAllNotizen();
+  let   allNotes = [];
+  getFilteredSorted().forEach(p => {
+    (notAll[p.id] || []).slice().reverse().forEach(n => allNotes.push({ p, n, isGlobal: false }));
+  });
+  (notAll['_global'] || []).slice().reverse().forEach(n => allNotes.push({ p: null, n, isGlobal: true }));
+  allNotes.sort((a, b) => b.n.ts.localeCompare(a.n.ts));
+
+  // Phasen-Filter
+  if (_notizFilterPhase !== 'alle') {
+    if (_notizFilterPhase === 'allgemein') {
+      allNotes = allNotes.filter(x => x.isGlobal);
+    } else {
+      allNotes = allNotes.filter(x => !x.isGlobal && (x.p._phase || 'baugrund') === _notizFilterPhase);
+    }
+  }
+
+  // Suche
+  const q = _notizFilterSearch.trim().toLowerCase();
+  if (q) {
+    allNotes = allNotes.filter(({ p, n, isGlobal }) =>
+      n.text.toLowerCase().includes(q) ||
+      (!isGlobal && String(p.mast || p.id).toLowerCase().includes(q))
+    );
+  }
+
+  const searchFocused = document.activeElement?.id === 'notiz-search-input';
+
+  const phases = [
+    { val: 'alle',        label: 'Alle' },
+    { val: 'baugrund',    label: 'Baugrund' },
+    { val: 'bauprojekt',  label: 'Bauprojekt' },
+    { val: 'ausfuehrung', label: 'Ausführung' },
+    { val: 'allgemein',   label: 'Allgemein' },
+  ];
+
+  const tilesHtml = allNotes.map(({ p, n, isGlobal }) => {
+    const pairId = isGlobal ? '_global' : p.id;
+    const label  = isGlobal
+      ? `<span style="font-size:11px;font-weight:700;color:#6b7280;">Allgemein</span>`
+      : `<span style="font-size:11px;font-weight:700;color:#1a3a5c;cursor:pointer;"
+           onclick="event.stopPropagation();showDetail(${p.id})">Mast ${p.mast || p.id}</span>`;
+    return `
+      <div style="position:relative;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;
+                  padding:9px 11px;${!isGlobal ? 'cursor:pointer;' : ''}box-sizing:border-box;"
+           ${!isGlobal ? `onclick="showDetail(${p.id})"` : ''}>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-right:42px;">
+          ${label}
+          <span style="font-size:9px;color:#9ca3af;">${n.ts}</span>
+        </div>
+        <div style="font-size:11px;color:#374151;white-space:pre-wrap;word-break:break-word;overflow:hidden;max-height:48px;">${n.text.replace(/</g,'&lt;')}</div>
+        <div style="position:absolute;top:6px;right:6px;display:flex;gap:2px;">
+          <button onclick="event.stopPropagation();notizBearbeiten('${pairId}','${n.id}')"
+            style="font-size:10px;color:#9ca3af;background:none;border:none;cursor:pointer;padding:2px;line-height:1;"
+            onmouseover="this.style.color='#1a3a5c'" onmouseout="this.style.color='#9ca3af'" title="Bearbeiten">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();notizLoeschen('${pairId}','${n.id}')"
+            style="font-size:10px;color:#d1d5db;background:none;border:none;cursor:pointer;padding:2px;line-height:1;"
+            onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'" title="Löschen">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:2px 0;margin-top:20px;margin-bottom:10px;">
+      <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+      <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Notizen</span>
+      <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      ${phases.map(ph => `
+        <button class="filter-btn${_notizFilterPhase === ph.val ? ' active' : ''}"
+          style="padding:4px 10px;font-size:11px;"
+          onclick="setNotizPhaseFilter('${ph.val}')">${ph.label}</button>`).join('')}
+      <input id="notiz-search-input" type="search" placeholder="Suchbegriff…"
+        value="${_notizFilterSearch.replace(/"/g,'&quot;')}"
+        oninput="_notizFilterSearch=this.value;renderNotizSection()"
+        style="padding:4px 10px;border-radius:20px;border:1px solid #d1d5db;background:white;
+               font-size:11px;font-family:inherit;outline:none;width:140px;">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;">
+      ${tilesHtml}
+      <div onclick="openSchnellNotizModal()"
+        style="background:white;border:2px dashed #d1d5db;border-radius:10px;display:flex;
+               flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+               gap:3px;box-sizing:border-box;min-height:60px;">
+        <span style="font-size:20px;color:#d1d5db;line-height:1;">+</span>
+        <span style="font-size:10px;color:#9ca3af;">Notiz</span>
+      </div>
+    </div>`;
+
+  if (searchFocused) {
+    const inp = document.getElementById('notiz-search-input');
+    if (inp) { inp.focus(); const v = inp.value; inp.value = ''; inp.value = v; }
+  }
 }
 
 // ============================================================
@@ -3877,7 +3930,6 @@ function showDetail(pairId) {
   // Übersichtskarte-Popup schliessen (verhindert DOM-Überlagerung nach Zurück-Navigation)
   if (overviewMap) overviewMap.closePopup();
   currentPairId = pairId;
-  document.getElementById('phasen-banner').style.display = 'none';
   lockMarkers();
   document.getElementById('overview-view').style.display = 'none';
   document.getElementById('create-view').style.display = 'none';
@@ -3888,6 +3940,9 @@ function showDetail(pairId) {
   dv.style.visibility = 'visible';
   dv.style.pointerEvents = '';
   document.getElementById('back-btn').style.display = 'flex';
+  // Projekte-Button nur in Übersicht zeigen
+  const _pw = document.getElementById('projekte-btn-wrap');
+  if (_pw) _pw.style.visibility = 'hidden';
   if (createMapLeaflet) { createMapLeaflet.remove(); createMapLeaflet = null; createRsMarker = null; createRksMarker = null; createBsMarker = null; }
 
   const isBP = _activePhase === 'bauprojekt';
@@ -3903,7 +3958,7 @@ function showDetail(pairId) {
 
   renderDetail();
 
-  ['sec-fotos','sec-skizzen'].forEach(id => {
+  ['sec-fotos','sec-skizzen','sec-notizen'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = '';
   });
 
@@ -3919,6 +3974,7 @@ function showDetail(pairId) {
   loadSidebar_Termine(pairId);
   setTimeout(() => loadMeasureLayer(pairId), 100);
   setTimeout(() => renderSkizzeThumbs(), 50);
+  renderPaarNotizen(pairId);
   // User-Sidebar-Config anwenden (nach Phase-basierter Sichtbarkeit)
   setTimeout(() => applySidebarCfg(), 0);
 
@@ -3942,7 +3998,6 @@ function showDetail(pairId) {
     if (!dv2 || dv2.style.display !== 'block') {
       // Detail wurde nicht vollständig gezeigt → zurück zur Übersicht
       document.getElementById('overview-view').style.display = 'block';
-      document.getElementById('phasen-banner').style.display = 'flex';
       document.getElementById('back-btn').style.display = 'none';
     }
   }
@@ -3961,6 +4016,50 @@ function toggleSection(id) {
   if (chevron) chevron.style.transform = collapsed ? 'rotate(-90deg)' : '';
   section.classList.toggle('section-open', !collapsed);
   try { sessionStorage.setItem('sb-' + id, collapsed ? '1' : '0'); } catch(e) {}
+  _updateCollapseAllBtn();
+}
+
+// Alle Sidebar-Sektionen auf- oder zuklappen
+function toggleAllSections() {
+  const sections = document.querySelectorAll('.detail-sidebar .sidebar-section');
+  // Zustand ermitteln: wenn mindestens eine offen ist → alle schliessen; sonst alle öffnen
+  const anyOpen = Array.from(sections).some(s => {
+    const body = s.querySelector('.sb-body');
+    return body && !body.classList.contains('collapsed');
+  });
+  sections.forEach(section => {
+    const body    = section.querySelector('.sb-body');
+    const chevron = section.querySelector('.sb-chevron');
+    if (!body) return;
+    if (anyOpen) {
+      body.classList.add('collapsed');
+      if (chevron) chevron.style.transform = 'rotate(-90deg)';
+      section.classList.remove('section-open');
+      try { sessionStorage.setItem('sb-' + section.id, '1'); } catch(e) {}
+    } else {
+      body.classList.remove('collapsed');
+      if (chevron) chevron.style.transform = '';
+      section.classList.add('section-open');
+      try { sessionStorage.setItem('sb-' + section.id, '0'); } catch(e) {}
+    }
+  });
+  _updateCollapseAllBtn();
+}
+
+// Button-Label + Icon passend aktualisieren
+function _updateCollapseAllBtn() {
+  const sections = document.querySelectorAll('.detail-sidebar .sidebar-section');
+  const anyOpen  = Array.from(sections).some(s => {
+    const body = s.querySelector('.sb-body');
+    return body && !body.classList.contains('collapsed');
+  });
+  const lbl  = document.getElementById('sb-collapse-all-label');
+  const icon = document.getElementById('sb-collapse-all-icon');
+  const btn = document.getElementById('sb-collapse-all-btn');
+  if (btn) btn.title = anyOpen ? 'Alle zuklappen' : 'Alle aufklappen';
+  if (icon) icon.innerHTML = anyOpen
+    ? '<polyline points="6 9 12 15 18 9"/>'   // Pfeil nach unten = zuklappen
+    : '<polyline points="18 15 12 9 6 15"/>'; // Pfeil nach oben = aufklappen
 }
 
 const SECTION_DEFAULT_OPEN = new Set(['sec-zugang']);
@@ -4002,7 +4101,6 @@ function appRefresh() {
 
 function showOverview() {
   if (pendingDrag) cancelDrag();
-  document.getElementById('phasen-banner').style.display = 'flex';
   appRefresh();
   setTimeout(updatePhaseSelectState, 50);
 }
@@ -7478,7 +7576,6 @@ function _restoreNavState(state) {
     // Übersicht IMMER sicherstellen (auch wenn detail bereits hidden war)
     if (dv) { dv.style.display = 'none'; dv.style.visibility = 'hidden'; }
     document.getElementById('overview-view').style.display = 'block';
-    document.getElementById('phasen-banner').style.display = 'flex';
     document.getElementById('back-btn').style.display = 'none';
     if (overviewMap) overviewMap.closePopup();
     setTimeout(updatePhaseSelectState, 50);
@@ -7565,6 +7662,7 @@ function toggleRowSelect(id, cb) {
   tr.style.background = cb.checked ? '#eff6ff' : '';
   updateBulkBar();
 }
+
 
 function toggleSelectAll(cb) {
   document.querySelectorAll('.row-cb').forEach(c => {
@@ -8611,7 +8709,7 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#list-tag-picker') && !e.target.closest('button[onclick*="openListTagPicker"]')) {
     closeListTagPicker();
   }
-  if (!e.target.closest('.card-tag-picker') && !e.target.closest('.card-action-btn.tag')) {
+  if (!e.target.closest('.card-tag-picker') && !e.target.closest('[onclick*="toggleCardTagPicker"]')) {
     document.querySelectorAll('.card-tag-picker.open').forEach(el => el.classList.remove('open'));
   }
 });
@@ -8689,13 +8787,15 @@ function getFilteredSorted() {
   if (currentFilter !== 'alle') list = list.filter(p => getPairData(p.id).status === currentFilter);
   if (activeTagFilter) list = list.filter(p => (getPairData(p.id).tags || []).includes(activeTagFilter));
   if (searchQuery) {
-    const q = searchQuery.toLowerCase();
+    const q      = searchQuery.toLowerCase();
+    const notAll = loadAllNotizen();
     list = list.filter(p =>
       (p.bezeichnung||'').toLowerCase().includes(q) ||
       ('standort '+p.id).includes(q) ||
       String(p.mast).includes(q) ||
       String(p.km_rs).includes(q) ||
-      (p.zugang||'').toLowerCase().includes(q)
+      (p.zugang||'').toLowerCase().includes(q) ||
+      (notAll[p.id] || []).some(n => n.text.toLowerCase().includes(q))
     );
   }
   if (currentSort === 'name')   list.sort((a,b) => _listSortDir * (a.bezeichnung||'Standort '+a.id).localeCompare(b.bezeichnung||'Standort '+b.id, 'de'));
@@ -9519,6 +9619,16 @@ function capturePhoto() {
     logChange(_ckPairId, 'Foto', 'Abnahme-Foto aufgenommen');
     renderCkFotos();
     if (_ckPairId === currentPairId) renderFotos();
+  } else if (_cameraBegehungMode) {
+    _cameraBegehungMode = false;
+    const datum = document.getElementById('beg-datum')?.value || '';
+    const pd = getPairData(currentPairId);
+    const fotos = pd.fotos || [];
+    fotos.push({ data, ts: new Date().toLocaleString('de-CH'),
+                 phase: _activePhase, kategorie: 'begehung', datum });
+    setPairData(currentPairId, { fotos });
+    logChange(currentPairId, 'Foto', 'Begehungs-Foto aufgenommen');
+    renderFotos();
   } else {
     const pd = getPairData(currentPairId);
     const fotos = pd.fotos || [];
@@ -9546,9 +9656,10 @@ function renderFotos() {
   if (!inner) return;
   const pd      = getPairData(currentPairId);
   const allFotos = pd.fotos || [];
-  // Aufteilen: normale Fotos und Abnahme-Fotos (dieser Phase)
-  const regular = allFotos.filter(f => (f.phase || 'baugrund') === _activePhase && f.kategorie !== 'abnahme');
-  const abnahme = allFotos.filter(f => (f.phase || 'baugrund') === _activePhase && f.kategorie === 'abnahme');
+  // Aufteilen: reguläre Fotos, Begehungs-Fotos, Abnahme-Fotos (dieser Phase)
+  const regular  = allFotos.filter(f => (f.phase || 'baugrund') === _activePhase && !f.kategorie);
+  const begehung = allFotos.filter(f => (f.phase || 'baugrund') === _activePhase && f.kategorie === 'begehung');
+  const abnahme  = allFotos.filter(f => (f.phase || 'baugrund') === _activePhase && f.kategorie === 'abnahme');
   inner.innerHTML = '';
 
   const mkThumb = (f) => {
@@ -9564,6 +9675,15 @@ function renderFotos() {
     return wrap;
   };
 
+  const mkDivider = (label) => {
+    const d = document.createElement('div');
+    d.style.cssText = 'width:100%;display:flex;align-items:center;gap:6px;margin:6px 4px 2px;';
+    d.innerHTML = `<div style="flex:1;height:1px;background:#e5e7eb;"></div>
+      <span style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">${label}</span>
+      <div style="flex:1;height:1px;background:#e5e7eb;"></div>`;
+    return d;
+  };
+
   // Reguläre Fotos
   regular.forEach(f => inner.appendChild(mkThumb(f)));
 
@@ -9575,14 +9695,24 @@ function renderFotos() {
     <input type="file" accept="image/*" multiple style="display:none;" onchange="addFotos(this)">`;
   inner.appendChild(addBtn);
 
-  // Trennlinie + Abnahme-Fotos (nur wenn vorhanden)
+  // Begehungs-Fotos — nach Datum gruppiert
+  if (begehung.length > 0) {
+    const fmtBegDatum = d => {
+      if (!d) return 'Begehung';
+      const p = d.split('-');
+      return p.length === 3 ? `Begehung ${p[2]}.${p[1]}.` : 'Begehung';
+    };
+    // Einzigarte Daten in Reihenfolge ermitteln
+    const dates = [...new Set(begehung.map(f => f.datum || ''))];
+    dates.forEach(datum => {
+      inner.appendChild(mkDivider(fmtBegDatum(datum)));
+      begehung.filter(f => (f.datum || '') === datum).forEach(f => inner.appendChild(mkThumb(f)));
+    });
+  }
+
+  // Abnahme-Fotos
   if (abnahme.length > 0) {
-    const divider = document.createElement('div');
-    divider.style.cssText = 'width:100%;display:flex;align-items:center;gap:6px;margin:6px 4px 2px;';
-    divider.innerHTML = `<div style="flex:1;height:1px;background:#e5e7eb;"></div>
-      <span style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">Abnahme</span>
-      <div style="flex:1;height:1px;background:#e5e7eb;"></div>`;
-    inner.appendChild(divider);
+    inner.appendChild(mkDivider('Abnahme'));
     abnahme.forEach(f => inner.appendChild(mkThumb(f)));
   }
 }
@@ -9619,6 +9749,40 @@ function deleteLightboxFoto() {
   logChange(currentPairId, 'Foto', 'gelöscht');
   closeLightbox();
   renderFotos();
+}
+
+// ============================================================
+// BEGEHUNGS-FOTOS (aus Begehungs-Sektion)
+// ============================================================
+let _cameraBegehungMode = false;
+
+function addFotosBegehung(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const datum = document.getElementById('beg-datum')?.value || '';
+  let loaded = 0;
+  const results = [];
+  files.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const compressed = await compressImage(e.target.result);
+      results[idx] = { data: compressed, ts: new Date().toLocaleString('de-CH'),
+                       phase: _activePhase, kategorie: 'begehung', datum };
+      if (++loaded === files.length) {
+        const pd = getPairData(currentPairId);
+        setPairData(currentPairId, { fotos: (pd.fotos || []).concat(results.filter(Boolean)) });
+        logChange(currentPairId, 'Foto', `${files.length} Begehungs-Foto(s) hinzugefügt`);
+        renderFotos();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function openCameraBegehung() {
+  _cameraBegehungMode = true;
+  openCamera();
 }
 
 // ============================================================
@@ -10205,13 +10369,80 @@ function cancelEditTitle() {
   document.getElementById('app-title-text').style.display  = '';
 }
 
-// Projekttitel laden
+// ============================================================
+// PROJEKTKENNDATEN MODAL
+// ============================================================
+function loadKenndaten() {
+  try { return JSON.parse(localStorage.getItem(KENNDATEN_KEY) || '{}'); } catch { return {}; }
+}
+function saveKenndatenData(obj) {
+  localStorage.setItem(KENNDATEN_KEY, JSON.stringify(obj));
+}
+
+function openProjektKenndatenModal() {
+  const kd = loadKenndaten();
+  const titleEl = document.getElementById('app-title-text');
+  document.getElementById('pkd-name').value = titleEl?.textContent?.trim() || '';
+  document.getElementById('pkd-isp').value  = kd.isp    || '';
+  document.getElementById('pkd-linie').value = kd.linie || '';
+  document.getElementById('pkd-von').value  = kd.von    || '';
+  document.getElementById('pkd-bis').value  = kd.bis    || '';
+  document.getElementById('projektkd-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('pkd-name')?.focus(), 50);
+}
+
+function closeProjektKenndatenModal() {
+  document.getElementById('projektkd-modal').style.display = 'none';
+}
+
+function saveProjektKenndaten() {
+  const name  = document.getElementById('pkd-name')?.value.trim();
+  const isp   = document.getElementById('pkd-isp')?.value.trim();
+  const linie = document.getElementById('pkd-linie')?.value.trim();
+  const von   = document.getElementById('pkd-von')?.value.trim();
+  const bis   = document.getElementById('pkd-bis')?.value.trim();
+
+  // Projektname speichern (gleiche Logik wie saveTitle)
+  if (name) {
+    const span = document.getElementById('app-title-text');
+    if (span) { span.textContent = name; }
+    document.title = name;
+    localStorage.setItem(TITEL_KEY, name);
+    const p = _projects.find(x => x.id === _activeId);
+    if (p) { p.name = name; saveProjectsMeta(_projects); }
+  }
+
+  // Weitere Kenndaten speichern
+  saveKenndatenData({ isp, linie, von, bis });
+
+  // Header-Sub aktualisieren
+  updateHeaderSub();
+
+  closeProjektKenndatenModal();
+}
+
+function updateHeaderSub() {
+  const kd   = loadKenndaten();
+  const sub  = document.getElementById('header-sub');
+  if (!sub) return;
+  const parts = [];
+  if (kd.linie) parts.push(`Linie ${kd.linie}`);
+  if (kd.von && kd.bis) parts.push(`km ${kd.von}–${kd.bis}`);
+  else if (kd.von)      parts.push(`ab km ${kd.von}`);
+  if (kd.isp)  parts.push(`ISP ${kd.isp}`);
+  const pairsCount = typeof PAIRS !== 'undefined' ? PAIRS.length : 0;
+  if (pairsCount) parts.unshift(`${pairsCount} Standorte`);
+  if (parts.length) sub.textContent = parts.join(' · ');
+}
+
+// Projekttitel + Kenndaten laden
 (function() {
   const saved = localStorage.getItem(TITEL_KEY);
   if (saved) {
     const el = document.getElementById('app-title-text');
     if (el) { el.textContent = saved; document.title = saved; }
   }
+  updateHeaderSub();
 })();
 
 // ============================================================
@@ -11878,16 +12109,19 @@ try {
     sidebar.addEventListener('change', handle);
   })();
 
+  migrateAusfNotizenToNew();
   updateProgress();
   renderTagFilterChips();
   renderCards();
   renderContacts();
   // Nach Refresh: gespeicherte Ansicht wiederherstellen
-  const refreshView = sessionStorage.getItem('refresh_view');
-  const refreshTab  = sessionStorage.getItem('refresh_tab') || 'karten';
+  const refreshView      = sessionStorage.getItem('refresh_view');
+  const refreshTab       = sessionStorage.getItem('refresh_tab') || 'karten';
+  const refreshBpHighlight = sessionStorage.getItem('refresh_bp_highlight') || '';
   sessionStorage.removeItem('refresh_view');
   sessionStorage.removeItem('refresh_pair');
   sessionStorage.removeItem('refresh_tab');
+  sessionStorage.removeItem('refresh_bp_highlight');
   if (refreshView === 'detail') {
     const refreshPair = parseInt(sessionStorage.getItem('refresh_pair') || '0');
     if (refreshPair && PAIRS.find(p => p.id === refreshPair)) {
@@ -11898,7 +12132,12 @@ try {
     }
   } else {
     document.getElementById('overview-view').style.display = 'block';
-    setTimeout(() => setOverviewView(refreshTab), 50);
+    if (refreshBpHighlight) {
+      // Direkt auf Baupaket-Karte zoomen
+      setTimeout(() => showBaupaketOnMap(refreshBpHighlight), 150);
+    } else {
+      setTimeout(() => setOverviewView(refreshTab), 50);
+    }
   }
 
   // Phasen initialisieren
@@ -12031,6 +12270,32 @@ function saveAllBauprojekt(all) {
   localStorage.setItem(BP_KEY(), JSON.stringify(all));
 }
 
+// ============================================================
+// NOTIZEN — Storage (alle Phasen, standort-übergreifend)
+// ============================================================
+function loadAllNotizen() {
+  try { return JSON.parse(localStorage.getItem('sp_notizen__' + _activeId) || '{}'); } catch(e) { return {}; }
+}
+function saveAllNotizen(obj) {
+  localStorage.setItem('sp_notizen__' + _activeId, JSON.stringify(obj));
+}
+function migrateAusfNotizenToNew() {
+  const bpAll  = loadAllBauprojekt();
+  const notAll = loadAllNotizen();
+  let changed  = false;
+  Object.keys(bpAll).forEach(pid => {
+    const old = bpAll[pid]?.ausfNotizen;
+    if (old?.length && !notAll[pid]?.length) {
+      notAll[pid] = old.map(n => ({
+        id: 'mg_' + Math.random().toString(36).slice(2),
+        ts: n.ts, text: n.text
+      }));
+      changed = true;
+    }
+  });
+  if (changed) saveAllNotizen(notAll);
+}
+
 // Rückwärtskompatibilität: alte spezial-* Codes auf Bibliotheks-Namen mappen
 const SPEZIAL_LEGACY_MAP = {
   'spezial-pfahl':    'Pfahlfundament',
@@ -12054,13 +12319,26 @@ function isFtSpezial(name) {
   return name.startsWith('spezial-'); // Fallback für unbekannte Legacy-Werte
 }
 
-// Prüft ob es sich um einen Bauwerk-Typ handelt (keine Geländeneigung relevant)
+// Prüft ob es sich um einen Bauwerk-Typ handelt (Mauer / Kunstbau — keine Geländeneigung, kein Baugrund)
 function isFtBauwerk(name) {
   if (!name) return false;
   const ft = loadFtProfile().find(t => t.name === name);
   if (ft) return ft.fundamentArt === 'mauer' || ft.fundamentArt === 'bauwerk';
   return name === 'Mast auf Kunstbau' || name === 'Mast an Mauer'
       || name === 'spezial-kunstbau'  || name === 'spezial-mauer'; // Legacy-Fallback
+}
+
+// Prüft ob es sich um einen Fels-Typ handelt (keine Bodenbeurteilung nötig)
+function isFtFels(name) {
+  if (!name) return false;
+  const ft = loadFtProfile().find(t => t.name === name);
+  if (ft) return ft.fundamentArt === 'fels';
+  return name === 'spezial-fels' || name === 'Mast in Fels'; // Legacy-Fallback
+}
+
+// Prüft ob für diesen Fundamenttyp keine Bodenbeurteilung erforderlich ist
+function isFtOhneBodenbeurteilung(name) {
+  return isFtBauwerk(name) || isFtFels(name);
 }
 
 // Befüllt den bp-fundtyp Select dynamisch aus der Fundamenttypen-Bibliothek
@@ -12081,6 +12359,82 @@ function refreshBpFundtypSelect(savedVal) {
   sel.innerHTML = html;
 }
 
+// Zeigt FT-Profil-Daten als read-only Infokarte im Bauprojekt-Sidebar
+function renderBpFtInfo() {
+  const wrap = document.getElementById('bp-ft-info');
+  if (!wrap) return;
+  const name = document.getElementById('bp-fundtyp')?.value || '';
+  const ft   = name ? loadFtProfile().find(t => t.name === name) : null;
+
+  if (!ft) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  // Hilfsfunktionen
+  const fmt = (v, unit) => v != null && v !== '' ? `${v}${unit ? ' ' + unit : ''}` : null;
+  const row = (lbl, val) => val ? `<div style="display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid #f0f2f5;">
+    <span style="font-size:10px;color:#9ca3af;min-width:80px;flex-shrink:0;">${lbl}</span>
+    <span style="font-size:11px;font-weight:600;color:#374151;">${val}</span>
+  </div>` : '';
+
+  const artLabel = { einzelpfahl:'Einzelpfahl', mehrpfahl:'Mehrpfahl', direktgr:'Direktgründung', sonstige:'Sonstige' }[ft.fundamentArt] || ft.fundamentArt || '';
+
+  // Kopf-Abmessungen
+  let kopf = '';
+  if (ft.kopfB != null) {
+    kopf = ft.kopfL != null && ft.kopfL !== ft.kopfB
+      ? `${ft.kopfB} × ${ft.kopfL} m`
+      : `${ft.kopfB} m`;
+    if (ft.kopfHoehe) kopf += ` · h = ${ft.kopfHoehe} m`;
+  } else if (ft.kopfAbmessung) { kopf = ft.kopfAbmessung; }
+
+  // Block-Abmessungen
+  let block = '';
+  if (ft.blockB != null) {
+    block = ft.blockL != null && ft.blockL !== ft.blockB
+      ? `${ft.blockB} × ${ft.blockL} m`
+      : `${ft.blockB} m`;
+  } else if (ft.blockAbmessung && ft.blockAbmessung !== '—') { block = ft.blockAbmessung; }
+
+  // Pfahl-Info
+  let pfahl = '';
+  if (ft.anzahlPfaehle) {
+    pfahl = `${ft.anzahlPfaehle} Stk.`;
+    if (ft.pfahlLaenge) pfahl += ` · ${ft.pfahlLaenge} m Länge`;
+    if (ft.schraubLaenge) pfahl += ` · ${ft.schraubLaenge} m`;
+  }
+
+  const rows = [
+    row('Fundamentart',   artLabel),
+    row('Kopf (B × L)',   kopf || null),
+    row('Block (B × L)',  block || null),
+    row('Pfähle',         pfahl || null),
+    row('Tiefe',          fmt(ft.tiefe, 'm')),
+    row('FT-Intervall',   fmt(ft.ftIntervall, 'h')),
+    row('Einsatz',        ft.einsatzBedingung || null),
+  ].filter(Boolean).join('');
+
+  wrap.innerHTML = rows ? `
+    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:7px;padding:8px 10px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;">Aus Bibliothek</span>
+        <div style="display:flex;gap:6px;">
+          <button onclick="openFundtypProfilModal('${ft.id}')"
+            style="font-size:10px;font-weight:600;color:#1a3a5c;background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:3px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Bearbeiten
+          </button>
+          <button onclick="showOverview();setOverviewView('fundamente')"
+            style="font-size:10px;font-weight:600;color:#6b7280;background:none;border:none;cursor:pointer;padding:0;">
+            → Sortiment
+          </button>
+        </div>
+      </div>
+      ${rows}
+    </div>` : '';
+}
+
 function loadBauprojektFelder(pairId) {
   const all = loadAllBauprojekt();
   const bpData = all[pairId] || {};
@@ -12094,6 +12448,7 @@ function loadBauprojektFelder(pairId) {
   v('bp-sicherung-link',   d.sicherungLink);
   v('bp-sicherung-bemerkung', d.sicherungBemerkung);
   refreshBpFundtypSelect(d.fundtyp); // dynamisch aus Bibliothek
+  renderBpFtInfo();
   v('bp-nachweis-link',    d.nachweisLink);
   v('bp-neigung',          d.neigung);
   v('bp-bemerkung',        d.bemerkung || pair.zugang || '');
@@ -12321,6 +12676,7 @@ function onBpFundtypChange() {
   saveBauprojektFeld();
   updateBpFundtypUI();
   updateBpFundAbmessung();
+  renderBpFtInfo();
   loadHoehenkoten(); // Sohle/Fundamentkopf neu anzeigen
 }
 
@@ -12421,6 +12777,8 @@ function updateBpNachweisAndBoden() {
 
   const isSpezial          = isFtSpezial(fundtyp);
   const isBauwerk          = isFtBauwerk(fundtyp);
+  const isFels             = isFtFels(fundtyp);
+  const isOhneBoden        = isFtOhneBodenbeurteilung(fundtyp);
   const isBestandErhalten  = bestand === 'bestand' && massnahme === 'erhalten';
   const isBestandAbbruch   = bestand === 'bestand' && massnahme === 'abbruch';
   const isBestandAbbruchNur = bestand === 'bestand' && massnahme === 'abbruch-nur';
@@ -12437,22 +12795,24 @@ function updateBpNachweisAndBoden() {
     nachweisInput.placeholder = 'https://… oder Dok.-Nr.';
   }
 
-  // ── Geländeneigung: bei Bauwerk/Mauer nicht relevant ──
+  // ── Geländeneigung: bei Bauwerk/Mauer und Fels nicht relevant ──
   const neigungWrap = document.getElementById('bp-neigung')?.closest('div');
-  if (neigungWrap) neigungWrap.style.display = isBauwerk ? 'none' : '';
+  if (neigungWrap) neigungWrap.style.display = (isBauwerk || isFels) ? 'none' : '';
 
   // ── Bodenkennwerte-Sektion ──
   const secBoden = document.getElementById('sec-bodenkennwerte');
   if (!secBoden) return;
 
-  const bodenNichtRelevant = isBestandErhalten || isBestandAbbruchNur || isSpezial;
+  // Bodenbeurteilung nicht nötig bei: Bestand erhalten, Abbruch, Fels, Mauer/Kunstbau
+  // Bei allen anderen Fällen (Neu, Prov, Spezial ohne Fels/Bauwerk) ist sie zwingend.
+  const bodenNichtRelevant = isBestandErhalten || isBestandAbbruchNur || isOhneBoden;
   const bodenBannerText = isBestandErhalten
     ? 'Nicht erforderlich — Bestand erhalten'
     : isBestandAbbruchNur
       ? 'Nicht erforderlich — Abbruch'
-      : isBauwerk
-        ? `Nicht massgebend — ${fundtyp === 'Mast an Mauer' || fundtyp === 'spezial-mauer' ? 'Mast an Mauer' : 'Mast an Bauwerk'}`
-        : 'Nicht massgebend — Spezialfundament';
+      : isFels
+        ? 'Nicht erforderlich — Verankerung in Fels'
+        : `Nicht erforderlich — Mast an ${fundtyp === 'Mast an Mauer' || fundtyp === 'spezial-mauer' ? 'Mauer' : 'Kunstbau/Bauwerk'}`;
 
   if (bodenNichtRelevant) {
     secBoden.style.display = '';
@@ -12718,6 +13078,7 @@ function loadBegehungFelder(pairId) {
   renderBegehungTags(d.tags || []);
   updateBegehungStatusBtns();
   updateBegehungUI();
+  begFillEreignisDropdown();
 }
 
 function saveBegehung() {
@@ -12776,6 +13137,204 @@ function updateBegehungUI() {
   }
 }
 
+// Begehung — Ereignis-Dropdown befüllen
+function begFillEreignisDropdown() {
+  const sel = document.getElementById('beg-ereignis-vorlage');
+  if (!sel) return;
+  const begehungen = loadEreignisse().filter(e => e.typ === 'begehung');
+  sel.innerHTML = '<option value="">— Begehung aus Terminen wählen —</option>' +
+    begehungen.map(e => {
+      const d = e.datum ? e.datum.split('-').reverse().join('.') : '?';
+      return `<option value="${e.id}">${d} – ${(e.titel||'Begehung').replace(/</g,'&lt;')}</option>`;
+    }).join('');
+}
+
+// Begehung — Ereignis-Daten in Formular übernehmen
+function begLadeEreignis(id) {
+  if (!id) return;
+  const e = loadEreignisse().find(x => x.id === id);
+  if (!e) return;
+  const datum = document.getElementById('beg-datum');
+  const person = document.getElementById('beg-person');
+  if (datum && e.datum) datum.value = e.datum;
+  if (person && Array.isArray(e.beteiligte) && e.beteiligte.length) {
+    person.value = e.beteiligte.join(', ');
+  } else if (person && e.ort && !person.value) {
+    person.value = e.ort;
+  }
+  saveBegehung();
+  const sel = document.getElementById('beg-ereignis-vorlage');
+  if (sel) sel.value = '';
+}
+
+// Begehung PDF — Modal öffnen
+function openBegehungPdfModal() {
+  const modal = document.getElementById('begehung-pdf-modal');
+  if (!modal) return;
+  const phasePairs = getFilteredSorted();
+  const allBeg = loadAllBegehung();
+  const list = document.getElementById('begehung-pdf-pair-list');
+  if (list) {
+    list.innerHTML = phasePairs.map(p => {
+      const beg = allBeg[`${p.id}_${_activePhase}`] || {};
+      const hasBeg = !!(beg.datum || beg.befund || beg.status);
+      const checked = (p.id === currentPairId || hasBeg) ? 'checked' : '';
+      const km = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—';
+      const dot = hasBeg ? '<span style="color:#16a34a;font-size:10px;margin-left:2px;">●</span>' : '';
+      return `<label style="display:flex;align-items:center;gap:7px;font-size:11px;padding:3px 0;cursor:pointer;color:#374151;">
+        <input type="checkbox" class="beg-pdf-chk" value="${p.id}" ${checked} style="accent-color:#1a3a5c;">
+        Mast ${p.mast||'?'} · KM ${km}${dot}
+      </label>`;
+    }).join('');
+  }
+  modal.style.display = 'flex';
+}
+
+function begPdfSelectAll(select) {
+  document.querySelectorAll('.beg-pdf-chk').forEach(el => el.checked = select);
+}
+
+function doExportBegehungPdf() {
+  const pairIds = Array.from(document.querySelectorAll('.beg-pdf-chk:checked')).map(el => parseInt(el.value));
+  if (!pairIds.length) { alert('Bitte mindestens einen Standort auswählen.'); return; }
+  const inclFotos = document.getElementById('beg-pdf-include-fotos')?.checked !== false;
+  document.getElementById('begehung-pdf-modal').style.display = 'none';
+  exportBegehungPdf(pairIds, inclFotos);
+}
+
+function exportBegehungPdf(pairIds, inclFotos) {
+  const jsPDFLib = window.jspdf?.jsPDF || window.jsPDF;
+  if (!jsPDFLib) { alert('jsPDF nicht geladen.'); return; }
+  const doc    = new jsPDFLib({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const allBeg = loadAllBegehung();
+  const pn     = getActiveProjectName() || 'Projekt';
+  const today  = new Date().toLocaleDateString('de-CH');
+  const fmtD   = d => { if (!d) return '—'; const p = d.split('-'); return p.length===3 ? `${p[2]}.${p[1]}.${p[0]}` : d; };
+  const STATUS_LABEL = { geplant:'Geplant', durchgefuehrt:'Durchgeführt', nichtmoeglich:'Nicht möglich' };
+  const STATUS_COL   = { geplant:[245,158,11], durchgefuehrt:[22,163,74], nichtmoeglich:[220,38,38] };
+
+  // Deckblatt-Kopf
+  doc.setFillColor(26,58,92); doc.rect(0,0,210,3,'F');
+  let y = 13;
+  doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.setTextColor(26,58,92);
+  doc.text('Begehungs-Protokoll', 14, y);
+  doc.setFontSize(9); doc.setFont(undefined,'normal'); doc.setTextColor(107,114,128);
+  doc.text(pn, 14, y+6);
+  doc.setFontSize(8); doc.text(today, 196, y, { align:'right' });
+  doc.text(`${pairIds.length} Standort${pairIds.length!==1?'e':''}`, 196, y+6, { align:'right' });
+  y += 14; doc.setDrawColor(229,231,235); doc.line(14,y,196,y); y += 7;
+
+  pairIds.forEach((pairId, idx) => {
+    const pair = PAIRS.find(p => p.id === pairId);
+    if (!pair) return;
+    const beg = allBeg[`${pairId}_${_activePhase}`] || {};
+
+    // Neue Seite ab 2. Standort oder wenn Platz nicht reicht
+    if (idx > 0) { doc.addPage(); y = 14; }
+
+    // Standort-Header Box
+    const statusCol = STATUS_COL[beg.status] || [100,116,139];
+    doc.setFillColor(26,58,92);
+    doc.roundedRect(14, y-4, 182, 11, 2, 2, 'F');
+    doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
+    doc.text(`Mast ${pair.mast||'—'}  ·  KM ${pair.km_rs ? parseFloat(pair.km_rs).toFixed(3) : '—'}`, 18, y+3);
+    if (beg.status) {
+      const sl = STATUS_LABEL[beg.status] || beg.status;
+      doc.setFillColor(...statusCol); doc.roundedRect(162, y-2, 30, 7, 2, 2, 'F');
+      doc.setFontSize(7); doc.text(sl, 177, y+2, { align:'center' });
+    }
+    y += 13;
+
+    // Datum + Durchgeführt von
+    doc.setTextColor(107,114,128); doc.setFontSize(8); doc.setFont(undefined,'bold');
+    doc.text('Datum:', 14, y); doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30);
+    doc.text(fmtD(beg.datum), 36, y);
+    doc.setFont(undefined,'bold'); doc.setTextColor(107,114,128);
+    doc.text('Durchgeführt von:', 90, y); doc.setFont(undefined,'normal'); doc.setTextColor(30,30,30);
+    const perLines = doc.splitTextToSize(beg.person || '—', 68);
+    doc.text(perLines, 128, y); y += Math.max(perLines.length, 1) * 5 + 4;
+
+    // Befund
+    if (beg.befund) {
+      doc.setFillColor(249,250,251); doc.roundedRect(14, y-2, 182, 6, 1, 1, 'F');
+      doc.setFont(undefined,'bold'); doc.setTextColor(107,114,128); doc.setFontSize(7.5);
+      doc.text('BEFUND / HINDERNISSE', 16, y+2);
+      y += 7;
+      doc.setFont(undefined,'normal'); doc.setTextColor(55,65,81); doc.setFontSize(8);
+      const befLines = doc.splitTextToSize(beg.befund, 182);
+      doc.text(befLines, 14, y); y += befLines.length * 4.5 + 4;
+      doc.setTextColor(30,30,30);
+    }
+
+    // Massnahme
+    if (beg.massnahmeJa === 'ja') {
+      doc.setFillColor(255,243,205);
+      const massLines = doc.splitTextToSize(beg.massnahmeBeschrieb || '(keine Beschreibung)', 172);
+      doc.roundedRect(14, y-2, 182, massLines.length*4.5+10, 2, 2, 'F');
+      doc.setFillColor(245,158,11); doc.roundedRect(14, y-2, 4, massLines.length*4.5+10, 1, 1, 'F');
+      doc.setFont(undefined,'bold'); doc.setFontSize(7.5); doc.setTextColor(146,64,14);
+      doc.text('MASSNAHME ERFORDERLICH', 20, y+2); y += 6;
+      doc.setFont(undefined,'normal'); doc.setFontSize(8); doc.text(massLines, 20, y);
+      y += massLines.length * 4.5 + 6; doc.setTextColor(30,30,30);
+    }
+
+    // Tags
+    const tags = beg.tags || [];
+    if (tags.length) {
+      doc.setFont(undefined,'bold'); doc.setFontSize(7.5); doc.setTextColor(107,114,128);
+      doc.text('TAGS', 14, y); y += 4;
+      doc.setFont(undefined,'normal'); doc.setFontSize(8); doc.setTextColor(55,65,81);
+      const tagLines = doc.splitTextToSize(tags.join('  ·  '), 182);
+      doc.text(tagLines, 14, y); y += tagLines.length * 4.5 + 4;
+      doc.setTextColor(30,30,30);
+    }
+
+    // Fotos
+    if (inclFotos) {
+      const pd = getPairData(pairId);
+      // Fotos dieser Phase, ohne Abnahme, gefiltert auf Begehungs-Datum wenn vorhanden
+      const begFotos = (pd.fotos || []).filter(f => {
+        if ((f.phase || 'baugrund') !== _activePhase) return false;
+        if (f.kategorie && f.kategorie !== 'begehung') return false; // nur reguläre + begehung
+        if (!beg.datum) return true;
+        // Begehungs-Fotos haben datum direkt gespeichert
+        if (f.datum) return f.datum === beg.datum;
+        // Reguläre Fotos: Datum aus ts-String parsen ("29.05.2026, 14:30")
+        if (f.ts) {
+          const dp = f.ts.split(',')[0].trim().split('.');
+          if (dp.length === 3) {
+            const fDate = `${dp[2]}-${dp[1].padStart(2,'0')}-${dp[0].padStart(2,'0')}`;
+            return fDate === beg.datum;
+          }
+        }
+        return false;
+      });
+      if (begFotos.length) {
+        if (y > 230) { doc.addPage(); y = 14; }
+        doc.setDrawColor(229,231,235); doc.line(14, y, 196, y); y += 5;
+        doc.setFont(undefined,'bold'); doc.setFontSize(7.5); doc.setTextColor(107,114,128);
+        doc.text('FOTOS', 14, y); y += 5;
+        const imgW=56, imgH=42, perRow=3, gap=7;
+        let col = 0;
+        for (const f of begFotos) {
+          if (col === 0 && y + imgH + 10 > 285) { doc.addPage(); y = 14; }
+          try { doc.addImage(f.data, 'JPEG', 14 + col*(imgW+gap), y, imgW, imgH); } catch(e) {}
+          col++;
+          if (col >= perRow) { col = 0; y += imgH + 6; }
+        }
+        if (col > 0) y += imgH + 6;
+      }
+    }
+
+    // Trennlinie
+    if (idx < pairIds.length - 1) {
+      y += 4; doc.setDrawColor(229,231,235); doc.line(14,y,196,y);
+    }
+  });
+
+  doc.save(`Begehung_${pn.replace(/[^a-zA-Z0-9]/g,'_')}_${today.replace(/\./g,'-')}.pdf`);
+}
+
 // ============================================================
 // AUSFÜHRUNGSPROJEKT
 // ============================================================
@@ -12806,6 +13365,8 @@ function loadAusfuehrungFelder(pairId) {
   // Abnahme-Summary
   updateAbnahmeSummary(pairId);
   updateAusfuehrungUI();
+  // Ausführungsplanung: Baupaket-Info + Notizen
+  loadAusfPlanung(pairId);
 }
 
 function saveAusfuehrung() {
@@ -21613,7 +22174,7 @@ function renderTermineBauprogramm() {
     return;
   }
   const fmt = d => { if (!d) return '—'; const [y,m,dd]=d.split('-'); return `${dd}.${m}.${y}`; };
-  const mapPinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+  const mapPinSvg = `<div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:#f0f4f8;border:1px solid #dde3ea;flex-shrink:0;" title="Auf Karte zeigen"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>`;
   wrap.innerHTML = pakete.map(pak => {
     const col  = pak.farbe || '#1a3a5c';
     const end  = bpPaketEnd(pak);
@@ -22064,104 +22625,357 @@ function applyBulkEdit() {
 function loadAusfPlanung(pairId) {
   const all = loadAllBauprojekt();
   const d   = all[pairId] || {};
-  const v   = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
   const c   = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-  const isBG = _activePhase === 'baugrund';
 
-  // Felder ausblenden die in Baugrund-Phase nicht relevant sind (keine Fundamente)
-  ['ausf-schichten-wrap','ausf-baugruppe-wrap','ausf-geraet-wrap'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = isBG ? 'none' : '';
-  });
-
-  // Sperrmuster-Select befüllen
-  updateAllSperrmusterSelects();
-  v('ausf-sperrmuster', d.sperrmusterId);
-
-  // Intervall aus Sperrmuster anzeigen
-  const sp = d.sperrmusterId ? loadSperrmuster().find(x => x.id === d.sperrmusterId) : null;
-  const intervallEl = document.getElementById('ausf-intervall');
-  if (intervallEl) {
-    if (sp?.von && sp?.bis) {
-      intervallEl.value = `${sp.von}–${sp.bis} Uhr${sp.nettoH ? ' (' + sp.nettoH + ' h)' : ''}`;
-    } else if (sp?.nettoH) {
-      intervallEl.value = `${sp.nettoH} h`;
-    } else {
-      intervallEl.value = '';
-    }
-  }
-
-  // Schichttyp: gespeicherter Wert, oder Typ aus Sperrmuster ableiten
-  if (d.ausfSchichttyp) {
-    v('ausf-schichttyp', d.ausfSchichttyp);
-  } else if (sp) {
-    v('ausf-schichttyp', sp.typ === 'wochenende' ? 'gemischt' : sp.typ === 'nacht' ? 'nacht' : 'tag');
-  } else {
-    v('ausf-schichttyp', '');
-  }
-
-  // Anzahl Schichten: manueller Wert oder auto-berechnet
-  const autoVal = calcSchichtenAuto(pairId);
-  const manualVal = d.ausfAnzahlSchichtenManual;
-  if (manualVal) {
-    v('ausf-anzahl-schichten', manualVal);
-  } else if (autoVal != null) {
-    v('ausf-anzahl-schichten', autoVal);
-  } else {
-    v('ausf-anzahl-schichten', '');
-  }
-  setAusfSchichtenDisplay(autoVal);
-
-  // Baugruppe + Arbeitsgerät: auto aus Bauprogramm-Ereignis
-  if (!isBG) {
-    const erg = loadEreignisse().find(e => e.typ === 'bau' && Array.isArray(e.pairIds) && e.pairIds.includes(pairId));
-    const bgWrap = document.getElementById('ausf-baugruppe-wrap');
-    const bgDisp = document.getElementById('ausf-baugruppe-display');
-    const grWrap = document.getElementById('ausf-geraet-wrap');
-    const grDisp = document.getElementById('ausf-geraet-display');
-    if (bgWrap && bgDisp) {
-      const baugruppe = erg?.baugruppe || '';
-      bgDisp.textContent = baugruppe || '—';
-      bgWrap.style.display = baugruppe ? '' : 'none';
-    }
-    if (grWrap && grDisp) {
-      const geraet = erg?.geraet || '';
-      grDisp.textContent = geraet || '—';
-      grWrap.style.display = geraet ? '' : 'none';
-    }
-  }
-
-  v('ausf-bemerkung',        d.ausfBemerkung);
+  // Betriebliche Einschränkungen
   c('ausf-gleisgebunden',    d.ausfGleisgebunden);
   c('ausf-hoehenbegrenzung', d.ausfHoehenbegrenzung);
   c('ausf-abschaltung',      d.ausfAbschaltung);
   c('ausf-nachbargleis',     d.ausfNachbargleis);
+
+  // Bauprogramm-Infos aus zugewiesenem Baupaket rendern
+  renderAusfBpInfo(pairId);
 }
 
 function saveAusfPlanung() {
   if (!currentPairId) return;
-  const v    = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-  const chk  = id => { const el = document.getElementById(id); return el ? el.checked : false; };
-  const all  = loadAllBauprojekt();
-
-  // Manuell überschriebener Schichten-Wert: nur speichern wenn abweichend von Auto
-  const autoVal    = calcSchichtenAuto(currentPairId);
-  const inputVal   = parseInt(v('ausf-anzahl-schichten')) || null;
-  const isManual   = inputVal != null && autoVal != null && inputVal !== autoVal;
-  const manualVal  = isManual ? inputVal : null;
-
+  const chk = id => !!document.getElementById(id)?.checked;
+  const all = loadAllBauprojekt();
   all[currentPairId] = {
     ...(all[currentPairId] || {}),
-    sperrmusterId:              v('ausf-sperrmuster') || null,
-    ausfSchichttyp:             v('ausf-schichttyp'),
-    ausfAnzahlSchichtenManual:  manualVal,
-    ausfBemerkung:              v('ausf-bemerkung'),
-    ausfGleisgebunden:          chk('ausf-gleisgebunden'),
-    ausfHoehenbegrenzung:       chk('ausf-hoehenbegrenzung'),
-    ausfAbschaltung:            chk('ausf-abschaltung'),
-    ausfNachbargleis:           chk('ausf-nachbargleis'),
+    ausfGleisgebunden:   chk('ausf-gleisgebunden'),
+    ausfHoehenbegrenzung:chk('ausf-hoehenbegrenzung'),
+    ausfAbschaltung:     chk('ausf-abschaltung'),
+    ausfNachbargleis:    chk('ausf-nachbargleis'),
   };
   saveAllBauprojekt(all);
+}
+
+function ausfEinschraenkungenGlobal() {
+  if (!currentPairId) return;
+  const chk  = id => !!document.getElementById(id)?.checked;
+  const gl   = chk('ausf-gleisgebunden');
+  const ho   = chk('ausf-hoehenbegrenzung');
+  const ab   = chk('ausf-abschaltung');
+  const na   = chk('ausf-nachbargleis');
+
+  // Nur gesetzte Checkboxen anzeigen, damit klar ist was übernommen wird
+  const aktive = [
+    gl && 'Gleisgebunden',
+    ho && 'Höhenbegrenzung',
+    ab && 'Abschaltung Fahrleitung',
+    na && 'Nachbargleis',
+  ].filter(Boolean);
+
+  // Alle Nicht-Baugrund-Paare (wie die Ausführungsansicht zeigt)
+  const ziele = PAIRS.filter(p => p._phase && p._phase !== 'baugrund' && p.id !== currentPairId);
+  if (!ziele.length) { alert('Keine weiteren Ausführungsstandorte vorhanden.'); return; }
+
+  const msg = aktive.length
+    ? `Folgende Einschränkungen auf alle ${ziele.length} Ausführungsstandorte übernehmen?\n\n✔ ${aktive.join('\n✔ ')}`
+    : `Alle Einschränkungen auf alle ${ziele.length} Ausführungsstandorte übernehmen?\n(Alle Häkchen werden entfernt)`;
+
+  if (!confirm(msg)) return;
+
+  const all = loadAllBauprojekt();
+  ziele.forEach(p => {
+    all[p.id] = {
+      ...(all[p.id] || {}),
+      ausfGleisgebunden:   gl,
+      ausfHoehenbegrenzung:ho,
+      ausfAbschaltung:     ab,
+      ausfNachbargleis:    na,
+    };
+  });
+  saveAllBauprojekt(all);
+  alert(`Einschränkungen auf ${ziele.length} Standorte übernommen.`);
+}
+
+// ============================================================
+// AUSFÜHRUNGSPLANUNG — Baupaket-Info (read-only aus Bauprogramm)
+// ============================================================
+function renderAusfBpInfo(pairId) {
+  const block = document.getElementById('ausf-bp-block');
+  if (!block) return;
+  const zuw = loadSchichtZuw()[pairId];
+  const pak = zuw?.paketId ? loadBaupakete().find(p => p.id === zuw.paketId) : null;
+
+  if (!pak) {
+    block.innerHTML = `<div style="font-size:11px;color:#9ca3af;padding:9px 12px;background:#f1f5f9;border:1px solid #dde3ea;border-radius:7px;display:flex;align-items:center;gap:6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>Kein Baupaket zugewiesen</span>
+    </div>`;
+    return;
+  }
+
+  const col     = pak.farbe || '#1a3a5c';
+  const schicht = bpGetSchichten(pak).find(s => s.schichtNr === zuw.schichtNr);
+  const sp      = pak.sperrmusterTypId ? loadSperrmuster().find(x => x.id === pak.sperrmusterTypId) : null;
+  const end     = bpPaketEnd(pak);
+  const fmtD    = d => { if (!d) return '—'; const [y,m,dd] = d.split('-'); return `${dd}.${m}.${y}`; };
+  const intervall  = sp?.von && sp?.bis ? `${sp.von}–${sp.bis} Uhr` : sp?.nettoH ? `${sp.nettoH} h` : '';
+  const schichtTyp = sp ? (sp.typ === 'nacht' ? 'Nacht' : sp.typ === 'wochenende' ? 'Wochenende' : 'Tag') : '';
+
+  const params = [];
+  if (sp) {
+    const spLabel = [sp.name || sp.id, intervall, schichtTyp].filter(Boolean).join(' · ');
+    params.push(`<div style="display:flex;gap:6px;font-size:11px;">
+      <span style="color:#9ca3af;flex-shrink:0;min-width:68px;">Sperrmuster</span>
+      <span style="font-weight:600;color:#374151;">${spLabel}</span>
+    </div>`);
+  }
+  if (pak.anzahlNaechte) {
+    params.push(`<div style="display:flex;gap:6px;font-size:11px;">
+      <span style="color:#9ca3af;flex-shrink:0;min-width:68px;">Schichten</span>
+      <span style="font-weight:600;color:#374151;">${pak.anzahlNaechte} total</span>
+    </div>`);
+  }
+
+  block.innerHTML = `
+    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8fafc;">
+        <div style="width:4px;min-height:34px;border-radius:2px;background:${col};flex-shrink:0;"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:#1a3a5c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pak.name}</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:1px;">
+            ${schicht ? `Schicht ${schicht.schichtNr} · ${fmtD(schicht.datum)}` : `${fmtD(pak.startDatum)}${end ? ' – ' + fmtD(end) : ''}`}
+          </div>
+        </div>
+      </div>
+      ${params.length ? `<div style="padding:7px 10px;border-top:1px solid #f0f2f5;display:flex;flex-direction:column;gap:3px;">${params.join('')}</div>` : ''}
+    </div>`;
+}
+
+// ============================================================
+// NOTIZEN — Eigenständige Sektion (alle Phasen)
+// ============================================================
+function renderPaarNotizen(pairId) {
+  const grid        = document.getElementById('notizen-grid');
+  const alleBtnWrap = document.getElementById('notizen-alle-btn-wrap');
+  if (!grid) return;
+  const notizen = (loadAllNotizen()[pairId] || []).slice().reverse();
+  grid.innerHTML = '';
+  const max = 4;
+
+  // Notiz-Kacheln (max. 4 sichtbar)
+  notizen.slice(0, max).forEach(n => {
+    const card = document.createElement('div');
+    card.style.cssText = 'position:relative;width:calc(50% - 3px);min-height:60px;background:#f8fafc;' +
+      'border:1px solid #e5e7eb;border-radius:7px;padding:7px 8px;cursor:default;box-sizing:border-box;';
+    card.innerHTML = `
+      <div style="font-size:9px;font-weight:600;color:#9ca3af;margin-bottom:3px;">${n.ts}</div>
+      <div style="font-size:11px;color:#374151;white-space:pre-wrap;word-break:break-word;overflow:hidden;max-height:42px;">${n.text.replace(/</g,'&lt;')}</div>
+      <button onclick="notizLoeschen('${pairId}','${n.id}')"
+        style="position:absolute;top:4px;right:4px;font-size:9px;color:#ef4444;background:none;border:none;cursor:pointer;padding:2px;opacity:0.6;" title="Löschen">✕</button>`;
+    grid.appendChild(card);
+  });
+
+  // +Kachel am Ende
+  const addCard = document.createElement('div');
+  addCard.onclick = notizNeu;
+  addCard.style.cssText = 'width:calc(50% - 3px);min-height:60px;background:white;' +
+    'border:2px dashed #d1d5db;border-radius:7px;display:flex;flex-direction:column;' +
+    'align-items:center;justify-content:center;cursor:pointer;gap:3px;box-sizing:border-box;';
+  addCard.innerHTML = '<span style="font-size:20px;color:#d1d5db;line-height:1;">+</span>' +
+    '<span style="font-size:10px;color:#9ca3af;">Notiz</span>';
+  grid.appendChild(addCard);
+
+  if (alleBtnWrap) alleBtnWrap.style.display = notizen.length > max ? '' : 'none';
+}
+
+function notizNeu() {
+  // Direktes Popup-Modal für aktuellen Standort (ohne Standort-Auswahl)
+  const pair    = currentPairId ? PAIRS.find(p => p.id === currentPairId) : null;
+  const titleEl = document.getElementById('schnellnotiz-title');
+  const pairRow = document.getElementById('schnellnotiz-pair-row');
+  const pairSel = document.getElementById('schnellnotiz-pair');
+  const inp     = document.getElementById('schnellnotiz-input');
+  if (titleEl) titleEl.textContent = pair ? `Notiz · Mast ${pair.mast || currentPairId}` : 'Neue Notiz';
+  if (pairRow) pairRow.style.display = 'none';
+  // Optionen befüllen damit value korrekt gesetzt werden kann
+  if (pairSel) {
+    pairSel.innerHTML = PAIRS.map(p =>
+      `<option value="${p.id}">Mast ${p.mast || p.id}</option>`).join('');
+    pairSel.value = currentPairId || '';
+  }
+  if (inp) inp.value = '';
+  document.getElementById('schnellnotiz-modal').style.display = 'flex';
+  setTimeout(() => inp?.focus(), 50);
+}
+
+function notizAbbrechen() {
+  const wrap = document.getElementById('notiz-input-wrap');
+  if (wrap) wrap.style.display = 'none';
+  const inp = document.getElementById('notiz-input');
+  if (inp) inp.value = '';
+}
+
+function notizSpeichern() {
+  const inp  = document.getElementById('notiz-input');
+  const text = inp?.value?.trim();
+  if (!text || !currentPairId) return;
+  const all = loadAllNotizen();
+  if (!Array.isArray(all[currentPairId])) all[currentPairId] = [];
+  all[currentPairId].push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    ts: new Date().toLocaleString('de-CH'),
+    text
+  });
+  saveAllNotizen(all);
+  notizAbbrechen();
+  renderPaarNotizen(currentPairId);
+}
+
+function notizLoeschen(pairId, noteId) {
+  if (!confirm('Notiz löschen?')) return;
+  const all = loadAllNotizen();
+  if (all[pairId]) {
+    all[pairId] = all[pairId].filter(n => n.id !== noteId);
+    saveAllNotizen(all);
+  }
+  const numId = parseInt(pairId);
+  if (!isNaN(numId)) renderPaarNotizen(numId);
+  if (currentOverviewView === 'karten') renderNotizSection();
+}
+
+// Zustand für laufende Notiz-Bearbeitung
+let _editNote = null; // { pairId, noteId } oder null
+
+function notizBearbeiten(pairId, noteId) {
+  const all  = loadAllNotizen();
+  const note = (all[pairId] || []).find(n => n.id === noteId);
+  if (!note) return;
+  _editNote = { pairId, noteId };
+  const titleEl  = document.getElementById('schnellnotiz-title');
+  const pairRow  = document.getElementById('schnellnotiz-pair-row');
+  const saveBtn  = document.getElementById('schnellnotiz-save-btn');
+  const inp      = document.getElementById('schnellnotiz-input');
+  if (titleEl)  titleEl.textContent  = 'Notiz bearbeiten';
+  if (pairRow)  pairRow.style.display = 'none';
+  if (saveBtn)  saveBtn.textContent  = 'Speichern';
+  if (inp)      inp.value            = note.text;
+  document.getElementById('schnellnotiz-modal').style.display = 'flex';
+  setTimeout(() => { inp?.focus(); inp?.select(); }, 50);
+}
+
+// Alle-Notizen-Modal
+let _alleNotizenPhase = 'alle';
+
+function openAlleNotizenModal() {
+  _alleNotizenPhase = 'alle';
+  renderAlleNotizenList('alle');
+  document.getElementById('alle-notizen-modal').style.display = 'flex';
+}
+
+function closeAlleNotizenModal() {
+  document.getElementById('alle-notizen-modal').style.display = 'none';
+}
+
+function renderAlleNotizenList(phase) {
+  _alleNotizenPhase = phase;
+  ['alle','baugrund','bauprojekt','ausfuehrung'].forEach(p => {
+    const btn = document.getElementById('an-filter-' + p);
+    if (btn) btn.classList.toggle('an-filter-active', p === phase);
+  });
+  const all  = loadAllNotizen();
+  const wrap = document.getElementById('alle-notizen-list');
+  if (!wrap) return;
+  const rows = [];
+  PAIRS.forEach(p => {
+    const pPhase = p._phase || 'baugrund';
+    if (phase !== 'alle' && pPhase !== phase) return;
+    (all[p.id] || []).slice().reverse().forEach(n => rows.push({ p, n, isGlobal: false }));
+  });
+  // Mastunabhängige Notizen bei "Alle"
+  if (phase === 'alle') {
+    (all['_global'] || []).slice().reverse().forEach(n => rows.push({ p: null, n, isGlobal: true }));
+  }
+  rows.sort((a, b) => b.n.ts.localeCompare(a.n.ts));
+  if (!rows.length) {
+    wrap.innerHTML = '<div style="font-size:12px;color:#9ca3af;padding:8px 0;text-align:center;">Keine Notizen vorhanden.</div>';
+    return;
+  }
+  wrap.innerHTML = rows.map(({ p, n, isGlobal }) => {
+    const pairId = isGlobal ? '_global' : p.id;
+    const label  = isGlobal
+      ? `<span style="font-size:11px;font-weight:700;color:#6b7280;">Allgemein</span>`
+      : `<span style="font-size:11px;font-weight:700;color:#1a3a5c;cursor:pointer;"
+           onclick="closeAlleNotizenModal();showDetail(${p.id})">Mast ${p.mast || p.id}</span>`;
+    return `
+    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:9px 12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        ${label}
+        <span style="font-size:9px;color:#9ca3af;">${n.ts}</span>
+      </div>
+      <div style="font-size:11px;color:#374151;white-space:pre-wrap;word-break:break-word;">${n.text.replace(/</g,'&lt;')}</div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="notizBearbeiten('${pairId}','${n.id}');renderAlleNotizenList(_alleNotizenPhase)"
+          style="font-size:9px;color:#6b7280;background:none;border:none;cursor:pointer;padding:0;">Bearbeiten</button>
+        <button onclick="notizLoeschen('${pairId}','${n.id}');renderAlleNotizenList(_alleNotizenPhase)"
+          style="font-size:9px;color:#ef4444;background:none;border:none;cursor:pointer;padding:0;">Löschen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Schnellnotiz-Modal (FAB auf Karte — mit Standort-Auswahl)
+function openSchnellNotizModal() {
+  const titleEl = document.getElementById('schnellnotiz-title');
+  const pairRow = document.getElementById('schnellnotiz-pair-row');
+  const sel     = document.getElementById('schnellnotiz-pair');
+  const inp     = document.getElementById('schnellnotiz-input');
+  if (titleEl) titleEl.textContent = 'Schnellnotiz';
+  if (pairRow) pairRow.style.display = '';
+  if (sel) {
+    sel.innerHTML = '<option value="_global">— Mastunabhängig —</option>' +
+      PAIRS.map(p => `<option value="${p.id}">Mast ${p.mast || p.id} · KM ${p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—'}</option>`).join('');
+    if (currentPairId) sel.value = currentPairId;
+  }
+  if (inp) inp.value = '';
+  document.getElementById('schnellnotiz-modal').style.display = 'flex';
+  setTimeout(() => inp?.focus(), 50);
+}
+
+function closeSchnellNotizModal() {
+  document.getElementById('schnellnotiz-modal').style.display = 'none';
+  _editNote = null;
+  // Zustand für nächste Verwendung zurücksetzen
+  const titleEl = document.getElementById('schnellnotiz-title');
+  const pairRow = document.getElementById('schnellnotiz-pair-row');
+  if (titleEl) titleEl.textContent  = 'Schnellnotiz';
+  if (pairRow) pairRow.style.display = '';
+}
+
+function schnellNotizSpeichern() {
+  const text = document.getElementById('schnellnotiz-input')?.value?.trim();
+  if (!text) return;
+  const all = loadAllNotizen();
+
+  if (_editNote) {
+    // Bearbeitungs-Modus: bestehende Notiz aktualisieren
+    const { pairId, noteId } = _editNote;
+    const note = (all[pairId] || []).find(n => n.id === noteId);
+    if (note) { note.text = text; saveAllNotizen(all); }
+    closeSchnellNotizModal();
+    const numId = parseInt(pairId);
+    if (!isNaN(numId) && numId === currentPairId) renderPaarNotizen(numId);
+    if (currentOverviewView === 'karten') renderNotizSection();
+    return;
+  }
+
+  // Neu-Modus
+  const rawId  = document.getElementById('schnellnotiz-pair')?.value || '_global';
+  const pairId = rawId === '_global' ? '_global' : +rawId;
+  if (!Array.isArray(all[pairId])) all[pairId] = [];
+  all[pairId].push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    ts: new Date().toLocaleString('de-CH'),
+    text
+  });
+  saveAllNotizen(all);
+  closeSchnellNotizModal();
+  if (pairId === currentPairId) renderPaarNotizen(currentPairId);
+  if (currentOverviewView === 'karten') renderNotizSection();
 }
 
 function openEreignisModal(id) {
@@ -26801,6 +27615,47 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
   </div>
 </div>
 
+<!-- ══ BEGEHUNG PDF MODAL ══ -->
+<div id="begehung-pdf-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;width:400px;max-width:94vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding:15px 18px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="font-size:14px;font-weight:700;color:#1a3a5c;">Begehungs-Protokoll</div>
+      <button onclick="document.getElementById('begehung-pdf-modal').style.display='none'"
+        style="border:none;background:none;font-size:18px;color:#9ca3af;cursor:pointer;line-height:1;padding:0 2px;">×</button>
+    </div>
+    <div style="padding:16px 18px;overflow-y:auto;flex:1;">
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label style="font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.04em;">Standorte</label>
+          <div style="display:flex;gap:6px;">
+            <button onclick="begPdfSelectAll(true)"
+              style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #d1d5db;background:white;color:#374151;cursor:pointer;">Alle</button>
+            <button onclick="begPdfSelectAll(false)"
+              style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid #d1d5db;background:white;color:#374151;cursor:pointer;">Keine</button>
+          </div>
+        </div>
+        <div id="begehung-pdf-pair-list"
+          style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px;display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer;color:#374151;">
+        <input type="checkbox" id="beg-pdf-include-fotos" checked style="accent-color:#1a3a5c;">
+        Fotos aus diesem Zeitfenster einschliessen
+      </label>
+    </div>
+    <div style="padding:12px 18px;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;">
+      <button onclick="document.getElementById('begehung-pdf-modal').style.display='none'"
+        style="padding:6px 16px;border-radius:7px;border:1px solid #d1d5db;background:white;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+        Abbrechen
+      </button>
+      <button onclick="doExportBegehungPdf()"
+        style="padding:6px 16px;border-radius:7px;border:none;background:#1a3a5c;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PDF erstellen
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ BAUPROGRAMM RESET MODAL ══ -->
 <div id="bp-reset-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
   <div style="background:white;border-radius:12px;padding:24px;width:340px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
@@ -26878,6 +27733,102 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
       <div id="bp-fs-gantt-wrap" style="overflow-x:auto;min-height:120px;"></div>
     </div>
     <div id="bp-fs-legende" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  </div>
+</div>
+
+<!-- ALLE NOTIZEN MODAL -->
+<div id="alle-notizen-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeAlleNotizenModal()">
+  <div class="modal-box" style="max-width:520px;width:95%;">
+    <div class="modal-header">
+      <div class="modal-title">Alle Notizen</div>
+      <button class="modal-close" onclick="closeAlleNotizenModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #f0f2f5;flex-wrap:wrap;">
+      <button onclick="renderAlleNotizenList('alle')" id="an-filter-alle" class="an-filter-btn an-filter-active">Alle</button>
+      <button onclick="renderAlleNotizenList('baugrund')" id="an-filter-baugrund" class="an-filter-btn">Baugrund</button>
+      <button onclick="renderAlleNotizenList('bauprojekt')" id="an-filter-bauprojekt" class="an-filter-btn">Bauprojekt</button>
+      <button onclick="renderAlleNotizenList('ausfuehrung')" id="an-filter-ausfuehrung" class="an-filter-btn">Ausführung</button>
+    </div>
+    <div id="alle-notizen-list" style="padding:10px 16px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+</div>
+
+<!-- PROJEKTKENNDATEN MODAL -->
+<div id="projektkd-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeProjektKenndatenModal()">
+  <div class="modal-box" style="max-width:480px;width:95%;">
+    <div class="modal-header">
+      <div class="modal-title">Allgemeine Projektkenndaten</div>
+      <button class="modal-close" onclick="closeProjektKenndatenModal()">✕</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Projektname</label>
+        <input id="pkd-name" type="text" placeholder="z.B. Weinfelden–Sulgen"
+          style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Projektnummer ISP</label>
+          <input id="pkd-isp" type="text" placeholder="z.B. 2024-0815"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Liniennummer</label>
+          <input id="pkd-linie" type="text" placeholder="z.B. 460"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Von Station (km)</label>
+          <input id="pkd-von" type="text" placeholder="z.B. 12.500"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Bis Station (km)</label>
+          <input id="pkd-bis" type="text" placeholder="z.B. 18.250"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button onclick="saveProjektKenndaten()"
+          style="flex:1;padding:8px 0;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>
+        <button onclick="closeProjektKenndatenModal()"
+          style="padding:8px 18px;border-radius:7px;border:1px solid #e5e7eb;background:white;font-size:13px;cursor:pointer;font-family:inherit;">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHNELLNOTIZ MODAL -->
+<div id="schnellnotiz-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSchnellNotizModal()">
+  <div class="modal-box" style="max-width:380px;width:95%;">
+    <div class="modal-header">
+      <div class="modal-title" id="schnellnotiz-title">Schnellnotiz</div>
+      <button class="modal-close" onclick="closeSchnellNotizModal()">✕</button>
+    </div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <div id="schnellnotiz-pair-row">
+        <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Standort</label>
+        <select id="schnellnotiz-pair" style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
+          <option value="">— Standort wählen —</option>
+        </select>
+      </div>
+      <div>
+        <textarea id="schnellnotiz-input" rows="4" placeholder="Notiz eingeben…"
+          style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button id="schnellnotiz-save-btn" onclick="schnellNotizSpeichern()"
+          style="flex:1;padding:7px 0;border-radius:6px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>
+        <button onclick="closeSchnellNotizModal()"
+          style="padding:7px 14px;border-radius:6px;border:1px solid #e5e7eb;background:white;font-size:12px;cursor:pointer;font-family:inherit;">Abbrechen</button>
+      </div>
+    </div>
   </div>
 </div>
 
