@@ -1295,7 +1295,7 @@
             <div id="ftz-col-panel" style="position:absolute;top:calc(100% + 4px);right:0;background:white;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;min-width:170px;flex-direction:column;gap:6px;display:none;">
               <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;"><input type="checkbox" id="ftzcol-neigung" checked onchange="renderFundtypZuweisungList()"> Neigung</label>
               <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;"><input type="checkbox" id="ftzcol-nachweis" checked onchange="renderFundtypZuweisungList()"> Nachweis</label>
-              <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;"><input type="checkbox" id="ftzcol-vfk" onchange="renderFundtypZuweisungList()"> VFK</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;"><input type="checkbox" id="ftzcol-vfk" checked onchange="renderFundtypZuweisungList()"> VFK</label>
               <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;"><input type="checkbox" id="ftzcol-intervall" onchange="renderFundtypZuweisungList()"> Intervall (h)</label>
             </div>
           </div>
@@ -2402,13 +2402,16 @@
           <!-- FT-Profil Info (read-only, aus Fundamenttypen-Bibliothek) -->
           <div id="bp-ft-info"></div>
 
-          <!-- VFK — nur sichtbar wenn FT einen VFK-Typ hat -->
+          <!-- VFK — nahtlose Fortsetzung der Info-Box -->
           <div id="bp-vfk-wrap" style="display:none;margin-bottom:10px;">
-            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:5px 0;border-top:1px solid #f0f2f5;">
-              <input type="checkbox" id="bp-vfk" onchange="saveBauprojektFeld();renderBpFtInfo()" style="accent-color:#1a3a5c;width:13px;height:13px;flex-shrink:0;">
-              <span style="font-size:11px;font-weight:600;color:#374151;">VFK — Vorfabrizierter Fundamentkopf</span>
-              <span id="bp-vfk-zeich" style="margin-left:auto;font-size:10px;color:#9ca3af;font-family:monospace;white-space:nowrap;"></span>
-            </label>
+            <div style="background:#f8fafc;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 7px 7px;padding:0 10px 4px;">
+              <label style="display:flex;align-items:center;gap:6px;padding:3px 0;border-top:1px solid #f0f2f5;cursor:pointer;">
+                <span style="font-size:10px;color:#9ca3af;min-width:80px;flex-shrink:0;">VFK</span>
+                <input type="checkbox" id="bp-vfk" onchange="saveBauprojektFeld();renderBpFtInfo()" style="accent-color:#1a3a5c;width:12px;height:12px;flex-shrink:0;cursor:pointer;">
+                <span style="font-size:11px;font-weight:600;color:#374151;">Vorfabrizierter Fundamentkopf</span>
+                <span id="bp-vfk-zeich" style="margin-left:auto;font-size:10px;color:#9ca3af;font-family:monospace;white-space:nowrap;"></span>
+              </label>
+            </div>
           </div>
 
           <!-- FI-Hinweis Fundamenttyp (auto-dismiss) -->
@@ -2549,6 +2552,28 @@
               <span id="bk-phi-status" style="font-size:18px;min-width:20px;text-align:center;"></span>
             </div>
             <div id="bk-phi-hinweis" style="display:none;font-size:11px;margin-top:3px;padding:3px 7px;border-radius:4px;"></div>
+          </div>
+
+          <!-- Raumlast -->
+          <div style="margin-bottom:8px;">
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">
+              Raumlast γ'k
+              <span style="font-weight:400;color:#9ca3af;"> [kN/m³]</span>
+            </label>
+            <input id="bk-gamma-wert" type="number" step="0.5" min="0" placeholder="—"
+              style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;"
+              oninput="saveBodenkennwerte()">
+          </div>
+
+          <!-- Kohäsion -->
+          <div style="margin-bottom:8px;">
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">
+              Kohäsion c'k
+              <span style="font-weight:400;color:#9ca3af;"> [kPa]</span>
+            </label>
+            <input id="bk-c-wert" type="number" step="0.5" min="0" placeholder="—"
+              style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;"
+              oninput="saveBodenkennwerte()">
           </div>
 
           <!-- Grundwasser -->
@@ -9125,6 +9150,88 @@ function exportExcel() {
   XLSX.writeFile(wb, 'Sondagen_' + (getActiveProjectName() || 'Export').replace(/[^a-zA-Z0-9_]/g,'_') + '.xlsx');
 }
 
+// ── Export als Fundamentliste (SBB-Format) ──────────────────────────────────
+function exportFundamentliste() {
+  const kenndaten = loadKenndaten();
+  const allBP     = loadAllBauprojekt();
+  const ftList    = loadFtProfile();
+  const titel     = localStorage.getItem(TITEL_KEY) || '';
+  const todayDisp = new Date().toLocaleDateString('de-CH');
+  const todayISO  = new Date().toISOString().split('T')[0];
+  const bearb     = kenndaten.bearbeiter || '';
+
+  const aoa = [];
+  // Zeile 1: Projektname + ISP + Stand
+  aoa.push([titel, '', '', 'ISP:', kenndaten.isp || '', '', 'Stand:', todayDisp]);
+  // Zeilen 2–6: leer
+  for (let i = 0; i < 5; i++) aoa.push(new Array(28).fill(null));
+  // Zeile 7: Primäre Spaltenköpfe
+  aoa.push([
+    'Mast', null, null, 'Bezugsgleis', 'Überhöhung', 'Mass a', 'hkgl', 'Ausrichtung Kopf', 'Lichte Weite',
+    'Koordinaten (LV95)', null, null,
+    'Gelände-neigung βp', 'Typ USCS', 'ME-Wert', 'Reibungswinkel φ\'k', 'Raumlast Boden γ\'k', 'Kohäsion c\'k',
+    'GWSP ab OKT', 'Einsatz-bedingungen', 'Fundamenttyp Standard', null, 'Fundament-schrauben',
+    'Fundamenttyp Spezial', null, 'Bemerkungen', 'Letzte Änderung', null
+  ]);
+  // Zeile 8: Einheiten/Unterköpfe
+  aoa.push([
+    'Km', 'Nr.', 'Masttyp FL', 'Gleis', '[mm]', '[m]', '[cm]', 'Gleis/Mast', '[m]',
+    'E-Achse', 'N-Achse', 'Z-Achse',
+    '[°]', 'GSMCO', '[Mpa]', '[°]', '[kN/m³]', '[kPa]',
+    '[m]', '—', 'gem. FL-/SA-Planung', 'Zeichnungs-Nr.', 'Artikel-Nr.',
+    'Typenblattbez./Plan-Nr.', '—', '—', 'Datum', 'Name'
+  ]);
+  // Zeilen 9–17: leer
+  for (let i = 0; i < 9; i++) aoa.push(new Array(28).fill(null));
+  // Ab Zeile 18: Datenpositionen (1 Zeile pro Pair)
+  PAIRS.forEach(p => {
+    const bp       = allBP[p.id] || {};
+    const ft       = ftList.find(f => f.name === (bp.fundtyp || ''));
+    const neigGrad = bp.neigung === '≤14°' ? 7 : bp.neigung === '14–33°' ? 23 : null;
+    aoa.push([
+      p.km_rs,                    // A:0  Km
+      p.mast        || '',         // B:1  Nr.
+      p.masttyp     || '',         // C:2  Masttyp FL
+      p.gleis       || '',         // D:3  Gleis
+      p.ueberhohung ?? '',         // E:4  Überhöhung [mm]
+      p.massA       ?? '',         // F:5  Mass a [m]
+      p.hkgl        ?? '',         // G:6  hkgl [cm]
+      p.ausrichtung ?? '',         // H:7  Ausrichtung Kopf
+      p.lichteWeite ?? '',         // I:8  Lichte Weite [m]
+      p.rs?.e       ?? '',         // J:9  E-Achse LV95
+      p.rs?.n       ?? '',         // K:10 N-Achse LV95
+      p.z           ?? '',         // L:11 Z-Achse
+      neigGrad,                    // M:12 Geländeneigung [°]
+      bp.bkBodentyp || '',         // N:13 Typ USCS
+      bp.bkMe       || '',         // O:14 ME-Wert [Mpa]
+      bp.bkPhi      || '',         // P:15 Reibungswinkel [°]
+      bp.bkGamma    || '',         // Q:16 Raumlast [kN/m³]
+      bp.bkC        || '',         // R:17 Kohäsion [kPa]
+      bp.bkGrundwasser || '',      // S:18 GWSP [m]
+      '',                          // T:19 Einsatzbedingungen (nicht in App)
+      bp.fundtyp    || '',         // U:20 Fundamenttyp Standard
+      ft?.vfkZeichnungsNr || '',   // V:21 Zeichnungs-Nr.
+      '',                          // W:22 Schrauben Artikel-Nr.
+      bp.nachweisLink || '',       // X:23 Fundamenttyp Spezial
+      '',                          // Y:24
+      bp.bemerkung  || '',         // Z:25 Bemerkungen
+      todayISO,                    // AA:26 Letzte Änderung Datum
+      bearb,                       // AB:27 Letzte Änderung Name
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [
+    {wch:8},{wch:8},{wch:12},{wch:7},{wch:9},{wch:8},{wch:7},{wch:12},{wch:8},
+    {wch:12},{wch:12},{wch:8},{wch:10},{wch:8},{wch:8},{wch:10},{wch:10},{wch:8},
+    {wch:8},{wch:10},{wch:16},{wch:12},{wch:12},{wch:22},{wch:8},{wch:22},{wch:12},{wch:10}
+  ];
+  const wbOut = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbOut, ws, 'LISTE');
+  const ispPfx = kenndaten.isp ? kenndaten.isp + '_' : '';
+  XLSX.writeFile(wbOut, ispPfx + 'Fundamentliste_' + todayISO + '.xlsx');
+}
+
 // ============================================================
 // PAIR CRUD: create / edit / delete / reorder
 // ============================================================
@@ -9365,6 +9472,165 @@ function importExcel(input) {
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+// ── Import aus SBB-Fundamentliste (xlsm/xlsx) ───────────────────────────────
+function importFundamentliste(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const reader = new FileReader();
+  reader.onload = e => _importFundamentlisteFromBuffer(e.target.result);
+  reader.readAsArrayBuffer(file);
+}
+
+// Kern-Logik Import — trennt FileReader-Schicht von Verarbeitungsschicht
+// damit der Buffer auch aus sessionStorage (Neues-Projekt-Flow) kommen kann
+function _importFundamentlisteFromBuffer(buffer) {
+  try {
+    const wb = XLSX.read(buffer, { type: 'array' });
+      // Primär "LISTE"-Sheet, Fallback auf erstes Sheet
+      const wsName = wb.SheetNames.includes('LISTE') ? 'LISTE' : wb.SheetNames[0];
+      const ws = wb.Sheets[wsName];
+      // AOA-Modus: rows[i][j] = Zelle Zeile i+1, Spalte Buchstabe j
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+      // ── Projektmetadaten aus Zeilen 1–2 (Index 0–1) ──────────────
+      const row0 = rows[0] || [];
+      // Projektname: erster nicht-leerer String nach Spalte A (Index 0)
+      const projName = row0.slice(1).find(v => typeof v === 'string' && v.trim()) || null;
+      // ISP und Stand: Zelle rechts neben Label-String
+      const findAfterLabel = (rowArr, label) => {
+        if (!rowArr) return null;
+        for (let i = 0; i < rowArr.length - 1; i++) {
+          if (typeof rowArr[i] === 'string' && rowArr[i].toLowerCase().includes(label.toLowerCase()))
+            return rowArr[i + 1] ?? rowArr[i + 2] ?? null;
+        }
+        return null;
+      };
+      const ispVal   = findAfterLabel(rows[1], 'ISP')   || findAfterLabel(rows[0], 'ISP');
+      const standVal = findAfterLabel(rows[1], 'Stand') || findAfterLabel(rows[0], 'Stand');
+
+      // FT-Namen normalisieren: "DP2a/2.0" → "DP2a / 2.0"
+      const normFt = s => typeof s === 'string' ? s.replace(/\s*\/\s*/g, ' / ').trim() : '';
+      // Neigungsgrad → Label
+      const toNeigLabel = deg => {
+        const d = parseFloat(deg);
+        if (isNaN(d) || deg === null) return '';
+        return d <= 14 ? '≤14°' : d <= 33 ? '14–33°' : '>33°';
+      };
+
+      // ── Datenpositionen: Spalte A ist positive Dezimalzahl (km-Wert) ──
+      const dataRows = rows.filter(r => r && r[0] !== null && !isNaN(parseFloat(r[0])) && parseFloat(r[0]) > 0);
+      if (!dataRows.length) {
+        alert('Keine Datenpositionen gefunden.\nErwartet: LISTE-Sheet mit Km-Werten (Spalte A) ab Zeile 18.');
+        return;
+      }
+
+      const newPairs = [];
+      const newBP    = {};
+      const ftCache  = loadFtProfile();
+      dataRows.forEach((r, i) => {
+        const id     = i + 1;
+        const ftName = normFt(r[20]);
+        const ftMatch = ftCache.find(f => f.name === ftName);
+        newPairs.push({
+          id,
+          km_rs:       parseFloat(r[0]) || 0,
+          km_rks:      parseFloat(r[0]) || 0,
+          mast:        String(r[1] ?? ''),
+          masttyp:     String(r[2] ?? ''),
+          gleis:       String(r[3] ?? ''),
+          ueberhohung: r[4]  ?? null,
+          massA:       r[5]  ?? null,
+          hkgl:        r[6]  ?? null,
+          ausrichtung: r[7]  ?? null,
+          lichteWeite: r[8]  ?? null,
+          rs:          { e: parseInt(r[9])  || 0, n: parseInt(r[10]) || 0 },
+          rks:         { e: parseInt(r[9])  || 0, n: parseInt(r[10]) || 0 },
+          z:           r[11] ?? null,
+          _phase:      'bauprojekt',
+          bezeichnung: '',
+          tag:         'T1',
+          tiefe:       5,
+          zugang:      '',
+          strecke:     '',
+          streckennr:  '',
+        });
+        newBP[id] = {
+          bestand:       'neu',
+          massnahme:     '',
+          neigung:       toNeigLabel(r[12]),
+          bkBodentyp:    r[13] != null ? String(r[13]) : '',
+          bkMe:          r[14] != null ? String(r[14]) : '',
+          bkPhi:         r[15] != null ? String(r[15]) : '',
+          bkGamma:       r[16] != null ? String(r[16]) : '',
+          bkC:           r[17] != null ? String(r[17]) : '',
+          bkGrundwasser: r[18] != null ? String(r[18]) : '',
+          fundtyp:       ftName,
+          ftProfilId:    ftMatch?.id || '',
+          nachweisLink:  r[23] != null ? String(r[23]) : '',
+          bemerkung:     r[25] != null ? String(r[25]) : '',
+          vfk:           false,
+        };
+      });
+
+      // FT-Zuweisungs-Map aufbauen
+      const ftZuwNew = {};
+      Object.entries(newBP).forEach(([id, bp]) => { if (bp.ftProfilId) ftZuwNew[id] = bp.ftProfilId; });
+
+      const replace = confirm(
+        `${newPairs.length} Positionen gefunden.\n\nOK = Bestehendes ersetzen\nAbbrechen = Zu bestehendem hinzufügen`
+      );
+      pushUndo();
+      if (replace) {
+        PAIRS.length = 0;
+        newPairs.forEach(p => PAIRS.push(p));
+        saveAllBauprojekt(newBP);
+        saveFtZuweisungen(ftZuwNew);
+      } else {
+        const maxId  = PAIRS.length ? Math.max(...PAIRS.map(p => p.id)) : 0;
+        const allBP  = loadAllBauprojekt();
+        const allFtZ = loadFtZuweisungen();
+        newPairs.forEach((p, i) => {
+          const nid = maxId + i + 1;
+          PAIRS.push({ ...p, id: nid });
+          allBP[nid]  = newBP[p.id];
+          if (ftZuwNew[p.id]) allFtZ[nid] = ftZuwNew[p.id];
+        });
+        saveAllBauprojekt(allBP);
+        saveFtZuweisungen(allFtZ);
+      }
+      savePairs();
+
+      // Projektmetadaten übernehmen
+      if (projName) {
+        localStorage.setItem(TITEL_KEY, projName);
+        const span = document.getElementById('app-title-text');
+        if (span) span.textContent = projName;
+        document.title = projName;
+        const proj = _projects?.find(x => x.id === _activeId);
+        if (proj) { proj.name = projName; saveProjectsMeta(_projects); }
+      }
+      const kd = loadKenndaten();
+      if (ispVal)   kd.isp   = String(ispVal);
+      if (standVal) {
+        // SheetJS-Datum: serielle Zahl → ISO-String
+        kd.stand = typeof standVal === 'number'
+          ? new Date(Math.round((standVal - 25569) * 86400000)).toISOString().split('T')[0]
+          : String(standVal).replace(/\./g, '-').split('-').reverse().join('-');
+      }
+      saveKenndatenData(kd);
+      updateHeaderSub();
+
+      autoRegisterSchichtenFromPairs(newPairs);
+      setPhase('bauprojekt');
+      renderCards();
+      alert(`Import abgeschlossen: ${newPairs.length} Positionen ${replace ? 'ersetzt' : 'hinzugefügt'}.`);
+    } catch(err) {
+      alert('Fehler beim Lesen der Fundamentliste:\n' + err.message);
+      console.error(err);
+    }
 }
 
 // ============================================================
@@ -9835,19 +10101,44 @@ function createNewProject() {
   const id = genProjectId();
   projects.push({ id, name: name.trim(), createdAt: new Date().toISOString() });
   saveProjectsMeta(projects);
-  // Leere Datensätze vorinitialisieren — verhindert Fallback auf DEFAULT_PAIRS
   localStorage.setItem('sp_pairs__'    + id, JSON.stringify([]));
   localStorage.setItem('sp_data__'     + id, JSON.stringify({}));
   localStorage.setItem('sp_tags__'     + id, JSON.stringify([]));
   localStorage.setItem('sp_tagdates__' + id, JSON.stringify({}));
   localStorage.setItem('sp_titel__'    + id, name.trim());
-  // Vorlage anwenden wenn vorhanden
   const tpl = loadAppTemplate();
   if (tpl && confirm('Möchtest du die gespeicherte App-Vorlage auf das neue Projekt anwenden?\n\n(Tags, Briefvorlagen, Standard-Feldbelegung)')) {
     applyTemplateTo(id, tpl);
   }
   localStorage.setItem(ACTIVE_PROJECT_KEY, id);
   location.reload();
+}
+
+// Fundamentliste in neues Projekt importieren (Projektname per prompt, dann Reload mit sessionStorage-Brücke)
+function importFundamentlisteNeuesProjekt(input) {
+  const file = input.files[0]; if (!file) return;
+  input.value = '';
+  const name = prompt('Name des neuen Projekts:', 'Neues Projekt');
+  if (!name?.trim()) return;
+  const projects = loadProjectsMeta();
+  const id = genProjectId();
+  projects.push({ id, name: name.trim(), createdAt: new Date().toISOString() });
+  saveProjectsMeta(projects);
+  localStorage.setItem('sp_pairs__'    + id, JSON.stringify([]));
+  localStorage.setItem('sp_data__'     + id, JSON.stringify({}));
+  localStorage.setItem('sp_tags__'     + id, JSON.stringify([]));
+  localStorage.setItem('sp_tagdates__' + id, JSON.stringify({}));
+  localStorage.setItem('sp_titel__'    + id, name.trim());
+  localStorage.setItem(ACTIVE_PROJECT_KEY, id);
+  closeProjektModal();
+  const reader = new FileReader();
+  reader.onload = e => {
+    const u8 = new Uint8Array(e.target.result);
+    let bin = ''; u8.forEach(b => bin += String.fromCharCode(b));
+    sessionStorage.setItem('pendingFlImport', btoa(bin));
+    location.reload();
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ============================================================
@@ -9938,7 +10229,8 @@ function seedDemoProjectAltstetten() {
     const km      = parseFloat((i * 0.090).toFixed(3));
     const fundtyp = spezialFT[i] || stdFT[i];
     const massnahme = massnahmeMap[i] || '';
-    const bestand   = massnahme === 'abbruch' ? 'bestehend' : 'neu';
+    // prov-Pairs brauchen bestand='prov' damit getPairBpTyp sie als 'provisorium' erkennt
+    const bestand = massnahme === 'abbruch' ? 'bestehend' : massnahme === 'prov' ? 'prov' : 'neu';
     const id = i + 1;
 
     pairs.push({
@@ -9953,9 +10245,42 @@ function seedDemoProjectAltstetten() {
     allBP[id]   = { bestand, massnahme, fundtyp };
   }
 
-  localStorage.setItem('sp_pairs__'       + PID, JSON.stringify(pairs));
-  localStorage.setItem('sp_data__'        + PID, JSON.stringify(appData));
-  localStorage.setItem('sp_bauprojekt__'  + PID, JSON.stringify(allBP));
+  // FT-Zuweisungen aus DEFAULT_FT_PROFIL ableiten (Name → ID)
+  const ftByName = {};
+  DEFAULT_FT_PROFIL.forEach(f => { ftByName[f.name] = f.id; });
+  const ftZuwMap = {};
+  pairs.forEach(p => { if (ftByName[p.fundtyp]) ftZuwMap[p.id] = ftByName[p.fundtyp]; });
+
+  // Standard-Projektkonfiguration: ein Los + Baubeginn
+  const demoEinst = {
+    baubeginn:               '2026-09-01',
+    abzugMinuten:            30,
+    berücksichtigeFeiertage: true,
+    bauGruppeMax:            3,
+    standardSperrmusterId:   'sp_demo_nacht',
+    aushaerteTage:           28,
+    flMontagePuffer:         7,
+    bbVersatzTage:           7,
+    abbruchLos:              {},
+    teams: [{ id: 'team_demo_1', name: 'Los 1', color: '#3b82f6' }],
+  };
+
+  // Demo-Sperrmuster: Nachtsperrung Mo–Fr 22:00–05:00
+  const demoSperrmuster = [{
+    id: 'sp_demo_nacht', name: 'Nachtsperrung Mo–Fr',
+    typ: 'nacht', farbe: '#1a3a5c',
+    wochentage: [1,2,3,4,5],
+    von: '22:00', bis: '05:00', nettoH: 6.5,
+    gleissperrung: 'eingleisig', gleisNr: '1',
+    fl: 'nein', bemerkung: 'Demo-Sperrmuster',
+  }];
+
+  localStorage.setItem('sp_pairs__'         + PID, JSON.stringify(pairs));
+  localStorage.setItem('sp_data__'          + PID, JSON.stringify(appData));
+  localStorage.setItem('sp_bauprojekt__'    + PID, JSON.stringify(allBP));
+  localStorage.setItem('sp_ft_zuweisung__'  + PID, JSON.stringify(ftZuwMap));
+  localStorage.setItem('sp_proj_einst__'    + PID, JSON.stringify(demoEinst));
+  localStorage.setItem('sp_sperrmuster__'   + PID, JSON.stringify(demoSperrmuster));
   localStorage.setItem(ACTIVE_PROJECT_KEY, PID);
   location.reload();
 }
@@ -11537,10 +11862,12 @@ function openProjektKenndatenModal() {
   const kd = loadKenndaten();
   const titleEl = document.getElementById('app-title-text');
   document.getElementById('pkd-name').value = titleEl?.textContent?.trim() || '';
-  document.getElementById('pkd-isp').value  = kd.isp    || '';
-  document.getElementById('pkd-linie').value = kd.linie || '';
-  document.getElementById('pkd-von').value  = kd.von    || '';
-  document.getElementById('pkd-bis').value  = kd.bis    || '';
+  document.getElementById('pkd-isp').value       = kd.isp        || '';
+  document.getElementById('pkd-linie').value     = kd.linie      || '';
+  document.getElementById('pkd-von').value       = kd.von        || '';
+  document.getElementById('pkd-bis').value       = kd.bis        || '';
+  document.getElementById('pkd-stand').value     = kd.stand      || '';
+  document.getElementById('pkd-bearbeiter').value= kd.bearbeiter || '';
   document.getElementById('projektkd-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('pkd-name')?.focus(), 50);
 }
@@ -11551,10 +11878,12 @@ function closeProjektKenndatenModal() {
 
 function saveProjektKenndaten() {
   const name  = document.getElementById('pkd-name')?.value.trim();
-  const isp   = document.getElementById('pkd-isp')?.value.trim();
-  const linie = document.getElementById('pkd-linie')?.value.trim();
-  const von   = document.getElementById('pkd-von')?.value.trim();
-  const bis   = document.getElementById('pkd-bis')?.value.trim();
+  const isp        = document.getElementById('pkd-isp')?.value.trim()       || '';
+  const linie      = document.getElementById('pkd-linie')?.value.trim()     || '';
+  const von        = document.getElementById('pkd-von')?.value.trim()       || '';
+  const bis        = document.getElementById('pkd-bis')?.value.trim()       || '';
+  const stand      = document.getElementById('pkd-stand')?.value            || '';
+  const bearbeiter = document.getElementById('pkd-bearbeiter')?.value.trim()|| '';
 
   // Projektname speichern (gleiche Logik wie saveTitle)
   if (name) {
@@ -11567,7 +11896,7 @@ function saveProjektKenndaten() {
   }
 
   // Weitere Kenndaten speichern
-  saveKenndatenData({ isp, linie, von, bis });
+  saveKenndatenData({ isp, linie, von, bis, stand, bearbeiter });
 
   // Header-Sub aktualisieren
   updateHeaderSub();
@@ -13462,6 +13791,20 @@ try {
   renderTagFilterChips();
   renderCards();
   renderContacts();
+
+  // Ausstehender Fundamentliste-Import nach Neues-Projekt-Erstellen
+  (() => {
+    const b64 = sessionStorage.getItem('pendingFlImport');
+    if (!b64) return;
+    sessionStorage.removeItem('pendingFlImport');
+    try {
+      const bin = atob(b64);
+      const u8  = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      setTimeout(() => _importFundamentlisteFromBuffer(u8.buffer), 200);
+    } catch(e) { console.error('pendingFlImport Fehler:', e); }
+  })();
+
   // Nach Refresh: gespeicherte Ansicht wiederherstellen
   const refreshView      = sessionStorage.getItem('refresh_view');
   const refreshTab       = sessionStorage.getItem('refresh_tab') || 'karten';
@@ -13912,8 +14255,9 @@ function renderBpFtInfo() {
     row('Schrauben Art.', ft.schraubenArtikelNr || null),
   ].filter(Boolean).join('');
 
+  const vfkVisible = ft?.typ === 'standard';
   wrap.innerHTML = rows ? `
-    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:7px;padding:8px 10px;margin-bottom:10px;">
+    <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:${vfkVisible ? '7px 7px 0 0' : '7px'};padding:8px 10px;margin-bottom:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <span style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;">Aus Bibliothek</span>
         ${ft.typ !== 'standard'
@@ -13949,6 +14293,8 @@ function loadBauprojektFelder(pairId) {
   // Bodenkennwerte
   v('bk-me-wert',          d.bkMe);
   v('bk-phi-wert',         d.bkPhi);
+  v('bk-gamma-wert',       d.bkGamma || '');
+  v('bk-c-wert',           d.bkC     || '');
   v('bk-grundwasser',      d.bkGrundwasser);
   v('bk-bemerkung',        d.bkBemerkung);
   setBkBodentyp(d.bkBodentyp || 'fein', false);
@@ -14021,6 +14367,8 @@ function saveBodenkennwerte() {
     bkBodentyp:    _bkBodentyp,
     bkMe:          v('bk-me-wert'),
     bkPhi:         v('bk-phi-wert'),
+    bkGamma:       v('bk-gamma-wert'),
+    bkC:           v('bk-c-wert'),
     bkGrundwasser: v('bk-grundwasser'),
     bkBemerkung:   v('bk-bemerkung'),
   };
@@ -15410,7 +15758,8 @@ function saveMexToKenndaten() {
 
 function exportMateriallisteExcelFull() {
   if (!window.XLSX) { alert('SheetJS nicht geladen.'); return; }
-  const d = _calcMateriallisteData();
+  const selectedIds = getMexSelectedIds();
+  const d = _calcMateriallisteData(selectedIds);
   if (!d.total) { alert('Keine Neubau-/Provisorium-Positionen mit Standardtyp vorhanden.'); return; }
 
   const get  = id => document.getElementById(id)?.value || '';
@@ -15421,95 +15770,121 @@ function exportMateriallisteExcelFull() {
   const erst = get('mex-ersteller');
   const kont = get('mex-kontierung');
 
+  const C = 9; // Spaltenanzahl
+  const E = (n) => Array(C).fill('').map((_, i) => i === 0 ? (n||'') : ''); // Sektions-Header-Zeile
+  const secHdr = txt => { const r = E(txt); return r; };
+
+  // ── Sheet 1: Positionen ──────────────────────────────────────
+  const posRows = [];
+  posRows.push([`Positionen · ${pn}${isp ? ' · ISP '+isp : ''} · ${datum}`]);
+  posRows.push([]);
+  posRows.push(['Mast / Pos.', 'KM / Sta.', 'Massnahme', 'Fundamenttyp', 'Zeichnungs-Nr.', 'VFK', 'Neigung', 'Betonmaterial', 'Ankerbolzen']);
+  d.positionen.forEach(({ pair: p, bp, ft }) => {
+    const km  = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : (p.km_rks ? parseFloat(p.km_rks).toFixed(3) : '—');
+    const vfk = bp.vfk ? 'Ja' : '—';
+    posRows.push([
+      p.mast || 'Pos. '+p.id, km,
+      bp.bestand === 'prov' ? 'Provisorium' : 'Neubau',
+      ft?.name || '—', ft?.zeichnungsNr || '—', vfk,
+      bp.neigung || '—',
+      ft?.beton ? ft.beton.split(',')[0] : '—',
+      ft?.schraubenAnzahl && ft?.schraubenDurchmesser
+        ? `${ft.schraubenAnzahl}×${ft.schraubenDurchmesser}, L=${ft.schraubenLaenge||'?'} cm` : '—',
+    ]);
+  });
+  const wsP = window.XLSX.utils.aoa_to_sheet(posRows);
+  wsP['!cols'] = [{wch:14},{wch:10},{wch:13},{wch:14},{wch:18},{wch:6},{wch:12},{wch:20},{wch:22}];
+
+  // ── Sheet 2: Materialliste ───────────────────────────────────
   const rows = [];
-  rows.push(['Materialliste für Fundamentbau', '', '', '', '', '', '', '']);
+  rows.push(['Materialliste für Fundamentbau', ...Array(C-1).fill('')]);
   rows.push([]);
-  rows.push(['Projekt:',    pn,    '', '', 'Total Anz. Fundamente:', d.total, '', '']);
-  rows.push(['ISP:',        isp,   '', '', '', '', '', '']);
-  rows.push(['Phase:',      phase, '', '', '', '', '', '']);
-  rows.push(['Datum:',      datum, '', '', '', '', '', '']);
-  rows.push(['Ersteller:',  erst,  '', '', '', '', '', '']);
-  rows.push(['Kontierung:', kont,  '', '', '', '', '', '']);
+  rows.push(['Projekt:',   pn,    '', '', 'Total Anz. Fundamente:', d.total, '', '', '']);
+  rows.push(['ISP:',       isp,   '', '', 'Phase:',  phase, '', '', '']);
+  rows.push(['Datum:',     datum, '', '', 'Ersteller:', erst, '', '', '']);
+  rows.push(['Kontierung:',kont,  '', '', '', '', '', '', '']);
   rows.push([]);
 
   // FT-Typ Übersicht
-  rows.push(['Anzahl Fundamenttyp Standard (Neubau/Prov)', '', '', '', '', '', '', '']);
+  rows.push([...secHdr('Anzahl Fundamenttyp Standard (Neubau/Prov)')]);
   const ftOrder = DEFAULT_FT_PROFIL.filter(t => t.typ === 'standard').map(t => t.name);
   const used    = ftOrder.filter(n => d.ftCounts[n]);
+  rows.push(['Typ', 'Anz.', '', 'Typ', 'Anz.', '', 'Typ', 'Anz.', '']);
   const col1 = used.slice(0, Math.ceil(used.length / 3));
   const col2 = used.slice(col1.length, col1.length + Math.ceil(used.length / 3));
   const col3 = used.slice(col1.length + col2.length);
-  const maxR = Math.max(col1.length, col2.length, col3.length);
-  rows.push(['Typ', 'Anz.', '', 'Typ', 'Anz.', '', 'Typ', 'Anz.']);
-  for (let i = 0; i < maxR; i++) {
+  for (let i = 0; i < Math.max(col1.length, col2.length, col3.length); i++) {
     rows.push([
-      col1[i] || '', col1[i] ? (d.ftCounts[col1[i]] || 0) : '', '',
-      col2[i] || '', col2[i] ? (d.ftCounts[col2[i]] || 0) : '', '',
-      col3[i] || '', col3[i] ? (d.ftCounts[col3[i]] || 0) : '',
+      col1[i]||'', col1[i]?(d.ftCounts[col1[i]]||0):'', '',
+      col2[i]||'', col2[i]?(d.ftCounts[col2[i]]||0):'', '',
+      col3[i]||'', col3[i]?(d.ftCounts[col3[i]]||0):'', '',
     ]);
   }
   rows.push([]);
 
   // Fundamentschrauben
-  rows.push(['Fundamentschrauben', '', '', '', '', '', '', '']);
-  rows.push(['Pos.', 'Bezeichnung', 'Art.-Nr.', 'Anz. [Stk.]', 'abgew. Länge [m]', 'Totallänge [m]', 'Material', 'zu Fund. Typ Std.']);
+  rows.push([...secHdr('Fundamentschrauben')]);
+  rows.push(['Pos.','Anz. [Stk.]','Bezeichnung','Art.-Nr.','Länge [m]','Total L. [m]','Material','Bemerkungen','zu Fund. Typ Std.']);
   d.schrAgg.forEach((s, i) => {
-    const tot = s.laengeM ? +(s.anzStueck * s.laengeM).toFixed(2) : '';
+    const L   = s.laengeM ? s.laengeM.toFixed(2) : '—';
+    const tot = s.laengeM ? (s.anzStueck * s.laengeM).toFixed(2) : '—';
     rows.push([
-      i + 1,
-      `Fundamentschraube ${s.durchm} × ${s.laengeM ? (s.laengeM*100).toFixed(0) : '?'} cm`,
-      s.artNr, s.anzStueck, s.laengeM || '', tot, s.material, [...s.families].join(' / '),
+      i+1, s.anzStueck,
+      `Ankerbolzen ${s.durchm}, L = ${s.laengeM ? (s.laengeM*100).toFixed(0) : '?'} cm`,
+      s.artNr, L, tot, s.material,
+      `Fundamentschraube ${s.durchm}, L=${s.laengeM?(s.laengeM*100).toFixed(0):'?'} cm — ${s.material}`,
+      [...s.families].join(' / '),
     ]);
   });
   rows.push([]);
 
   // Zubehör
-  rows.push(['Zubehör Fundamentschrauben', '', '', '', '', '', '', '']);
-  rows.push(['Pos.', 'Bezeichnung', 'Art.-Nr.', 'Anz. [Stk.]', '', '', 'Material', '']);
-  d.zubehoerAgg.forEach((z, i) => rows.push([i + 11, z.bez, z.artNr, z.anzStueck, '', '', z.material, '']));
+  rows.push([...secHdr('Zubehör Fundamentschrauben (Muttern / Scheiben)')]);
+  rows.push(['Pos.','Anz. [Stk.]','Bezeichnung','Art.-Nr.','','','Material','Bemerkungen','']);
+  d.zubehoerAgg.forEach((z, i) => rows.push([
+    i+11, z.anzStueck, z.bez, z.artNr, '', '', z.material,
+    `${z.bez} — ${z.material}`, '',
+  ]));
   rows.push([]);
 
   // Schubbewehrung
-  rows.push(['Schubbewehrung pro Fundament (Bewehrungsbügel)', '', '', '', '', '', '', '']);
-  rows.push(['Pos.', 'Anz. [Stk.]', 'Ø [mm]', 'abgew. Länge [m]', 'Totallänge [m]', 'Dimension [cm]', 'Bezeichnung', 'Art.-Nr.']);
+  rows.push([...secHdr('Schubbewehrung pro Fundament (Bewehrungsbügel)')]);
+  rows.push(['Pos.','Anz. [Stk.]','Ø [mm]','abgew. L. [m]','Total L. [m]','Aussenmasse [cm]','Material','Bemerkungen','zu Fund. Typ Std.']);
   d.buegelAgg.forEach((b, i) => {
     const schrTyp = BUEGEL_SCREW_DB[b.artNr] || 'M36';
     const abgL    = BUEGEL_ABGEW_DB[b.artNr] || '';
-    const totL    = abgL ? +(b.anzStueck * abgL).toFixed(2) : '';
+    const totL    = abgL ? (b.anzStueck * abgL).toFixed(2) : '—';
     const dimCm   = b.dim ? (b.dim.includes('×')
-      ? b.dim.split('×').map(v => (+v / 10).toFixed(0)).join(' × ')
-      : (+b.dim / 10).toFixed(0) + ' × ' + (+b.dim / 10).toFixed(0)) : '';
+      ? b.dim.split('×').map(v => (+v/10).toFixed(0)).join(' × ')
+      : (+b.dim/10).toFixed(0) + ' × ' + (+b.dim/10).toFixed(0)) : '—';
     rows.push([
-      i + 21, b.anzStueck, b.durchm, abgL, totL, dimCm,
-      `Bewehrungsbügel Ø ${b.durchm} mm, für ${schrTyp} / ${dimCm} cm`,
-      b.artNr,
+      i+21, b.anzStueck, b.durchm,
+      abgL ? abgL.toFixed(2) : '—', totL, dimCm, b.material,
+      `Bewehrungsbügel zu FL-Blockfundament für ${schrTyp} ${dimCm} cm (gem. ${b.artNr}) (2 Stk. / Fundament)`,
+      [...b.families].join(' / '),
     ]);
   });
   rows.push([]);
 
   // Fixierung
-  rows.push(['Fixierung der Fundamentschrauben unten pro Fundament', '', '', '', '', '', '', '']);
-  rows.push(['Pos.', 'Bez.', 'Form (Bezeichnung)', 'Art.-Nr.', 'Anz. [Stk.]', '', 'Material', 'zu Fund. Typ Std.']);
-  d.fixAgg.forEach((f, i) => rows.push([
-    i + 31, 'Flachstahl', f.bez, f.artNr, f.anzStueck, '', f.material, [...f.families].join(' / '),
-  ]));
+  rows.push([...secHdr('Fixierung der Fundamentschrauben unten pro Fundament')]);
+  rows.push(['Pos.','Anz. [Stk.]','Bez.','Bezeichnung DIN','Art.-Nr.','Länge [mm]','Material','Bemerkungen','zu Fund. Typ Std.']);
+  d.fixAgg.forEach((f, i) => {
+    const lenMatch = f.bez.match(/-(\d+)$/);
+    const lenMm    = lenMatch ? lenMatch[1] : '—';
+    rows.push([
+      i+31, f.anzStueck, 'Flachstahl', f.bez, f.artNr, lenMm, f.material,
+      `Fixierung der Fundamentschrauben unten (gem. ${f.artNr})`,
+      [...f.families].join(' / '),
+    ]);
+  });
 
   const ws = window.XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:6},{wch:46},{wch:16},{wch:12},{wch:16},{wch:14},{wch:18},{wch:24}];
+  ws['!cols'] = [{wch:5},{wch:10},{wch:36},{wch:16},{wch:11},{wch:14},{wch:16},{wch:52},{wch:16}];
+
   const wb = window.XLSX.utils.book_new();
-  window.XLSX.utils.book_append_sheet(wb, ws, 'Materialliste');
-  // Als 2. Sheet: Detailliste je Standort
-  const detailRows = [
-    [`Positionen · ${pn} · ${datum}`], [],
-    ['Mast','KM','Massnahme','Fundamenttyp','Zeichnungs-Nr.'],
-  ];
-  d.positionen.forEach(({ pair:p, bp, ft }) => {
-    const km = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : (p.km_rks ? parseFloat(p.km_rks).toFixed(3) : '');
-    detailRows.push(['Mast '+(p.mast||p.id), km, bp.bestand==='prov'?'Provisorium':'Neubau', ft?.name||'—', ft?.zeichnungsNr||'—']);
-  });
-  const wsD = window.XLSX.utils.aoa_to_sheet(detailRows);
-  wsD['!cols'] = [{wch:14},{wch:9},{wch:14},{wch:16},{wch:18}];
-  window.XLSX.utils.book_append_sheet(wb, wsD, 'Positionen');
+  window.XLSX.utils.book_append_sheet(wb, wsP, 'Positionen');
+  window.XLSX.utils.book_append_sheet(wb, ws,  'Materialliste');
   window.XLSX.writeFile(wb, `Materialliste_${pn.replace(/[^a-zA-Z0-9_]/g,'_')}_${datum.replace(/\./g,'-')}.xlsx`);
   closeMaterialExportModal();
 }
@@ -15517,7 +15892,8 @@ function exportMateriallisteExcelFull() {
 function exportMateriallistePdf() {
   const { jsPDF } = window.jspdf;
   if (!jsPDF) { alert('jsPDF nicht geladen.'); return; }
-  const d = _calcMateriallisteData();
+  const selectedIds = getMexSelectedIds();
+  const d = _calcMateriallisteData(selectedIds);
   if (!d.total) { alert('Keine Neubau-/Provisorium-Positionen mit Standardtyp vorhanden.'); return; }
 
   const get  = id => document.getElementById(id)?.value || '';
@@ -15528,143 +15904,184 @@ function exportMateriallistePdf() {
   const erst = get('mex-ersteller');
   const kont = get('mex-kontierung');
 
-  const doc  = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const ml = 12, cW = 186;
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+  const ml = 10, pw = 277;
   let y = 12;
 
+  const DARK = [26, 58, 92];
+  const MID  = [51, 65, 85];
+
   const secBar = (title, yPos) => {
-    doc.setFillColor(51, 65, 85);
-    doc.rect(ml, yPos, cW, 6.5, 'F');
-    doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(9);
-    doc.text(title, ml + 2, yPos + 4.5);
+    doc.setFillColor(...MID);
+    doc.rect(ml, yPos, pw, 6, 'F');
+    doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(8.5);
+    doc.text(title, ml+2, yPos+4.2);
     doc.setTextColor(0,0,0); doc.setFont(undefined,'normal');
-    return yPos + 6.5;
+    return yPos + 6;
+  };
+  const pageCheck = (needed) => {
+    if (y + needed > 192) { doc.addPage(); y = 12; }
+  };
+  const footer = () => {
+    const n = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= n; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7); doc.setFont(undefined,'normal'); doc.setTextColor(150,150,150);
+      doc.text(`${pn}${isp?' · ISP '+isp:''}${phase?' · '+phase:''}  ·  ${datum}`, ml, 202);
+      doc.text(`Seite ${i} / ${n}`, ml+pw, 202, {align:'right'});
+      doc.setDrawColor(210,210,210); doc.line(ml, 200, ml+pw, 200);
+    }
   };
 
-  // ── Titel + Header ──────────────────────────────────────────
-  doc.setFont(undefined,'bold'); doc.setFontSize(14); doc.setTextColor(26,58,92);
-  doc.text('Materialliste für Fundamentbau', ml, y); y += 7;
-  doc.setFontSize(9); doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
-  const hL = [ ['Projekt:',pn], ['ISP:',isp], ['Phase:',phase], ['Datum:',datum], ['Ersteller:',erst], ['Kontierung:',kont] ];
+  // ── Titel + Kopf ─────────────────────────────────────────────
+  doc.setFont(undefined,'bold'); doc.setFontSize(13); doc.setTextColor(...DARK);
+  doc.text('Materialliste — Fundamentbau', ml, y); y += 6;
+  doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+  const hL = [['Projekt:',pn],['ISP:',isp],['Phase:',phase],['Datum:',datum],['Ersteller:',erst],['Kontierung:',kont]];
   const hY0 = y;
-  hL.forEach(([lbl,val]) => {
-    doc.setFont(undefined,'bold'); doc.text(lbl, ml, y); doc.setFont(undefined,'normal'); doc.text(val||'', ml+22, y); y+=5;
+  hL.forEach(([lbl,val],i) => {
+    const x = ml + (i % 3) * 92;
+    const ly = hY0 + Math.floor(i/3) * 5;
+    doc.setFont(undefined,'bold'); doc.text(lbl, x, ly);
+    doc.setFont(undefined,'normal'); doc.text(val||'—', x+22, ly);
   });
-  // Total-Box rechts
-  doc.setFillColor(26,58,92); doc.rect(140, hY0-4, 58, 12, 'F');
-  doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(8);
-  doc.text('Total Anz. Fundamente', 141, hY0+1); doc.setFontSize(14);
-  doc.text(String(d.total), 169, hY0+8, {align:'center'});
-  doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9);
-  y += 4;
+  // Total-Box
+  doc.setFillColor(...DARK); doc.rect(ml+pw-36, hY0-4, 36, 12, 'F');
+  doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(7);
+  doc.text('Total Fundamente', ml+pw-34, hY0+1);
+  doc.setFontSize(14); doc.text(String(d.total), ml+pw-18, hY0+8, {align:'center'});
+  doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(8);
+  y = hY0 + 13;
 
-  // ── FT Übersicht ────────────────────────────────────────────
-  y = secBar('Anzahl Fundamenttyp Standard', y) + 1;
-  const ftOrder = DEFAULT_FT_PROFIL.filter(t => t.typ === 'standard').map(t => t.name);
+  // ── FT-Übersicht ─────────────────────────────────────────────
+  y = secBar('Anzahl Fundamenttyp Standard (Neubau / Provisorium)', y) + 1;
+  const ftOrder = DEFAULT_FT_PROFIL.filter(t => t.typ==='standard').map(t => t.name);
   const used    = ftOrder.filter(n => d.ftCounts[n]);
   const cols3   = [used.slice(0, Math.ceil(used.length/3)), used.slice(Math.ceil(used.length/3), Math.ceil(used.length*2/3)), used.slice(Math.ceil(used.length*2/3))];
-  const maxFt   = Math.max(...cols3.map(c => c.length));
-  const ftBody  = Array.from({length:maxFt}, (_,i) => cols3.map(col => col[i] ? [col[i], d.ftCounts[col[i]]||0] : ['','']).flat());
+  const maxFt   = Math.max(1,...cols3.map(c=>c.length));
+  const ftBody  = Array.from({length:maxFt},(_,i) => cols3.map(col => col[i]?[col[i],d.ftCounts[col[i]]||0]:['','']).flat());
   doc.autoTable({
     startY:y, head:[['Typ','Anz.','Typ','Anz.','Typ','Anz.']], body:ftBody,
     theme:'grid',
-    headStyles:{ fillColor:[26,58,92], textColor:255, fontSize:8, fontStyle:'bold', halign:'center' },
-    bodyStyles:{ fontSize:9 },
-    columnStyles:{
-      0:{cellWidth:32}, 1:{cellWidth:13,halign:'center',fontStyle:'bold'},
-      2:{cellWidth:32}, 3:{cellWidth:13,halign:'center',fontStyle:'bold'},
-      4:{cellWidth:32}, 5:{cellWidth:13,halign:'center',fontStyle:'bold'},
-    },
+    headStyles:{ fillColor:DARK, textColor:255, fontSize:8, fontStyle:'bold', halign:'center' },
+    bodyStyles:{ fontSize:8.5 },
+    columnStyles:{0:{cellWidth:44},1:{cellWidth:12,halign:'center',fontStyle:'bold'},2:{cellWidth:44},3:{cellWidth:12,halign:'center',fontStyle:'bold'},4:{cellWidth:44},5:{cellWidth:12,halign:'center',fontStyle:'bold'}},
     margin:{left:ml},
-    didParseCell(data){ if(data.section==='body'&&data.column.index%2===1){ const v=parseInt(data.cell.raw); if(!v) data.cell.styles.textColor=[180,180,180]; } }
+    didParseCell(data){ if(data.section==='body'&&data.column.index%2===1){const v=parseInt(data.cell.raw);if(!v)data.cell.styles.textColor=[180,180,180];} }
   });
-  y = doc.lastAutoTable.finalY + 6;
+  y = doc.lastAutoTable.finalY + 5;
 
-  // ── Fundamentschrauben ──────────────────────────────────────
-  y = secBar('Fundamentschrauben', y) + 1;
-  const schrBody = d.schrAgg.map((s,i) => [
-    i+1,
-    `Fundamentschraube ${s.durchm} × ${s.laengeM ? (s.laengeM*100).toFixed(0) : '?'} cm`,
-    s.artNr, s.anzStueck,
-    s.laengeM ? s.laengeM.toFixed(2)+' m' : '—',
-    s.laengeM ? (s.anzStueck*s.laengeM).toFixed(2)+' m' : '—',
-    s.material, [...s.families].join(' / ')
-  ]);
-  doc.autoTable({
-    startY:y, head:[['Pos.','Bezeichnung','Art.-Nr.','Anz.','L [m]','Total L','Material','zu Typ']], body:schrBody,
-    theme:'grid',
-    headStyles:{ fillColor:[51,65,85], textColor:255, fontSize:8, fontStyle:'bold' },
-    bodyStyles:{ fontSize:8 },
-    columnStyles:{ 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:56}, 2:{cellWidth:20,fontStyle:'bold'}, 3:{cellWidth:10,halign:'center'}, 4:{cellWidth:14,halign:'center'}, 5:{cellWidth:16,halign:'center'}, 6:{cellWidth:26}, 7:{cellWidth:36} },
-    margin:{left:ml},
-  });
-  y = doc.lastAutoTable.finalY + 4;
-
-  // ── Zubehör ─────────────────────────────────────────────────
-  y = secBar('Zubehör Fundamentschrauben', y) + 1;
-  const zubBody = d.zubehoerAgg.map((z,i) => [i+11, z.bez, z.artNr, z.anzStueck, z.material]);
-  doc.autoTable({
-    startY:y, head:[['Pos.','Bezeichnung','Art.-Nr.','Anz.','Material']], body:zubBody,
-    theme:'grid',
-    headStyles:{ fillColor:[51,65,85], textColor:255, fontSize:8, fontStyle:'bold' },
-    bodyStyles:{ fontSize:8 },
-    columnStyles:{ 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:70}, 2:{cellWidth:24,fontStyle:'bold'}, 3:{cellWidth:16,halign:'center'}, 4:{cellWidth:28} },
-    margin:{left:ml},
-  });
-  y = doc.lastAutoTable.finalY + 4;
-
-  if (y > 210) { doc.addPage(); y = 12; }
-
-  // ── Schubbewehrung ──────────────────────────────────────────
-  y = secBar('Schubbewehrung pro Fundament (Bewehrungsbügel)', y) + 1;
-  const buegelBody = d.buegelAgg.map((b,i) => {
-    const schrTyp = BUEGEL_SCREW_DB[b.artNr] || 'M36';
-    const abgL    = BUEGEL_ABGEW_DB[b.artNr] || '';
-    const totL    = abgL ? (b.anzStueck * abgL).toFixed(2)+' m' : '—';
-    const dimCm   = b.dim ? (b.dim.includes('×')
-      ? b.dim.split('×').map(v=>(+v/10).toFixed(0)).join('×')
-      : (+b.dim/10).toFixed(0)+'×'+(+b.dim/10).toFixed(0)) : '';
+  // ── Positionen ───────────────────────────────────────────────
+  pageCheck(30);
+  y = secBar('Positionen', y) + 1;
+  const posBody = d.positionen.map(({pair:p,bp,ft}) => {
+    const km = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : (p.km_rks ? parseFloat(p.km_rks).toFixed(3) : '—');
     return [
-      i+21, b.anzStueck, b.durchm,
-      abgL ? abgL.toFixed(2)+' m' : '—', totL,
-      `Bewehrungsbügel Ø${b.durchm} mm, für ${schrTyp} / ${dimCm} cm`,
-      b.material, b.artNr,
+      p.mast||'Pos.'+p.id, km,
+      bp.bestand==='prov'?'Provisorium':'Neubau',
+      ft?.name||'—', ft?.zeichnungsNr||'—',
+      bp.vfk?'Ja':'—', bp.neigung||'—',
     ];
   });
   doc.autoTable({
-    startY:y, head:[['Pos.','Anz.','Ø','abgew. L','Total L','Bezeichnung','Material','Art.-Nr.']], body:buegelBody,
-    theme:'grid',
-    headStyles:{ fillColor:[51,65,85], textColor:255, fontSize:8, fontStyle:'bold' },
+    startY:y, head:[['Mast / Pos.','KM / Sta.','Massnahme','Fundamenttyp','Zeichnungs-Nr.','VFK','Neigung']], body:posBody,
+    theme:'striped',
+    headStyles:{ fillColor:DARK, textColor:255, fontSize:8, fontStyle:'bold' },
     bodyStyles:{ fontSize:8 },
-    columnStyles:{ 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:10,halign:'center'}, 2:{cellWidth:8,halign:'center'}, 3:{cellWidth:16,halign:'center'}, 4:{cellWidth:16,halign:'center'}, 5:{cellWidth:60}, 6:{cellWidth:16}, 7:{cellWidth:20,fontStyle:'bold'} },
+    columnStyles:{0:{cellWidth:28},1:{cellWidth:20,halign:'center'},2:{cellWidth:24},3:{cellWidth:28,fontStyle:'bold'},4:{cellWidth:32,fontStyle:'bold'},5:{cellWidth:14,halign:'center'},6:{cellWidth:20}},
+    margin:{left:ml},
+  });
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ── Fundamentschrauben ───────────────────────────────────────
+  pageCheck(20);
+  y = secBar('Fundamentschrauben', y) + 1;
+  const schrBody = d.schrAgg.map((s,i) => [
+    i+1, s.anzStueck,
+    `Ankerbolzen ${s.durchm}, L=${s.laengeM?(s.laengeM*100).toFixed(0):'?'} cm`,
+    s.artNr,
+    s.laengeM?s.laengeM.toFixed(2)+'m':'—',
+    s.laengeM?(s.anzStueck*s.laengeM).toFixed(2)+'m':'—',
+    s.material, [...s.families].join(' / '),
+  ]);
+  doc.autoTable({
+    startY:y, head:[['Pos.','Anz.','Bezeichnung','Art.-Nr.','L [m]','Total L [m]','Material','zu Fund. Typ Std.']], body:schrBody,
+    theme:'grid',
+    headStyles:{ fillColor:MID, textColor:255, fontSize:8, fontStyle:'bold' },
+    bodyStyles:{ fontSize:8 },
+    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:12,halign:'center'},2:{cellWidth:58},3:{cellWidth:24,fontStyle:'bold'},4:{cellWidth:16,halign:'center'},5:{cellWidth:20,halign:'center'},6:{cellWidth:34},7:{cellWidth:28}},
     margin:{left:ml},
   });
   y = doc.lastAutoTable.finalY + 4;
 
-  if (y > 210) { doc.addPage(); y = 12; }
+  // ── Zubehör ──────────────────────────────────────────────────
+  pageCheck(20);
+  y = secBar('Zubehör Fundamentschrauben (Muttern / Scheiben)', y) + 1;
+  const zubBody = d.zubehoerAgg.map((z,i) => [i+11, z.anzStueck, z.bez, z.artNr, z.material]);
+  doc.autoTable({
+    startY:y, head:[['Pos.','Anz.','Bezeichnung','Art.-Nr.','Material']], body:zubBody,
+    theme:'grid',
+    headStyles:{ fillColor:MID, textColor:255, fontSize:8, fontStyle:'bold' },
+    bodyStyles:{ fontSize:8 },
+    columnStyles:{0:{cellWidth:10,halign:'center'},1:{cellWidth:12,halign:'center'},2:{cellWidth:100},3:{cellWidth:28,fontStyle:'bold'},4:{cellWidth:36}},
+    margin:{left:ml},
+  });
+  y = doc.lastAutoTable.finalY + 4;
+
+  // ── Schubbewehrung ───────────────────────────────────────────
+  pageCheck(30);
+  y = secBar('Schubbewehrung pro Fundament (Bewehrungsbügel)', y) + 1;
+  const buegelBody = d.buegelAgg.map((b,i) => {
+    const schrTyp = BUEGEL_SCREW_DB[b.artNr]||'M36';
+    const abgL    = BUEGEL_ABGEW_DB[b.artNr]||'';
+    const totL    = abgL?(b.anzStueck*abgL).toFixed(2)+' m':'—';
+    const dimCm   = b.dim?(b.dim.includes('×')
+      ?b.dim.split('×').map(v=>(+v/10).toFixed(0)).join(' × ')
+      :(+b.dim/10).toFixed(0)+' × '+(+b.dim/10).toFixed(0)):'—';
+    return [
+      i+21, b.anzStueck, b.durchm,
+      abgL?abgL.toFixed(2)+' m':'—', totL, dimCm,
+      b.material, b.artNr,
+      `Bewehrungsbügel zu FL-Blockfundament für ${schrTyp} ${dimCm} cm (gem. ${b.artNr}) (2 Stk./Fundament)`,
+      [...b.families].join(' / '),
+    ];
+  });
+  doc.autoTable({
+    startY:y,
+    head:[['Pos.','Anz.','Ø [mm]','abgew. L [m]','Total L [m]','Aussenmasse [cm]','Material','Art.-Nr.','Bemerkungen','zu Typ']],
+    body:buegelBody,
+    theme:'grid',
+    headStyles:{ fillColor:MID, textColor:255, fontSize:7.5, fontStyle:'bold' },
+    bodyStyles:{ fontSize:7.5 },
+    columnStyles:{0:{cellWidth:9,halign:'center'},1:{cellWidth:10,halign:'center'},2:{cellWidth:11,halign:'center'},3:{cellWidth:17,halign:'center'},4:{cellWidth:17,halign:'center'},5:{cellWidth:22,halign:'center'},6:{cellWidth:16},7:{cellWidth:20,fontStyle:'bold'},8:{cellWidth:72},9:{cellWidth:18}},
+    margin:{left:ml},
+  });
+  y = doc.lastAutoTable.finalY + 4;
 
   // ── Fixierung ────────────────────────────────────────────────
+  pageCheck(30);
   y = secBar('Fixierung der Fundamentschrauben unten pro Fundament', y) + 1;
-  const fixBody = d.fixAgg.map((f,i) => [i+31, 'Flachstahl', f.bez, f.artNr, f.anzStueck, f.material, [...f.families].join(' / ')]);
+  const fixBody = d.fixAgg.map((f,i) => {
+    const lenMatch = f.bez.match(/-(\d+)$/);
+    const lenMm    = lenMatch?lenMatch[1]:'—';
+    return [
+      i+31, f.anzStueck, 'Flachstahl', f.bez, f.artNr, lenMm+' mm', f.material,
+      `Fixierung der Fundamentschrauben unten (gem. ${f.artNr})`,
+      [...f.families].join(' / '),
+    ];
+  });
   doc.autoTable({
-    startY:y, head:[['Pos.','Bez.','Form / Bezeichnung','Art.-Nr.','Anz.','Material','zu Fund. Typ']], body:fixBody,
+    startY:y,
+    head:[['Pos.','Anz.','Bez.','Bezeichnung DIN','Art.-Nr.','Länge','Material','Bemerkungen','zu Typ']],
+    body:fixBody,
     theme:'grid',
-    headStyles:{ fillColor:[51,65,85], textColor:255, fontSize:8, fontStyle:'bold' },
-    bodyStyles:{ fontSize:8 },
-    columnStyles:{ 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:18}, 2:{cellWidth:56}, 3:{cellWidth:20,fontStyle:'bold'}, 4:{cellWidth:12,halign:'center'}, 5:{cellWidth:22}, 6:{cellWidth:30} },
+    headStyles:{ fillColor:MID, textColor:255, fontSize:7.5, fontStyle:'bold' },
+    bodyStyles:{ fontSize:7.5 },
+    columnStyles:{0:{cellWidth:9,halign:'center'},1:{cellWidth:10,halign:'center'},2:{cellWidth:18},3:{cellWidth:42,fontStyle:'bold'},4:{cellWidth:20,fontStyle:'bold'},5:{cellWidth:16,halign:'center'},6:{cellWidth:20},7:{cellWidth:72},8:{cellWidth:26}},
     margin:{left:ml},
   });
 
-  // ── Seitenfuss ───────────────────────────────────────────────
-  const nPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= nPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(7.5); doc.setFont(undefined,'normal'); doc.setTextColor(120,120,120);
-    doc.text(`${pn}${isp?' · ISP '+isp:''} · ${phase} · ${datum}`, ml, 203);
-    doc.text(`Seite ${i} / ${nPages}`, 198, 203, {align:'right'});
-    doc.setDrawColor(200,200,200); doc.line(ml, 201, 198, 201);
-  }
-
+  footer();
   doc.save(`Materialliste_${pn.replace(/[^a-zA-Z0-9_]/g,'_')}_${datum.replace(/\./g,'-')}.pdf`);
   closeMaterialExportModal();
 }
@@ -17601,6 +18018,11 @@ function saveProjEinst(obj)       { localStorage.setItem(PROJ_EINST_KEY(),  JSON
 function loadSchichtZuw()         { try { return JSON.parse(localStorage.getItem(SCHICHT_ZUW_KEY())) || {}; } catch { return {}; } }
 function saveSchichtZuw(obj)      { bpSnapshotBeforeChange(); localStorage.setItem(SCHICHT_ZUW_KEY(), JSON.stringify(obj)); }
 
+// Separater Store für Abbruch-Zeilen bei abbruch-neubau Paaren
+const ABBRUCH_ZUW_KEY = () => 'sp_abbruch_zuw__' + _activeId;
+function loadAbbZuw()  { try { return JSON.parse(localStorage.getItem(ABBRUCH_ZUW_KEY())) || {}; } catch { return {}; } }
+function saveAbbZuw(o) { bpSnapshotBeforeChange(); localStorage.setItem(ABBRUCH_ZUW_KEY(), JSON.stringify(o)); }
+
 function migrateZuwStores() {
   const zuw = loadSchichtZuw();
   let changed = false;
@@ -17674,6 +18096,7 @@ function bpCaptureSnapshot() {
   return {
     pakete:    localStorage.getItem(BP_PAKET_KEY())    || '[]',
     zuw:       localStorage.getItem(SCHICHT_ZUW_KEY()) || '{}',
+    abbZuw:    localStorage.getItem(ABBRUCH_ZUW_KEY()) || '{}',
     ms:        localStorage.getItem(MEILENSTEINE_KEY())|| '[]',
     einst:     localStorage.getItem(PROJ_EINST_KEY())  || '{}',
     baugruppen:localStorage.getItem(BAUGRUPPEN_KEY())  || '[]',
@@ -17684,6 +18107,7 @@ function bpRestoreSnapshot(snap) {
   if (!snap) return;
   localStorage.setItem(BP_PAKET_KEY(),    snap.pakete);
   localStorage.setItem(SCHICHT_ZUW_KEY(), snap.zuw);
+  if (snap.abbZuw) localStorage.setItem(ABBRUCH_ZUW_KEY(), snap.abbZuw);
   localStorage.setItem(MEILENSTEINE_KEY(),snap.ms);
   localStorage.setItem(PROJ_EINST_KEY(),  snap.einst);
   localStorage.setItem(BAUGRUPPEN_KEY(),  snap.baugruppen);
@@ -18050,13 +18474,16 @@ function bpGetSchichten(pak) {
     chFeiertage(yr).forEach(d => feiertage.add(d));
     chFeiertage(yr + 1).forEach(d => feiertage.add(d));
   }
-  const result = [];
-  for (let i = 0; i < pak.anzahlNaechte; i++) {
-    const d  = bpAddDays(bpParseDate(pak.startDatum), i);
+  // Gültige Arbeitstage sammeln (nicht Kalendertage zählen)
+  const result  = [];
+  const maxDays = pak.anzahlNaechte * 7 + 14; // Sicherheits-Cap
+  let calDay = 0;
+  while (result.length < pak.anzahlNaechte && calDay < maxDays) {
+    const d  = bpAddDays(bpParseDate(pak.startDatum), calDay++);
     const ds = bpFmtDate(d);
     if (allowedDows && !allowedDows.includes(d.getDay())) continue;
     if (berFt && feiertage.has(ds)) continue;
-    result.push({ schichtNr: i + 1, datum: ds });
+    result.push({ schichtNr: result.length + 1, datum: ds });
   }
   return result;
 }
@@ -19958,9 +20385,10 @@ function renderBpZuweisungTable() {
   const cntLbl = document.getElementById('bp-zuw-count');
   if (!table) return;
 
-  const pakete = loadBaupakete();
-  const zuw    = loadSchichtZuw();
-  const allPairs = getFilteredSorted();
+  const pakete    = loadBaupakete();
+  const zuw       = loadSchichtZuw();
+  const allAbbZuw = loadAbbZuw();
+  const allPairs  = getFilteredSorted();
   const ftZuw  = loadFtZuweisungen();
   const ftList = loadFtProfile();
   const spList = loadSperrmuster();
@@ -19998,7 +20426,10 @@ function renderBpZuweisungTable() {
   const sicherungPairsT = pairs.filter(p => getPairBpTyp(p.id, allBp) === 'sicherung');
   const provPairsT      = pairs.filter(p => getPairBpTyp(p.id, allBp) === 'provisorium');
   const zugewNB   = neubauPairsT.filter(p => !!zuw[p.id]).length;
-  const zugewABB  = abbruchPairsT.filter(p => !!zuw[p.id]).length;
+  const zugewABB  = abbruchPairsT.filter(p => {
+    const t = getPairBpTyp(p.id, allBp);
+    return t === 'abbruch-neubau' ? !!allAbbZuw[p.id] : !!zuw[p.id];
+  }).length;
   const zugewSICH = sicherungPairsT.filter(p => !!zuw[p.id]).length;
   const zugewPROV = provPairsT.filter(p => !!zuw[p.id]).length;
   const cntParts = [neubauPairsT.length + ' Neubau (' + zugewNB + ' zugewiesen)'];
@@ -20041,8 +20472,9 @@ function renderBpZuweisungTable() {
 
   // Hilfsfunktion: eine Tabellenzeile rendern
   // rowMode: 'neubau' | 'abbruch' | 'sicherung' | 'provisorium'
-  // showControls: false nur für ABB-Partnerrow in abbruch-neubau (Gerät/Status/Chips auf NB-Zeile)
-  const makeRow = (p, rowMode, showControls = true) => {
+  // showControls: true für alle Zeilen mit Dropdowns
+  // zuwData: alternativer Zuweisung-Store (für ABB-Zeilen bei abbruch-neubau)
+  const makeRow = (p, rowMode, showControls = true, zuwData = null) => {
     if (rowMode === true)  rowMode = 'abbruch';   // backward compat
     if (rowMode === false) rowMode = 'neubau';
     const isSpecialRow = rowMode !== 'neubau';    // steuert Betoniertermin/Ausschaltermin-Logik
@@ -20051,7 +20483,7 @@ function renderBpZuweisungTable() {
     const bp2   = allBp[p.id] || {};
     const massnahme = bp2.massnahme || '';
 
-    const z = zuw[p.id] || {};
+    const z = (zuwData || zuw)[p.id] || {};
 
     // Typ-Badge je nach Modus
     const rowTypInfo = rowMode === 'abbruch'
@@ -20090,11 +20522,18 @@ function renderBpZuweisungTable() {
     const rowBg = sel ? '#eff6ff' : bgRow;
     const rowBorder = sel ? 'outline:2px solid #3b82f6;outline-offset:-2px;' : '';
 
-    const saveSchichtFn = 'saveBpZuweisung(' + p.id + ',this.value,\'schicht\')';
-    const savePaketFn   = 'saveBpZuweisung(' + p.id + ',this.value,\'paket\')';
-    const idPfx    = 'bp-zuw';
-    const pakInputId  = idPfx + '-pak-' + p.id;
-    const schInputId  = idPfx + '-sch-' + p.id;
+    // ABB-Zeilen (abbruch-neubau) nutzen eigenen Store und eigene Save-Funktion
+    const isAbbRow = rowMode === 'abbruch' && zuwData !== null;
+    const saveSchichtFn = isAbbRow
+      ? 'saveBpAbbZuweisung(' + p.id + ',this.value,\'paket\')'
+      : 'saveBpZuweisung(' + p.id + ',this.value,\'schicht\')';
+    const savePaketFn = isAbbRow
+      ? 'saveBpAbbZuweisung(' + p.id + ',this.value,\'schicht\')'
+      : 'saveBpZuweisung(' + p.id + ',this.value,\'paket\')';
+    const idPfx      = 'bp-zuw';
+    // rowSuffix als ID-Teil nutzen damit ABB und NB nie kollidieren
+    const pakInputId = idPfx + '-pak-' + p.id + rowSuffix;
+    const schInputId = idPfx + '-sch-' + p.id + rowSuffix;
 
     const bedChips = !showControls ? '' : [
       { key:'gleisgebunden', label:'GL', color:'#b91c1c', bg:'#fee2e2', val: bp2.ausfGleisgebunden },
@@ -20131,9 +20570,13 @@ function renderBpZuweisungTable() {
             + (baugruppe?.betoniertermin ? '<div style="font-size:10px;color:#059669;font-weight:600;white-space:nowrap;">' + bpFmtDisplay(baugruppe.betoniertermin) + (baugruppe.ausschaltermin ? ' <span style="color:#9ca3af;font-weight:400;">↗ ' + bpFmtDisplay(baugruppe.ausschaltermin) + '</span>' : '') + '</div>' : '')
             + '</td>'
             + '<td style="' + tdS + 'text-align:center;"><span style="color:#9ca3af;font-size:11px;">—</span></td>'
-        : '<td style="' + tdS + '"><select onchange="' + saveSchichtFn + '" id="' + pakInputId + '" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;max-width:160px;' + (pak ? 'border-left:3px solid ' + pakCol + ';' : '') + '" data-pairid="' + p.id + '">' + pakOpts + '</select></td>'
-            + '<td style="' + tdS + '"><select onchange="' + savePaketFn + '" id="' + schInputId + '" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;max-width:140px;">' + schOpts + '</select></td>'
-            + '<td style="' + tdS + 'text-align:center;">' + (kap !== null ? '<span style="font-size:11px;color:#15803d;font-weight:600;">' + kap + '/Sch.</span>' : '<span style="color:#d1d5db;">—</span>') + '</td>'
+        : !showControls
+          ? '<td style="' + tdS + '"><span style="color:#d1d5db;font-size:11px;">—</span></td>'
+              + '<td style="' + tdS + '"><span style="color:#d1d5db;font-size:11px;">—</span></td>'
+              + '<td style="' + tdS + 'text-align:center;"><span style="color:#d1d5db;">—</span></td>'
+          : '<td style="' + tdS + '"><select onchange="' + saveSchichtFn + '" id="' + pakInputId + '" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;max-width:160px;' + (pak ? 'border-left:3px solid ' + pakCol + ';' : '') + '" data-pairid="' + p.id + '">' + pakOpts + '</select></td>'
+              + '<td style="' + tdS + '"><select onchange="' + savePaketFn + '" id="' + schInputId + '" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;max-width:140px;">' + schOpts + '</select></td>'
+              + '<td style="' + tdS + 'text-align:center;">' + (kap !== null ? '<span style="font-size:11px;color:#15803d;font-weight:600;">' + kap + '/Sch.</span>' : '<span style="color:#d1d5db;">—</span>') + '</td>'
         )
       + '<td style="' + tdS + 'white-space:nowrap;">' + (betonierterm ? '<span style="font-size:11px;color:#374151;">' + bpFmtDisplay(betonierterm) + '</span>' : '<span style="color:#d1d5db;">—</span>') + '</td>'
       + '<td style="' + tdS + 'white-space:nowrap;">' + (ausschalterm ? '<span style="font-size:11px;color:#9ca3af;">' + bpFmtDisplay(ausschalterm) + '</span>' : '<span style="color:#d1d5db;">—</span>') + '</td>'
@@ -20145,7 +20588,7 @@ function renderBpZuweisungTable() {
 
   const rows = pairs.flatMap(p => {
     const t = getPairBpTyp(p.id, allBp);
-    if (t === 'abbruch-neubau') return [makeRow(p, 'abbruch', false), makeRow(p, 'neubau', true)];
+    if (t === 'abbruch-neubau') return [makeRow(p, 'abbruch', true, allAbbZuw), makeRow(p, 'neubau', true)];
     if (t === 'abbruch')        return [makeRow(p, 'abbruch', true)];
     if (t === 'sicherung')      return [makeRow(p, 'sicherung', true)];
     if (t === 'provisorium')    return [makeRow(p, 'provisorium', true)];
@@ -20178,6 +20621,7 @@ function renderBpZuweisungTable() {
 
   const bpAll = loadAllBauprojekt();
   pairs.forEach(p => {
+    // NB-Zeile: ID ohne Suffix (rowSuffix = '')
     const pakSel = document.getElementById('bp-zuw-pak-' + p.id);
     if (pakSel) { pakSel.value = (zuw[p.id]||{}).paketId || ''; }
     const schSel = document.getElementById('bp-zuw-sch-' + p.id);
@@ -20190,6 +20634,22 @@ function renderBpZuweisungTable() {
     if (gerSel) gerSel.value = (bpAll[p.id] || {}).ausfGeraet || '';
     const stSel = document.getElementById('bp-st-' + p.id);
     if (stSel) stSel.value = (getPairData(p.id).status) || 'geplant';
+  });
+
+  // ABB-Zeilen bei abbruch-neubau: eigene IDs (-abbruch Suffix) + eigener Store
+  pairs.filter(p => getPairBpTyp(p.id, bpAll) === 'abbruch-neubau').forEach(p => {
+    const abbZ   = allAbbZuw[p.id] || {};
+    const abbPak = document.getElementById('bp-zuw-pak-' + p.id + '-abbruch');
+    if (abbPak) { abbPak.value = abbZ.paketId || ''; }
+    const abbSch = document.getElementById('bp-zuw-sch-' + p.id + '-abbruch');
+    if (abbSch) {
+      const curPak = pakete.find(pk => pk.id === abbZ.paketId);
+      if (curPak) abbSch.innerHTML = '<option value="">—</option>' +
+        bpGetSchichten(curPak).map(s => '<option value="' + s.schichtNr + '"' +
+          (abbZ.schichtNr == s.schichtNr ? ' selected' : '') +
+          '>Schicht ' + s.schichtNr + ' (' + bpFmtDisplay(s.datum) + ')</option>').join('');
+      abbSch.value = abbZ.schichtNr || '';
+    }
   });
 }
 
@@ -20298,6 +20758,28 @@ function saveBpZuweisung(pairId, value, field) {
   updateBpInfoBar();
 }
 
+
+// Paket/Schicht-Zuweisung für ABB-Zeile (abbruch-neubau) speichern
+function saveBpAbbZuweisung(pairId, value, field) {
+  const zuw = loadAbbZuw();
+  if (!zuw[pairId]) zuw[pairId] = {};
+  if (field === 'paket') {
+    zuw[pairId].paketId   = value || null;
+    zuw[pairId].schichtNr = null;
+    saveAbbZuw(zuw);
+    const pak = loadBaupakete().find(p => p.id === value);
+    const schichten = pak ? bpGetSchichten(pak) : [];
+    const schSel = document.getElementById('bp-zuw-sch-' + pairId + '-abbruch');
+    if (schSel) schSel.innerHTML = '<option value="">—</option>' +
+      schichten.map(s => '<option value="' + s.schichtNr + '">Schicht ' + s.schichtNr + ' (' + bpFmtDisplay(s.datum) + ')</option>').join('');
+    const pakSel = document.getElementById('bp-zuw-pak-' + pairId + '-abbruch');
+    if (pakSel) pakSel.style.borderLeft = pak?.farbe ? '3px solid ' + pak.farbe : '';
+  } else {
+    zuw[pairId].schichtNr = value ? parseInt(value) : null;
+    saveAbbZuw(zuw);
+  }
+  updateBpInfoBar();
+}
 
 // Pfahlfundament aus seiner Baugruppe herauslösen und in eine eigene neue Gruppe verschieben
 function bpGruppeAufteilen(pairId) {
@@ -20878,7 +21360,9 @@ function applyAutoPaketeModal() {
   const sichInfo = (sichCount > 0 && (konfig.sicherung?.generate) !== false)     ? `\n· Sicherung-Los: ${sichCount} Standorte ab Baubeginn` : '';
   const provInfo = (provCount > 0 && (konfig.provisorium?.generate) !== false)   ? `\n· Provisorien: ${provCount} Standorte ab Baubeginn`   : '';
   const ftInfo   = ftAssignCount ? `\n· ${ftAssignCount} Fundamenttyp${ftAssignCount!==1?'en':''} Baupaket als Voreinstellung zugewiesen` : '';
-  alert(`${newPakete.length} Paket${newPakete.length!==1?'e':''} erstellt.\n· Neubau-Start: T0 + ${bbVersatz} Tage (${bpFmtDate(bpAddDays(bpParseDate(baubeginnDat), bbVersatz))})\n· Meilenstein «FL-Montage erfolgt»: ${flMontageDat}${abbInfo}${sichInfo}${provInfo}${ftInfo}\n\nDu kannst Abhängigkeiten und Daten nun von Hand anpassen.`);
+  // Hinweis wenn kein Sperrmuster definiert → Paketdauern und Schichtzählung werden nicht berechnet
+  const spWarn   = !spList.length ? '\n\n⚠️ Kein Sperrmuster definiert. Bitte unter «Sperrmuster & Schichten» mindestens ein Muster anlegen, damit Paketdauern und die automatische Schichtzuweisung korrekt berechnet werden können.' : '';
+  alert(`${newPakete.length} Paket${newPakete.length!==1?'e':''} erstellt.\n· Neubau-Start: T0 + ${bbVersatz} Tage (${bpFmtDate(bpAddDays(bpParseDate(baubeginnDat), bbVersatz))})\n· Meilenstein «FL-Montage erfolgt»: ${flMontageDat}${abbInfo}${sichInfo}${provInfo}${ftInfo}\n\nDu kannst Abhängigkeiten und Daten nun von Hand anpassen.${spWarn}`);
 }
 
 // ── Paketdauern neu berechnen ─────────────────────────────────
@@ -21638,10 +22122,7 @@ function switchBpEinstTab(tab) {
 function _runGeneratePakete() {
   const einst = loadProjEinst();
   const lose  = einst.teams || [];
-  if (!lose.length) {
-    _showBpEinstHint('Bitte zuerst im Tab «Lose» mindestens ein Los definieren.');
-    switchBpEinstTab('lose'); return;
-  }
+  // Kein Los definiert → Warnung, aber nicht blockieren (Paket wird ohne Team generiert)
   const msList = loadMeilensteine();
   const bbMs   = msList.find(m => m.typ === 'baubeginn');
   const bbDat  = (bbMs ? msMsResolvedDatum(bbMs) : null) || einst.baubeginn || '';
@@ -22511,7 +22992,7 @@ function hexToRgb(hex) {
 // ============================================================
 const FT_PROFIL_KEY    = () => 'sp_ft_profile__'    + _activeId;
 const FT_VERSION_KEY   = () => 'sp_ft_version__'    + _activeId;
-const DEFAULT_FT_VERSION = 12; // Erhöhen bei Änderungen an Standardtypen
+const DEFAULT_FT_VERSION = 13; // Erhöhen bei Änderungen an Standardtypen
 
 // Standardtypen als Grundauswahl — werden beim ersten Öffnen vorabgefüllt
 // Kopf: 600×600 mm × h=1.0 m (gleich für alle DP/HP/DG-Typen)
@@ -22520,7 +23001,7 @@ const DEFAULT_FT_PROFIL = [
   // ── DP1a — Doppelstiel klein (Block 1.0×1.0 m) ──
   { id:'ft_std_dp1a_15', name:'DP1a / 1.50', typ:'standard', fundamentArt:'blockfundament',
     kopfAbmessung:'600×600 mm', kopfHoehe:'1.0', blockAbmessung:'1000×1000 mm',
-    anzahlPfaehle:'', pfahlLaenge:'', tiefe:'1.5', ftIntervall:3,
+    anzahlPfaehle:'', pfahlLaenge:'', tiefe:'1.5', ftIntervall:4,
     zeichnungsNr:'0161.1011.0171', schraubenArtikelNr:'371.10.07',
     vfkZeichnungsNr:'0161.1011.0190.1',
     beton:'NPK F, C30/37, XC4(CH), XD3(CH), XF2(CH), Dmax 32; Cl 0.1; C3, AAR-Beständig',
@@ -23010,10 +23491,7 @@ function renderFundtypProfilGrid() {
         ${tiefeStr ? `<div style="font-size:10px;color:#374151;"><span style="color:#6b7280;font-weight:600;">Tiefe</span> t = ${tiefeStr}</div>` : ''}
       </div>
       ${t.einsatzBedingung ? `<div style="font-size:10px;color:#9ca3af;font-style:italic;margin-bottom:6px;">${t.einsatzBedingung}</div>` : ''}
-      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;">
-        ${t.beton && t.beton !== 'gem. Dok.' ? `<span style="font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:4px;">${t.beton}</span>` : ''}
-        ${t.schraubenAnzahl && t.schraubenDurchmesser ? `<span style="font-size:10px;background:#f3f4f6;color:#374151;padding:1px 5px;border-radius:4px;">${t.schraubenAnzahl}×${t.schraubenDurchmesser}</span>` : ''}
-      </div>
+      ${t.schraubenAnzahl && t.schraubenDurchmesser ? `<div style="margin-bottom:6px;"><span style="font-size:10px;background:#f3f4f6;color:#374151;padding:1px 5px;border-radius:4px;">${t.schraubenAnzahl}×${t.schraubenDurchmesser}</span></div>` : ''}
       <div style="margin-top:auto;display:flex;flex-direction:column;gap:4px;">
         <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:4px;color:#6b7280;">${count} Standort${count !== 1 ? 'e' : ''}</span>
         <select onclick="event.stopPropagation()" onchange="setFtBaupaket('${t.id}', this.value)"
@@ -28258,25 +28736,49 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
 
     <hr style="border:none;border-top:1px solid #f0f2f5;margin:14px 0;">
 
-    <!-- Tabelle exportieren -->
+    <!-- Fundamentliste (SBB-Format) -->
     <div style="margin-bottom:14px;">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin-bottom:8px;">Tabelle exportieren</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <button onclick="closeProjektModal();exportExcel()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Excel (.xlsx)</button>
-        <button onclick="closeProjektModal();exportPdf()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF (.pdf)</button>
-        <button onclick="closeProjektModal();exportOneNote()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg> OneNote (.html)</button>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin-bottom:8px;">Fundamentliste (SBB-Format)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+        <!-- Import in aktives Projekt -->
+        <input type="file" id="proj-modal-fl-file" accept=".xlsx,.xlsm,.xls" style="display:none"
+          onchange="closeProjektModal();importFundamentliste(this)">
+        <button onclick="document.getElementById('proj-modal-fl-file').click()"
+          style="padding:7px 12px;border-radius:7px;border:1px solid #bfdbfe;background:#eff6ff;cursor:pointer;font-size:12px;font-weight:600;color:#1d4ed8;display:flex;align-items:center;gap:6px;"
+          onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'"
+          title="Fundamentliste in das aktive Projekt importieren">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Importieren
+        </button>
+        <!-- Export -->
+        <button onclick="closeProjektModal();exportFundamentliste()"
+          style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;"
+          onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"
+          title="Daten als Fundamentliste im SBB-Format exportieren">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Exportieren
+        </button>
+        <!-- Import als neues Projekt -->
+        <input type="file" id="proj-modal-fl-new-file" accept=".xlsx,.xlsm,.xls" style="display:none"
+          onchange="importFundamentlisteNeuesProjekt(this)">
+        <button onclick="document.getElementById('proj-modal-fl-new-file').click()"
+          style="padding:7px 12px;border-radius:7px;border:1px solid #d1d5db;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#6b7280;display:flex;align-items:center;gap:6px;"
+          onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"
+          title="Neues Projekt erstellen und Fundamentliste importieren">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Neues Projekt
+        </button>
       </div>
     </div>
 
     <hr style="border:none;border-top:1px solid #f0f2f5;margin:14px 0;">
 
-    <!-- Daten sichern / laden -->
+    <!-- Daten sichern / laden (JSON) -->
     <div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin-bottom:8px;">Daten sichern / laden</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         <button onclick="closeProjektModal();openExportModal()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Daten sichern</button>
         <button onclick="closeProjektModal();document.getElementById('import-daten-file').click()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Daten laden</button>
-        <button onclick="closeProjektModal();document.getElementById('import-file').click()" style="padding:7px 12px;border-radius:7px;border:1px solid #e5e7eb;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Excel importieren</button>
       </div>
     </div>
 
@@ -31289,6 +31791,19 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
         </div>
       </div>
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Stand / Datum</label>
+          <input id="pkd-stand" type="date"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#6b7280;display:block;margin-bottom:4px;">Bearbeiter</label>
+          <input id="pkd-bearbeiter" type="text" placeholder="z.B. KB/WB"
+            style="width:100%;padding:7px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;">
+        </div>
+      </div>
+
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button onclick="saveProjektKenndaten()"
           style="flex:1;padding:8px 0;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Speichern</button>
@@ -31370,6 +31885,22 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
         <label>Kontierung / Kostenstelle</label>
         <input id="mex-kontierung" class="modal-input" type="text" placeholder="z.B. 1234.56">
       </div>
+    </div>
+
+    <!-- Positionsauswahl -->
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <label style="font-size:11px;color:#6b7280;font-weight:600;">
+          Positionen einschliessen
+          <span id="mex-pos-count" style="font-weight:400;color:#9ca3af;margin-left:4px;"></span>
+        </label>
+        <div style="font-size:10px;">
+          <a href="#" onclick="return mexSelAll(true)"  style="color:#1a3a5c;font-weight:600;text-decoration:none;">Alle</a>
+          <span style="color:#d1d5db;margin:0 4px;">|</span>
+          <a href="#" onclick="return mexSelAll(false)" style="color:#6b7280;text-decoration:none;">Keine</a>
+        </div>
+      </div>
+      <div id="mex-pos-list" style="max-height:180px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;background:#fafafa;"></div>
     </div>
 
     <!-- Globale Übernahme -->
