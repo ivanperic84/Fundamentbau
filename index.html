@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sondagen App</title>
+<title>Fundamentbau</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Sondagen%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%7D">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Fundamentbau%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%22%7D">
 <meta name="theme-color" content="#1a3a5c">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -200,6 +200,15 @@
   .sb-chevron { font-size: 15px; opacity: 0.45; transition: transform 0.2s; flex-shrink: 0; margin-left: 4px; }
   .sb-body { overflow: hidden; }
   .sb-body.collapsed { display: none; }
+  .sb-drag-handle { display:inline-flex;align-items:center;justify-content:center;width:16px;flex-shrink:0;cursor:grab;color:#d1d5db;font-size:13px;user-select:none;transition:color 0.15s; }
+  .sb-drag-handle:hover { color:#9ca3af; }
+  .sidebar-section.sb-dragging { opacity:0.4; }
+  .sidebar-section.sb-drag-over-top    { border-top:2px solid #3b82f6 !important; }
+  .sidebar-section.sb-drag-over-bottom { border-bottom:2px solid #3b82f6 !important; }
+  .sb-cfg-row { display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb; }
+  .sb-cfg-row.sb-drag-over-top    { border-top:2px solid #3b82f6; }
+  .sb-cfg-row.sb-drag-over-bottom { border-bottom:2px solid #3b82f6; }
+  .sb-cfg-row.sb-cfg-dragging { opacity:0.4; }
 
   /* Sub-Label innerhalb Sidebar-Sektionen */
   .sb-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 5px; }
@@ -481,7 +490,9 @@
   /* Nav */
   .pair-nav {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 14px; border-bottom: 1px solid #f0f2f5;
+    padding: 8px 14px 8px 8px; border-bottom: 1px solid #dde3ea;
+    position: sticky; top: 0; z-index: 50;
+    background: #f0f2f5; margin: -6px -8px 0;
   }
   .pair-nav-btn {
     padding: 4px 10px; border-radius: 5px; border: 1px solid #e5e7eb;
@@ -931,7 +942,7 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
     </div>
-    <div class="header-sub" id="header-sub">31 Standorte · RS &amp; RKS · Programm T1–T12</div>
+    <div class="header-sub" id="header-sub"></div>
   </div>
   <!-- Phasen-Controls — mittlere Spalte, nimmt restlichen Platz, kein Springen -->
   <div id="phasen-banner" style="display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;">
@@ -1333,11 +1344,22 @@
         <div style="font-size:13px;font-weight:700;color:#374151;">Typengeprüfte Standardfundamente</div>
         <span style="font-size:10px;font-weight:600;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;border:1px solid #e5e7eb;">✓ Kein Nachweis erforderlich</span>
         <span style="font-size:11px;color:#9ca3af;">SBB Dok. 0161.1011.0002</span>
+        <button onclick="selectAllStdFt()" title="Alle Standardfundamente auswählen"
+          style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">
+          Alle auswählen
+        </button>
         <button onclick="openFtDatenbank()" title="Parameterdatenbank aller Standardfundamente"
           style="margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
           Parameterdatenbank
         </button>
+      </div>
+      <!-- Bulk-Bar: Leistungsprofil-Sammelzuweisung -->
+      <div id="ft-std-bulk-bar" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <span id="ft-std-bulk-count" style="font-size:12px;font-weight:600;color:#1d4ed8;white-space:nowrap;"></span>
+        <select id="ft-std-bulk-lp" style="font-size:11px;padding:4px 8px;border:1px solid #bfdbfe;border-radius:6px;background:white;cursor:pointer;"></select>
+        <button onclick="applyFtLeistungsprofilBulk()" style="padding:4px 12px;border-radius:6px;border:1px solid #2563eb;background:#2563eb;color:white;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">Leistungsprofil zuweisen</button>
+        <button onclick="clearFtSelection()" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;font-size:11px;color:#6b7280;cursor:pointer;margin-left:auto;white-space:nowrap;">✕ Auswahl aufheben</button>
       </div>
       <div id="fundtyp-std-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
     </div>
@@ -1577,9 +1599,9 @@
       <div style="display:flex;gap:5px;align-items:center;">
         <span style="font-size:10px;color:#9ca3af;font-weight:600;margin-right:2px;">SORTIERUNG</span>
         <button id="bp-fsort-km" onclick="setBpFundSort('km')"
-          style="padding:2px 8px;border-radius:4px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:10px;font-weight:600;cursor:pointer;">KM</button>
+          style="padding:2px 8px;border-radius:4px;border:1px solid #e5e7eb;background:white;color:#6b7280;font-size:10px;font-weight:600;cursor:pointer;">KM</button>
         <button id="bp-fsort-datum" onclick="setBpFundSort('datum')"
-          style="padding:2px 8px;border-radius:4px;border:1px solid #e5e7eb;background:white;color:#6b7280;font-size:10px;font-weight:600;cursor:pointer;">Datum</button>
+          style="padding:2px 8px;border-radius:4px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:10px;font-weight:600;cursor:pointer;">Datum</button>
         <button id="bp-fsort-baugruppe" onclick="setBpFundSort('baugruppe')"
           style="padding:2px 8px;border-radius:4px;border:1px solid #e5e7eb;background:white;color:#6b7280;font-size:10px;font-weight:600;cursor:pointer;">Baugruppe</button>
       </div>
@@ -1605,37 +1627,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- Mehrfachauswahl-Aktionsleiste -->
-    <div id="bp-zuw-bulk-bar" style="display:none;align-items:center;gap:8px;padding:8px 10px;margin-bottom:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;flex-wrap:wrap;">
-      <span id="bp-zuw-bulk-count" style="font-size:12px;font-weight:700;color:#1d4ed8;white-space:nowrap;"></span>
-      <div style="width:1px;height:18px;background:#bfdbfe;"></div>
-      <label style="font-size:11px;color:#374151;font-weight:600;">Baupaket:</label>
-      <select id="bp-zuw-bulk-pak" style="padding:3px 7px;border:1px solid #d1d5db;border-radius:5px;font-size:11px;font-family:inherit;" onchange="bpZuwBulkPakChange()">
-        <option value="">— unverändert —</option>
-      </select>
-      <label style="font-size:11px;color:#374151;font-weight:600;">Schicht:</label>
-      <select id="bp-zuw-bulk-sch" style="padding:3px 7px;border:1px solid #d1d5db;border-radius:5px;font-size:11px;font-family:inherit;">
-        <option value="">— unverändert —</option>
-      </select>
-      <label style="font-size:11px;color:#374151;font-weight:600;">Gerät:</label>
-      <select id="bp-zuw-bulk-ger" style="padding:3px 7px;border:1px solid #d1d5db;border-radius:5px;font-size:11px;font-family:inherit;">
-        <option value="">— unverändert —</option>
-        <option value="bagger">Bagger</option>
-        <option value="bohrmaschine">Bohrmaschine</option>
-        <option value="kran">Kran</option>
-        <option value="sonstige">Sonstige</option>
-      </select>
-      <label style="font-size:11px;color:#374151;font-weight:600;">Status:</label>
-      <select id="bp-zuw-bulk-st" style="padding:3px 7px;border:1px solid #d1d5db;border-radius:5px;font-size:11px;font-family:inherit;">
-        <option value="">— unverändert —</option>
-        <option value="geplant">Geplant</option>
-        <option value="bestaetigt">Bestätigt</option>
-        <option value="abgeschlossen">Abgeschlossen</option>
-        <option value="abgesagt">Abgesagt</option>
-      </select>
-      <button onclick="bpZuwApplyBulk()" style="padding:4px 12px;border-radius:6px;border:none;background:#1d4ed8;color:white;font-size:11px;font-weight:700;cursor:pointer;">Übernehmen</button>
-      <button onclick="bpZuwClearSelection()" style="padding:4px 10px;border-radius:6px;border:1px solid #bfdbfe;background:white;font-size:11px;color:#6b7280;cursor:pointer;">Auswahl aufheben</button>
     </div>
     <div style="overflow-x:auto;">
       <table id="bp-zuweisung-table" class="list-table" style="min-width:800px;width:100%;"></table>
@@ -1852,6 +1843,10 @@
             <svg id="sb-collapse-all-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="6 9 12 15 18 9"/>
             </svg>
+          </button>
+          <button onclick="resetSbOrder()" title="Gruppen-Reihenfolge zurücksetzen"
+            style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid #dde3ea;background:white;cursor:pointer;color:#6b7280;padding:0;flex-shrink:0;font-size:15px;line-height:1;">
+            ↺
           </button>
         </div>
       </div>
@@ -3187,8 +3182,10 @@ function setPhase(phase) {
     initOverviewMap();
     setTimeout(resizeOverviewMap, 50);
   }
-  // Detailansicht: NICHT automatisch neu laden — User bleibt wo er ist
-  // (Phasenwechsel nur in Übersicht erlaubt, s. updatePhaseSelectState)
+  // In Detailansicht: Sidebar mit neuer Phase neu laden
+  if (document.getElementById('detail-view')?.style.display !== 'none' && currentPairId) {
+    showDetail(currentPairId);
+  }
 }
 
 // Phase-Dropdown ist in allen Ansichten aktiv
@@ -4235,6 +4232,94 @@ function _updateCollapseAllBtn() {
 
 const SECTION_DEFAULT_OPEN = new Set(['sec-zugang']);
 
+// ── Sidebar Section Drag & Drop ──────────────────────────
+const SB_ORDER_KEY = 'fb_sb_section_order';
+let _sbDragId = null;
+
+function _loadSbOrder()  { try { return JSON.parse(localStorage.getItem(SB_ORDER_KEY)) || null; } catch { return null; } }
+function _saveSbOrder()  {
+  const sidebar = document.querySelector('.detail-sidebar');
+  if (!sidebar) return;
+  const order = [...sidebar.querySelectorAll(':scope > .sidebar-section')].map(s => s.id).filter(Boolean);
+  localStorage.setItem(SB_ORDER_KEY, JSON.stringify(order));
+}
+function _applySbOrder() {
+  const order = _loadSbOrder();
+  if (!order?.length) return;
+  const sidebar = document.querySelector('.detail-sidebar');
+  if (!sidebar) return;
+  order.forEach(id => {
+    const el = document.getElementById(id);
+    if (el?.parentNode === sidebar) sidebar.appendChild(el);
+  });
+}
+function resetSbOrder() {
+  if (!confirm('Reihenfolge der Sidebar-Gruppen zurücksetzen?')) return;
+  localStorage.removeItem(SB_ORDER_KEY);
+  location.reload();
+}
+
+function _initSidebarDragHandles() {
+  _applySbOrder();
+  const sidebar = document.querySelector('.detail-sidebar');
+  if (!sidebar) return;
+
+  sidebar.querySelectorAll(':scope > .sidebar-section').forEach(sec => {
+    if (sec.dataset.sbDrag) return;
+    sec.dataset.sbDrag = '1';
+    const h3 = sec.querySelector('h3');
+    if (!h3) return;
+
+    // Fix h3 layout to accommodate the new handle on the left
+    h3.style.justifyContent = 'flex-start';
+    h3.style.gap = '4px';
+    const labelSpan = h3.querySelector('span:first-child');
+    if (labelSpan) labelSpan.style.flex = '1';
+
+    const handle = document.createElement('span');
+    handle.className = 'sb-drag-handle';
+    handle.textContent = '⠿';
+    handle.title = 'Ziehen zum Neuanordnen';
+    h3.insertBefore(handle, h3.firstChild);
+
+    handle.addEventListener('pointerdown', () => sec.setAttribute('draggable', 'true'));
+
+    sec.addEventListener('dragstart', e => {
+      _sbDragId = sec.id;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => sec.classList.add('sb-dragging'), 0);
+    });
+    sec.addEventListener('dragend', () => {
+      sec.removeAttribute('draggable');
+      sec.classList.remove('sb-dragging');
+      sidebar.querySelectorAll('.sb-drag-over-top, .sb-drag-over-bottom')
+        .forEach(el => el.classList.remove('sb-drag-over-top', 'sb-drag-over-bottom'));
+      _sbDragId = null;
+    });
+    sec.addEventListener('dragover', e => {
+      if (!_sbDragId || _sbDragId === sec.id) return;
+      e.preventDefault();
+      const mid = sec.getBoundingClientRect().top + sec.getBoundingClientRect().height / 2;
+      sec.classList.toggle('sb-drag-over-top',    e.clientY < mid);
+      sec.classList.toggle('sb-drag-over-bottom', e.clientY >= mid);
+    });
+    sec.addEventListener('dragleave', e => {
+      if (!sec.contains(e.relatedTarget))
+        sec.classList.remove('sb-drag-over-top', 'sb-drag-over-bottom');
+    });
+    sec.addEventListener('drop', e => {
+      e.preventDefault();
+      sec.classList.remove('sb-drag-over-top', 'sb-drag-over-bottom');
+      if (!_sbDragId || _sbDragId === sec.id) return;
+      const srcEl = document.getElementById(_sbDragId);
+      if (!srcEl) return;
+      const mid = sec.getBoundingClientRect().top + sec.getBoundingClientRect().height / 2;
+      sidebar.insertBefore(srcEl, e.clientY < mid ? sec : sec.nextSibling);
+      _saveSbOrder();
+    });
+  });
+}
+
 function restoreSectionStates() {
   ['sec-meta','sec-begehung','sec-zugang','sec-fotos','sec-skizzen','sec-feld','sec-sicher','sec-changelog'].forEach(id => {
     const saved = sessionStorage.getItem('sb-' + id);
@@ -4253,6 +4338,7 @@ function restoreSectionStates() {
       section.classList.add('section-open');
     }
   });
+  _initSidebarDragHandles();
 }
 
 function appRefresh() {
@@ -8601,6 +8687,22 @@ function bulkToggleCustomTag() {
   renderCards();
 }
 
+function deletePair(id) {
+  const p = PAIRS.find(x => x.id === id);
+  const name = p ? (p.mast ? `Mast ${p.mast}` : p.bezeichnung || 'Standort') : 'Standort';
+  if (!confirm(`«${name}» wirklich löschen?`)) return;
+  pushUndo();
+  const idx = PAIRS.findIndex(x => x.id === id);
+  if (idx >= 0) PAIRS.splice(idx, 1);
+  delete appData[id];
+  saveData(appData);
+  savePairs();
+  selectedIds.delete(id);
+  updateProgress();
+  renderList();
+  renderCards();
+}
+
 function bulkDelete() {
   if (!selectedIds.size) return;
   if (!confirm(`${selectedIds.size} Standort(e) wirklich löschen?`)) return;
@@ -8745,6 +8847,11 @@ function renderList() {
         ${!isBPlist && hasFelddaten(p.id) ? '<span title="Felddaten" style="color:#9ca3af;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span>' : ''}
         ${pd.sketch ? '<span title="Skizze" style="color:#9ca3af;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>' : ''}
         ${pd.comment ? '<span title="Kommentar" style="color:#9ca3af;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' : ''}
+        <button onclick="event.stopPropagation();deletePair(${p.id})" title="Löschen"
+          style="background:none;border:none;cursor:pointer;color:#d1d5db;padding:2px;display:flex;align-items:center;line-height:1;"
+          onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
       </div></td>`;
     tbody.appendChild(tr);
   });
@@ -8790,7 +8897,15 @@ function saveListField(pairId, key, value) {
   const all     = loadAllBauprojekt();
   const targets = _listTargets(pairId);
   targets.forEach(id => {
-    all[id] = { ...(all[id] || {}), [key]: value };
+    const existing = all[id] || {};
+    const update = { ...existing, [key]: value };
+    // Neigung manuell gesetzt → importVerify.neigung quittieren
+    if (key === 'neigung' && value) {
+      const iv = { ...(update.importVerify || {}) };
+      delete iv.neigung;
+      update.importVerify = Object.keys(iv).length ? iv : undefined;
+    }
+    all[id] = update;
   });
   saveAllBauprojekt(all);
   if (targets.length > 1) _showListEditNotice(`${targets.length} Positionen aktualisiert`);
@@ -9083,7 +9198,7 @@ function exportPdf() {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   doc.setFontSize(13);
   doc.setTextColor(26, 58, 92);
-  doc.text('Sondagen – ' + (getActiveProjectName() || 'Export'), 14, 14);
+  doc.text('Fundamentbau – ' + (getActiveProjectName() || 'Export'), 14, 14);
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
   doc.text(`Erstellt: ${new Date().toLocaleDateString('de-CH')}`, 14, 20);
@@ -9096,7 +9211,7 @@ function exportPdf() {
     alternateRowStyles: { fillColor: [245, 248, 252] },
     margin: { left: 14, right: 14 },
   });
-  doc.save('Sondagen_' + (getActiveProjectName() || 'Export').replace(/[^a-zA-Z0-9_]/g,'_') + '.pdf');
+  doc.save('Fundamentbau_' + (getActiveProjectName() || 'Export').replace(/[^a-zA-Z0-9_]/g,'_') + '.pdf');
 }
 
 function exportOneNote() {
@@ -9105,16 +9220,16 @@ function exportOneNote() {
   const trHead = `<tr>${headers.map(h=>`<th style="background:#1a3a5c;color:white;padding:6px 10px;font-size:12px;">${h}</th>`).join('')}</tr>`;
   const trRows = rows.map((r,i)=>`<tr style="background:${i%2===0?'#f5f8fc':'white'}">${r.map(c=>`<td style="padding:5px 10px;font-size:11px;border-bottom:1px solid #e5e7eb;">${c}</td>`).join('')}</tr>`).join('');
   const _pname = getActiveProjectName() || 'Export';
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sondagen ${_pname}</title></head><body style="font-family:Arial,sans-serif;padding:24px;">
-<h2 style="color:#1a3a5c;">Sondagen – ${_pname}</h2>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Fundamentbau ${_pname}</title></head><body style="font-family:Arial,sans-serif;padding:24px;">
+<h2 style="color:#1a3a5c;">Fundamentbau – ${_pname}</h2>
 <p style="color:#6b7280;font-size:12px;">Erstellt: ${new Date().toLocaleDateString('de-CH')}</p>
 <table style="border-collapse:collapse;width:100%;">${trHead}${trRows}</table>
-<p style="font-size:10px;color:#9ca3af;margin-top:16px;">Erstellt mit Sondagen-App · Gentiana Leci · 2026</p>
+<p style="font-size:10px;color:#9ca3af;margin-top:16px;">Erstellt mit Fundamentbau-App · 2026</p>
 </body></html>`;
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'Sondagen_' + _pname.replace(/[^a-zA-Z0-9_]/g,'_') + '.html';
+  a.download = 'Fundamentbau_' + _pname.replace(/[^a-zA-Z0-9_]/g,'_') + '.html';
   a.click();
 }
 
@@ -9166,8 +9281,8 @@ function exportExcel() {
     {wch:14},{wch:20},{wch:20},{wch:20},{wch:14},{wch:20},{wch:16},{wch:20},{wch:30},{wch:40}
   ];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Sondagen');
-  XLSX.writeFile(wb, 'Sondagen_' + (getActiveProjectName() || 'Export').replace(/[^a-zA-Z0-9_]/g,'_') + '.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, 'Fundamentbau');
+  XLSX.writeFile(wb, 'Fundamentbau_' + (getActiveProjectName() || 'Export').replace(/[^a-zA-Z0-9_]/g,'_') + '.xlsx');
 }
 
 // ── Export als Fundamentliste (SBB-Format) ──────────────────────────────────
@@ -9497,6 +9612,25 @@ function importExcel(input) {
 
 // ── Hilfs-Konverter für Fundamentliste-Import ───────────────────────────────
 function _normFtName(s)     { return typeof s === 'string' ? s.replace(/\s*\/\s*/g, ' / ').trim() : ''; }
+
+// Robustes FT-Matching: exakt → Tiefe als Float (2.0 == 2.00) → Family-Prefix + nächste Tiefe
+function _findFtInCache(cache, ftName) {
+  if (!ftName) return null;
+  // 1. Exakter Match
+  let m = cache.find(f => f.name === ftName);
+  if (m) return m;
+  // 2. Tiefe normalisieren: "DP2a / 2.0" vs "DP2a / 2.00"
+  const parseParts = n => { const p = n.split('/'); if (p.length < 2) return null; const d = parseFloat(p[1]); return isNaN(d) ? null : { family: p[0].trim().toLowerCase(), depth: d }; };
+  const imp = parseParts(ftName);
+  if (imp) {
+    m = cache.find(f => { const p = parseParts(f.name); return p && p.family === imp.family && Math.abs(p.depth - imp.depth) < 0.001; });
+    if (m) return m;
+    // 3. Gleiche Family, nächste verfügbare Tiefe
+    const same = cache.filter(f => { const p = parseParts(f.name); return p && p.family === imp.family; });
+    if (same.length) return same.reduce((a, b) => { const pa = parseParts(a.name), pb = parseParts(b.name); return Math.abs(pa.depth - imp.depth) <= Math.abs(pb.depth - imp.depth) ? a : b; });
+  }
+  return null;
+}
 function _toNeigLabel(deg)  { const d = parseFloat(deg); return isNaN(d) ? '' : d <= 14 ? '≤14°' : d <= 33 ? '14–33°' : '>33°'; }
 function _gwNumToEnum(v)    { if (v === null || v === '') return ''; const n = parseFloat(v); return isNaN(n) ? 'unbekannt' : (n > 0 ? 'angetroffen' : 'nicht_angetroffen'); }
 function _uscsToBodentyp(s) { return /^[GS]/i.test(String(s||'').trim()) ? 'grob' : 'fein'; }
@@ -9556,7 +9690,7 @@ function _importFundamentlisteFromBuffer(buffer) {
       dataRows.forEach((r, i) => {
         const id     = i + 1;
         const ftName = normFt(r[20]);
-        const ftMatch = ftCache.find(f => f.name === ftName);
+        const ftMatch = _findFtInCache(ftCache, ftName);
 
         // ── Geländeneigung ────────────────────────────────────────
         const neigRaw   = r[12];
@@ -9590,8 +9724,8 @@ function _importFundamentlisteFromBuffer(buffer) {
           hkgl:        r[6]  ?? null,
           ausrichtung: r[7]  ?? null,
           lichteWeite: r[8]  ?? null,
-          rs:          { e: parseInt(r[9])  || 0, n: parseInt(r[10]) || 0 },
-          rks:         { e: parseInt(r[9])  || 0, n: parseInt(r[10]) || 0 },
+          rs:          { e: 0, n: 0 },
+          rks:         { e: 0, n: 0 },
           z:           r[11] ?? null,
           _phase:      'bauprojekt',
           bezeichnung: '',
@@ -9718,7 +9852,6 @@ function _importFundamentlisteFromBuffer(buffer) {
         localStorage.setItem(TITEL_KEY, projName);
         const span = document.getElementById('app-title-text');
         if (span) span.textContent = projName;
-        document.title = projName;
         const proj = _projects?.find(x => x.id === _activeId);
         if (proj) { proj.name = projName; saveProjectsMeta(_projects); }
       }
@@ -9834,7 +9967,7 @@ function exportTermineIcs() {
   });
 
   if (!events.length) { alert('Keine Termine erfasst.'); return; }
-  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Sondagen App//DE',
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Fundamentbau//DE',
                'CALSCALE:GREGORIAN','METHOD:PUBLISH', ...events, 'END:VCALENDAR'].join('\r\n');
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const a    = document.createElement('a');
@@ -10002,18 +10135,37 @@ function openListTagPicker(pairId, btn) {
     closeListTagPicker(); return;
   }
   listTagPickerPairId = pairId;
+  const targets  = _listTargets(pairId);
+  const isMulti  = targets.length > 1;
+  const header   = document.getElementById('list-tag-picker-header');
+  if (header) header.textContent = isMulti ? `${targets.length} Positionen` : 'Tags';
   const items = document.getElementById('list-tag-picker-items');
   items.innerHTML = '';
   if (!customTags.length) {
     items.innerHTML = '<span style="font-size:11px;color:#9ca3af;">Noch keine Tags.</span>';
   } else {
-    const active = getPairData(pairId).tags || [];
     customTags.forEach(t => {
+      const activeCount = targets.filter(id => (getPairData(id).tags || []).includes(t.id)).length;
+      const allActive   = activeCount === targets.length;
+      const someActive  = activeCount > 0 && !allActive;
       const lbl = document.createElement('label');
       lbl.className = 'card-tag-picker-item';
-      lbl.innerHTML = `<input type="checkbox" ${active.includes(t.id)?'checked':''} style="accent-color:${t.color}"> <span style="color:${t.color};font-weight:600;">${t.name}</span>`;
-      lbl.querySelector('input').onchange = e => {
-        togglePairTag(pairId, t.id);
+      lbl.innerHTML = `<input type="checkbox" ${allActive ? 'checked' : ''} style="accent-color:${t.color}"> <span style="color:${t.color};font-weight:600;">${t.name}</span>`;
+      const cb = lbl.querySelector('input');
+      if (someActive) cb.indeterminate = true;
+      cb.onchange = e => {
+        const add = e.target.checked;
+        targets.forEach(id => {
+          const pd   = getPairData(id);
+          const tags = pd.tags ? [...pd.tags] : [];
+          const idx  = tags.indexOf(t.id);
+          if (add && idx < 0)  tags.push(t.id);
+          if (!add && idx >= 0) tags.splice(idx, 1);
+          setPairData(id, { tags });
+        });
+        if (isMulti) _showListEditNotice(`${targets.length} Positionen aktualisiert`);
+        renderTagAssignment();
+        renderList();
       };
       items.appendChild(lbl);
     });
@@ -10232,6 +10384,7 @@ function createNewProject() {
     applyTemplateTo(id, tpl);
   }
   localStorage.setItem(ACTIVE_PROJECT_KEY, id);
+  sessionStorage.setItem('reopen_projekt_modal', '1');
   location.reload();
 }
 
@@ -10507,10 +10660,67 @@ function initAppTabAllgemein() {
 }
 
 function initAppTabSidebar() {
-  const cfg = loadSidebarCfg();
-  SIDEBAR_SECTIONS.forEach(s => {
-    const cb = document.getElementById('sbcfg-' + s.id);
-    if (cb) cb.checked = cfg[s.id] !== false;
+  const cfg  = loadSidebarCfg();
+  const list = document.getElementById('sidebar-cfg-list');
+  if (!list) return;
+
+  // Build ordered list: saved order first, append any missing entries
+  const savedOrder = _loadSbOrder() || SIDEBAR_SECTIONS.map(s => s.id);
+  const ordered = [
+    ...savedOrder.map(id => SIDEBAR_SECTIONS.find(s => s.id === id)).filter(Boolean),
+    ...SIDEBAR_SECTIONS.filter(s => !savedOrder.includes(s.id)),
+  ];
+
+  list.innerHTML = '';
+  let cfgDragId = null;
+
+  ordered.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'sb-cfg-row';
+    row.dataset.id = s.id;
+    row.setAttribute('draggable', 'true');
+    row.innerHTML =
+      `<span style="cursor:grab;color:#d1d5db;font-size:13px;user-select:none;flex-shrink:0;">⠿</span>` +
+      `<input type="checkbox" id="sbcfg-${s.id}" ${cfg[s.id] !== false ? 'checked' : ''} style="accent-color:#1a3a5c;width:15px;height:15px;flex-shrink:0;cursor:pointer;">` +
+      `<label for="sbcfg-${s.id}" style="flex:1;cursor:pointer;">${s.label}</label>`;
+
+    row.addEventListener('dragstart', e => {
+      cfgDragId = s.id;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => row.classList.add('sb-cfg-dragging'), 0);
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('sb-cfg-dragging');
+      list.querySelectorAll('.sb-drag-over-top,.sb-drag-over-bottom')
+        .forEach(el => el.classList.remove('sb-drag-over-top','sb-drag-over-bottom'));
+      cfgDragId = null;
+    });
+    row.addEventListener('dragover', e => {
+      if (!cfgDragId || cfgDragId === s.id) return;
+      e.preventDefault();
+      const mid = row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+      row.classList.toggle('sb-drag-over-top',    e.clientY < mid);
+      row.classList.toggle('sb-drag-over-bottom', e.clientY >= mid);
+    });
+    row.addEventListener('dragleave', e => {
+      if (!row.contains(e.relatedTarget))
+        row.classList.remove('sb-drag-over-top','sb-drag-over-bottom');
+    });
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('sb-drag-over-top','sb-drag-over-bottom');
+      if (!cfgDragId || cfgDragId === s.id) return;
+      const srcRow = list.querySelector(`[data-id="${cfgDragId}"]`);
+      if (!srcRow) return;
+      const mid = row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+      list.insertBefore(srcRow, e.clientY < mid ? row : row.nextSibling);
+      // Persist order immediately
+      const newOrder = [...list.querySelectorAll('[data-id]')].map(el => el.dataset.id);
+      localStorage.setItem(SB_ORDER_KEY, JSON.stringify(newOrder));
+      _applySbOrder();
+    });
+
+    list.appendChild(row);
   });
 }
 
@@ -10646,12 +10856,18 @@ function saveSidebarCfg() {
   const cfg = {};
   SIDEBAR_SECTIONS.forEach(s => {
     const cb = document.getElementById('sbcfg-' + s.id);
-    if (cb) cfg[s.id] = cb.checked ? undefined : false; // undefined = sichtbar (default)
+    if (cb) cfg[s.id] = cb.checked ? undefined : false;
   });
-  // Undefined-Werte entfernen
   Object.keys(cfg).forEach(k => { if (cfg[k] === undefined) delete cfg[k]; });
   saveSidebarCfgData(cfg);
+  // Save order from settings list
+  const list = document.getElementById('sidebar-cfg-list');
+  if (list) {
+    const order = [...list.querySelectorAll('[data-id]')].map(el => el.dataset.id);
+    if (order.length) localStorage.setItem(SB_ORDER_KEY, JSON.stringify(order));
+  }
   applySidebarCfg();
+  _applySbOrder();
   alert('✓ Sidebar-Einstellungen gespeichert.');
 }
 
@@ -10802,25 +11018,32 @@ function renderParamdbGeo() {
   const inpS   = 'padding:2px 4px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;';
   const rowBg  = i => i % 2 === 0 ? '#ffffff' : '#f8fafc';
 
+  const NEIG_OPTS = ['Hangneigung ≤ 14°', 'Hangneigung 14–33°'];
+
   body.innerHTML = types.map((t, i) => {
-    const ov       = geoOv[t.id] || {};
-    const effName  = (stored.find(s => s.id === t.id)?.name) || ov.name || t.name;
-    const kopfH    = parseFloat(ov.kopfHoehe    ?? t.kopfHoehe)  || 1.0;
-    const tiefe    = parseFloat(ov.tiefe        ?? t.tiefe)       || 0;
-    const blockAbm = ov.blockAbmessung != null ? ov.blockAbmessung : t.blockAbmessung;
-    const blockB   = _ftParseBlockM(blockAbm);
-    const blockH   = tiefe - kopfH;
+    const ov        = geoOv[t.id] || {};
+    const effName   = (stored.find(s => s.id === t.id)?.name) || ov.name || t.name;
+    const kopfH     = parseFloat(ov.kopfHoehe    ?? t.kopfHoehe)  || 1.0;
+    const tiefe     = parseFloat(ov.tiefe        ?? t.tiefe)       || 0;
+    const blockAbm  = ov.blockAbmessung != null ? ov.blockAbmessung : t.blockAbmessung;
+    const effNeig   = ov.einsatzBedingung ?? t.einsatzBedingung ?? '';
+    const blockB    = _ftParseBlockM(blockAbm);
+    const blockH    = tiefe - kopfH;
     let volStr = '—';
     if (blockB && blockH > 0) {
       const volKopf  = (0.36 * kopfH).toFixed(2);
       const volBlock = (blockB * blockB * blockH).toFixed(2);
       volStr = `${(+volKopf + +volBlock).toFixed(2)} m³`;
     }
+    const isBoesch  = effNeig.includes('14–33');
+    const neigChip  = `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;background:${isBoesch?'#fef9c3':'#eff6ff'};color:${isBoesch?'#854d0e':'#1d4ed8'};">${isBoesch?'14–33°':'≤ 14°'}</span>`;
 
     if (_paramdbEditMode) {
-      const blockVal = (blockAbm && blockAbm !== '—') ? blockAbm : '';
+      const blockVal  = (blockAbm && blockAbm !== '—') ? blockAbm : '';
+      const neigOpts  = NEIG_OPTS.map(o => `<option value="${o}"${effNeig===o?' selected':''}>${o.replace('Hangneigung ','')}</option>`).join('');
       return `<tr style="background:${rowBg(i)};">
         <td style="${tdS}"><input type="text" value="${effName.replace(/"/g,'&quot;')}" onchange="saveParamdbGeoField('${t.id}','name',this.value)" onblur="renderParamdbGeo()" style="width:130px;${inpS}font-weight:700;color:#1a3a5c;"></td>
+        <td style="${tdS}"><select onchange="saveParamdbGeoField('${t.id}','einsatzBedingung',this.value)" style="${inpS}"><option value="">—</option>${neigOpts}</select></td>
         <td style="${tdS}color:#9ca3af;">0.60×0.60 m</td>
         <td style="${tdS}"><input type="number" step="0.01" min="0" value="${kopfH.toFixed(2)}" onchange="saveParamdbGeoField('${t.id}','kopfHoehe',this.value)" onblur="renderParamdbGeo()" style="width:60px;${inpS}"></td>
         <td style="${tdS}"><input type="text" value="${blockVal}" placeholder="z.B. 850×850 mm" onchange="saveParamdbGeoField('${t.id}','blockAbmessung',this.value||'—')" onblur="renderParamdbGeo()" style="width:120px;${inpS}"></td>
@@ -10833,6 +11056,7 @@ function renderParamdbGeo() {
         : mmAbmessungToM(blockAbm);
       return `<tr style="background:${rowBg(i)};">
         <td style="${tdS}font-weight:700;color:#1a3a5c;">${effName}</td>
+        <td style="${tdS}">${neigChip}</td>
         <td style="${tdS}">0.60×0.60 m</td>
         <td style="${tdS}">${kopfH.toFixed(2)} m</td>
         <td style="${tdS}">${blockTxt}</td>
@@ -10891,18 +11115,21 @@ function saveParamdbGeoField(id, field, value) {
   saveFtGeoOverrides(ov);
 
   if (field === 'name' && value) {
-    // FT-Profil-Liste im localStorage umbenennen
     const list = loadFtProfile();
     const entry = list.find(t => t.id === id);
     if (entry) { entry.name = value; saveFtProfile(list); }
-
-    // Alle Bauprojekt-Records mit ftProfilId === id aktualisieren
     const all = loadAllBauprojekt();
     let changed = false;
     Object.keys(all).forEach(k => {
       if (all[k].ftProfilId === id) { all[k].fundtyp = value; changed = true; }
     });
     if (changed) saveAllBauprojekt(all);
+  }
+  if (field === 'einsatzBedingung') {
+    // FT-Profil-Eintrag aktualisieren damit _ftMatchesNeigung korrekt arbeitet
+    const list = loadFtProfile();
+    const entry = list.find(t => t.id === id);
+    if (entry) { entry.einsatzBedingung = value; saveFtProfile(list); }
   }
 }
 
@@ -10922,8 +11149,8 @@ function exportParamdbExcel() {
   types.forEach(t => {
     const ov = geoOv[t.id] || {};
     geoRows.push([
-      t.name,
-      t.einsatzBedingung,
+      ov.name || t.name,
+      ov.einsatzBedingung ?? t.einsatzBedingung,
       parseFloat(ov.kopfHoehe ?? t.kopfHoehe) || '',
       ov.blockAbmessung != null ? ov.blockAbmessung : t.blockAbmessung,
       parseFloat(ov.tiefe ?? t.tiefe) || ''
@@ -11021,7 +11248,7 @@ function deleteProject(id) {
 
 function deleteAllProjectData() {
   if (!confirm('⚠️ ALLE Projekte und Daten wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden!')) return;
-  if (!confirm('Letzte Bestätigung: Wirklich alle Sondagen-Daten löschen?')) return;
+  if (!confirm('Letzte Bestätigung: Wirklich alle Fundamentbau-Daten löschen?')) return;
   // Alle projekt-spezifischen und Legacy-Keys entfernen
   const toRemove = Object.keys(localStorage).filter(k =>
     k.startsWith('sp_') || k.startsWith('sondagen_')
@@ -11157,7 +11384,7 @@ async function exportAppDaten() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const datum = new Date().toLocaleDateString('de-CH').replace(/\./g, '-');
-  a.download = `Sondagen_Daten_${datum}.json`;
+  a.download = `Fundamentbau_Daten_${datum}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -11170,7 +11397,7 @@ function importAppDaten(input) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.pairs || !Array.isArray(data.pairs)) {
-        alert('❌ Ungültige Datei. Bitte eine gültige Sondagen-Datei (.json) wählen.'); return;
+        alert('❌ Ungültige Datei. Bitte eine gültige Fundamentbau-Datei (.json) wählen.'); return;
       }
       if (!confirm(`Daten vom ${data.exportiert_am || '?'} laden?\n\n⚠️ Alle aktuellen Daten auf diesem Gerät werden überschrieben!`)) {
         input.value = ''; return;
@@ -11206,7 +11433,6 @@ function importAppDaten(input) {
       if (data.titel) {
         localStorage.setItem(TITEL_KEY, data.titel);
         document.getElementById('app-title-text').textContent = data.titel;
-        document.title = data.titel;
         // Projektname synchronisieren
         const proj = _projects.find(x => x.id === _activeId);
         if (proj) { proj.name = data.titel; saveProjectsMeta(_projects); }
@@ -12214,7 +12440,6 @@ function saveTitle() {
   if (val) {
     span.textContent = val;
     localStorage.setItem(TITEL_KEY, val);
-    document.title = val;
     // Projektnamen in Metadaten synchronisieren
     const p = _projects.find(x => x.id === _activeId);
     if (p) { p.name = val; saveProjectsMeta(_projects); }
@@ -12269,7 +12494,6 @@ function saveProjektKenndaten() {
   if (name) {
     const span = document.getElementById('app-title-text');
     if (span) { span.textContent = name; }
-    document.title = name;
     localStorage.setItem(TITEL_KEY, name);
     const p = _projects.find(x => x.id === _activeId);
     if (p) { p.name = name; saveProjectsMeta(_projects); }
@@ -12295,7 +12519,7 @@ function updateHeaderSub() {
   if (kd.isp)  parts.push(`ISP ${kd.isp}`);
   const pairsCount = typeof PAIRS !== 'undefined' ? PAIRS.length : 0;
   if (pairsCount) parts.unshift(`${pairsCount} Standorte`);
-  if (parts.length) sub.textContent = parts.join(' · ');
+  sub.textContent = parts.join(' · ');
 }
 
 // Projekttitel + Kenndaten laden
@@ -12303,8 +12527,9 @@ function updateHeaderSub() {
   const saved = localStorage.getItem(TITEL_KEY);
   if (saved) {
     const el = document.getElementById('app-title-text');
-    if (el) { el.textContent = saved; document.title = saved; }
+    if (el) { el.textContent = saved; }
   }
+  document.title = 'Fundamentbau';
   updateHeaderSub();
 })();
 
@@ -14172,6 +14397,12 @@ try {
   renderCards();
   renderContacts();
 
+  // Modal nach Neues-Projekt-Erstellen wieder öffnen
+  if (sessionStorage.getItem('reopen_projekt_modal')) {
+    sessionStorage.removeItem('reopen_projekt_modal');
+    setTimeout(() => openProjektModal(), 300);
+  }
+
   // Ausstehender Fundamentliste-Import nach Neues-Projekt-Erstellen
   (() => {
     const b64 = sessionStorage.getItem('pendingFlImport');
@@ -14751,15 +14982,21 @@ function saveBodenkennwerte() {
   const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
   const all = loadAllBauprojekt();
   const existing = all[currentPairId] || {};
+  const bkMe  = v('bk-me-wert');
+  const bkPhi = v('bk-phi-wert');
+  // Bodenkennwerte gesetzt → importVerify.boden quittieren
+  const ivUpd = { ...(existing.importVerify || {}) };
+  if (bkMe || bkPhi) delete ivUpd.boden;
   all[currentPairId] = {
     ...existing,
     bkBodentyp:    _bkBodentyp,
-    bkMe:          v('bk-me-wert'),
-    bkPhi:         v('bk-phi-wert'),
+    bkMe,
+    bkPhi,
     bkGamma:       v('bk-gamma-wert'),
     bkC:           v('bk-c-wert'),
     bkGrundwasser: _bkGrundwasser,
     bkBemerkung:   v('bk-bemerkung'),
+    importVerify:  Object.keys(ivUpd).length ? ivUpd : undefined,
   };
   saveAllBauprojekt(all);
   showBkFiWarn();
@@ -17500,8 +17737,9 @@ function renderBaugrundView() {
 }
 
 function renderFundtypView() {
-  seedDefaultFtProfile();    // Standardtypen einmalig vorabfüllen falls leer
-  seedLeistungsprofile();    // Standardprofile je Bauart vorabfüllen falls leer
+  seedDefaultFtProfile();                   // Standardtypen einmalig vorabfüllen falls leer
+  seedLeistungsprofile();                   // Standardprofile je Bauart vorabfüllen falls leer
+  _initStdFtDefaultLeistungsprofil();       // lp_block als Voreinstellung für Standardfundamente
   renderLpGrid();
   renderFundtypProfilGrid();
   renderStatikBerichte();
@@ -18675,9 +18913,11 @@ function bpAddDays(d, n)          { const r = new Date(d); r.setDate(r.getDate()
 function bpFmtDisplay(str)        { if (!str) return '—'; const d = bpParseDate(str); return d.toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}); }
 function bpDayDiff(a, b)          { return Math.round((bpParseDate(b) - bpParseDate(a)) / 86400000); }
 
-// Paket-Enddatum (letzte Nacht)
+// Paket-Enddatum (letzte tatsächliche Arbeitsnacht, Sperrmuster-bewusst)
 function bpPaketEnd(pak) {
-  if (!pak.startDatum || !pak.anzahlNaechte) return pak.startDatum || '';
+  if (!pak?.startDatum || !pak.anzahlNaechte) return pak?.startDatum || '';
+  const schichten = bpGetSchichten(pak);
+  if (schichten.length) return schichten[schichten.length - 1].datum;
   return bpFmtDate(bpAddDays(bpParseDate(pak.startDatum), (pak.anzahlNaechte || 1) - 1));
 }
 
@@ -18996,10 +19236,13 @@ function bpGetSchichten(pak) {
   return result;
 }
 
-// Datum einer konkreten Schicht ermitteln
+// Datum einer konkreten Schicht ermitteln (Sperrmuster-bewusst)
 function bpSchichtDatum(paketId, schichtNr, paketeList) {
   const pak = (paketeList || loadBaupakete()).find(p => p.id === paketId);
   if (!pak?.startDatum) return null;
+  const schichten = bpGetSchichten(pak);
+  const s = schichten.find(s => s.schichtNr === schichtNr);
+  if (s) return s.datum;
   return bpFmtDate(bpAddDays(bpParseDate(pak.startDatum), (schichtNr || 1) - 1));
 }
 
@@ -19025,7 +19268,7 @@ function _calcPfahlSchichten(ft, nettoH, abzugMin) {
 
 // ── Zoom-Zustand ──────────────────────────────────────────────
 let _bpZoom          = 'tag'; // 'tag' | 'woche' | 'monat' | 'jahr'
-let _bpFundSort      = 'km';  // 'km' | 'datum' | 'baugruppe'
+let _bpFundSort      = 'datum';  // 'km' | 'datum' | 'baugruppe'
 let _bpCollapsed     = new Set(); // IDs kollabierter Baugruppen
 let _bpZoomColW      = 28;    // aktuell gepixelter Spaltenbreite (für Resize)
 let _bpResizeDrag    = null;  // { pakId, side, startX, startNaechte, startDatum, currentNaechte, currentStart }
@@ -20032,11 +20275,11 @@ function renderBpLegende() {
     return `<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:white;border:1px solid #e5e7eb;border-left:3px solid ${col};border-radius:6px;font-size:11px;">
       <span style="font-weight:700;color:${col};cursor:pointer;" onclick="openBaupaketModal('${pak.id}')" title="Bearbeiten">${pak.name}</span>
       ${pak.startDatum ? `<span style="color:#9ca3af;">${bpFmtDisplay(pak.startDatum)}</span>` : ''}
-      ${sp?.name ? `<span style="color:#c4b5fd;font-size:10px;padding:1px 5px;border-radius:4px;background:#f5f3ff;border:1px solid #ede9fe;" title="Sperrmustertyp">${sp.name}</span>` : ''}
+      ${sp?.name ? `<span style="color:#6b7280;font-size:10px;padding:1px 5px;border-radius:4px;background:#f3f4f6;border:1px solid #e5e7eb;" title="Sperrmustertyp">${sp.name}</span>` : ''}
       ${kapInfo ? `<span style="color:#9ca3af;">${kapInfo}</span>` : ''}
       ${kapSumLabel ? `<span style="font-size:10px;font-weight:700;color:#374151;" title="Summierte Leistung aller zugewiesenen Standorte">${kapSumLabel}</span>` : ''}
-      ${bdLabel ? `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;color:${bdColor};background:${bdColor}18;border:1px solid ${bdColor}44;" title="Schicht-Bedarf / verfügbare Nächte">${bdLabel}</span>` : ''}
-      <span style="background:${col}22;color:${col};padding:1px 6px;border-radius:8px;font-weight:700;">${cnt} St.</span>
+      ${bdLabel ? `<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;color:#374151;background:#f3f4f6;border:1px solid #e5e7eb;" title="Schicht-Bedarf / verfügbare Nächte">${bdLabel}</span>` : ''}
+      <span style="background:#f3f4f6;color:#374151;padding:1px 6px;border-radius:8px;font-weight:600;font-size:10px;">${cnt} St.</span>
       <button onclick="bpKarteClick('${pak.id}')" title="Standorte auf Karte hervorheben"
         style="padding:2px 8px;border-radius:5px;border:1px solid ${col}55;background:${col}11;font-size:10px;font-weight:600;color:${col};cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="${col}" stroke="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
@@ -20221,11 +20464,10 @@ function renderBpGantt(targetId = 'bp-gantt-wrap', karteMode = false) {
     }
   };
   const wForPak = pak => {
-    const days = pak.anzahlNaechte || 1;
-    if (_bpZoom === 'tag') return Math.max(days * z.colW, 22);
-    if (_bpZoom === 'woche') return Math.max(Math.ceil(days / 7) * z.colW, z.colW * 0.5);
-    if (_bpZoom === 'jahr') return Math.max((days / 365) * z.colW, 6);
-    return Math.max(Math.ceil(days / 28) * z.colW, z.colW * 0.5);
+    if (!pak.startDatum || !pak.anzahlNaechte) return z.colW;
+    const endStr = bpPaketEnd(pak);
+    if (!endStr) return Math.max((pak.anzahlNaechte || 1) * z.colW, 22);
+    return Math.max(xForDate(endStr) - xForDate(pak.startDatum) + z.colW, 22);
   };
 
   // SVG aufbauen
@@ -21063,15 +21305,8 @@ function renderBpZuweisungTable() {
 
     const cbCell = '<td style="' + tdS + 'width:36px;text-align:center;"><input type="checkbox" ' + (sel ? 'checked' : '') + ' onclick="bpZuwToggleRow(' + p.id + ',this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#3b82f6;"></td>';
 
-    // Import-Verifikations-Chips (Geländeneigung / Baugrundkennwerte fehlen)
-    const iv = bp2.importVerify || {};
-    const verifyChips = [
-      iv.neigung ? '<span title="Geländeneigung fehlt — bitte verifizieren" style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:4px;font-size:9px;font-weight:700;background:#fef3c7;color:#92400e;border:1px solid #fde68a;white-space:nowrap;">⚠ Neigung</span>' : '',
-      iv.boden   ? '<span title="Baugrundkennwerte fehlen — Standardtyp-Tauglichkeit unklar" style="display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:4px;font-size:9px;font-weight:700;background:#fef3c7;color:#92400e;border:1px solid #fde68a;white-space:nowrap;">⚠ Baugrund</span>' : '',
-    ].filter(Boolean).join(' ');
-    const hasVerify = iv.neigung || iv.boden;
-    // Zeile mit Amber-Linksrand wenn Verifikation nötig
-    const verifyBorder = hasVerify ? 'border-left:3px solid #f59e0b;' : '';
+    const verifyChips = '';
+    const verifyBorder = '';
 
     return '<tr class="list-hover-row" style="background:' + rowBg + ';' + verifyBorder + rowBorder + '" id="' + rowId + '">'
       + cbCell
@@ -21177,8 +21412,8 @@ function renderBpZuweisungTable() {
 }
 
 function saveBpAusfDetail(pairId, field, value) {
-  const all = loadAllBauprojekt();
-  const bp  = all[pairId] || {};
+  const ids = (_bpZuwSelected.size > 1 && _bpZuwSelected.has(pairId))
+    ? [..._bpZuwSelected] : [pairId];
   const fieldMap = {
     'geraet':        'ausfGeraet',
     'gleisgebunden': 'ausfGleisgebunden',
@@ -21187,16 +21422,18 @@ function saveBpAusfDetail(pairId, field, value) {
     'nachbargleis':  'ausfNachbargleis',
   };
   if (field === 'status') {
-    const pd = getPairData(pairId);
-    setPairData(pairId, { ...pd, status: value });
+    ids.forEach(id => setPairData(id, { ...getPairData(id), status: value }));
   } else {
     const key = fieldMap[field];
     if (key) {
-      if (value === true || value === false) bp[key] = value;
-      else bp[key] = value || null;
+      const all = loadAllBauprojekt();
+      ids.forEach(id => {
+        const bp = all[id] || {};
+        bp[key] = (value === true || value === false) ? value : (value || null);
+        all[id] = bp;
+      });
+      saveAllBauprojekt(all);
     }
-    all[pairId] = bp;
-    saveAllBauprojekt(all);
   }
   renderBpZuweisungTable();
 }
@@ -21302,8 +21539,6 @@ function assignFundtypFromTable(pairId, val) {
 }
 
 function toggleBpBedingung(pairId, key) {
-  const all = loadAllBauprojekt();
-  const bp  = all[pairId] || {};
   const fieldMap = {
     gleisgebunden: 'ausfGleisgebunden',
     hoehenbegr:    'ausfHoehenbegrenzung',
@@ -21311,8 +21546,16 @@ function toggleBpBedingung(pairId, key) {
     nachbargleis:  'ausfNachbargleis',
   };
   const f = fieldMap[key];
-  if (f) bp[f] = !bp[f];
-  all[pairId] = bp;
+  if (!f) return;
+  const all    = loadAllBauprojekt();
+  const newVal = !(all[pairId] || {})[f];  // neue Zielwert vom angeklickten Eintrag
+  const ids    = (_bpZuwSelected.size > 1 && _bpZuwSelected.has(pairId))
+    ? [..._bpZuwSelected] : [pairId];
+  ids.forEach(id => {
+    const bp = all[id] || {};
+    bp[f]    = newVal;
+    all[id]  = bp;
+  });
   saveAllBauprojekt(all);
   renderBpZuweisungTable();
 }
@@ -21341,10 +21584,15 @@ function saveBpZuweisung(pairId, value, field) {
       if (pakSel) pakSel.style.borderLeft = pak?.farbe ? '3px solid ' + pak.farbe : '';
     }
   } else {
-    if (!zuw[pairId]) zuw[pairId] = {};
-    zuw[pairId].schichtNr = value ? parseInt(value) : null;
+    const schIds = (_bpZuwSelected.size > 1 && _bpZuwSelected.has(pairId))
+      ? [..._bpZuwSelected] : [pairId];
+    schIds.forEach(id => {
+      if (!zuw[id]) zuw[id] = {};
+      zuw[id].schichtNr = value ? parseInt(value) : null;
+    });
     saveSchichtZuw(zuw);
     _recalcBaugruppenDates();
+    if (schIds.length > 1) renderBpZuweisungTable();
   }
   updateBpInfoBar();
 }
@@ -21404,7 +21652,6 @@ function bpGruppeAufteilen(pairId) {
 function bpZuwToggleRow(pairId, checked) {
   if (checked) _bpZuwSelected.add(pairId);
   else _bpZuwSelected.delete(pairId);
-  _bpZuwUpdateBulkBar();
   const row = document.getElementById('bp-zuw-row-' + pairId);
   if (row) {
     row.style.background = checked ? '#eff6ff' : 'white';
@@ -21432,79 +21679,8 @@ function bpZuwSelectAll(checked) {
     const cb = row?.querySelector('input[type=checkbox]');
     if (cb) cb.checked = checked;
   });
-  _bpZuwUpdateBulkBar();
 }
 
-function bpZuwClearSelection() {
-  _bpZuwSelected.clear();
-  renderBpZuweisungTable();
-}
-
-function _bpZuwUpdateBulkBar() {
-  const bar = document.getElementById('bp-zuw-bulk-bar');
-  const cnt = document.getElementById('bp-zuw-bulk-count');
-  if (!bar) return;
-  if (_bpZuwSelected.size === 0) {
-    bar.style.display = 'none';
-    return;
-  }
-  bar.style.display = 'flex';
-  if (cnt) cnt.textContent = _bpZuwSelected.size + ' Standort' + (_bpZuwSelected.size > 1 ? 'e' : '') + ' ausgewählt';
-  // Baupaket-Optionen befüllen
-  const pakSel = document.getElementById('bp-zuw-bulk-pak');
-  if (pakSel && pakSel.options.length <= 1) {
-    const pakete = loadBaupakete();
-    pakSel.innerHTML = '<option value="">— unverändert —</option>' +
-      pakete.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
-  }
-}
-
-function bpZuwBulkPakChange() {
-  const pakId = document.getElementById('bp-zuw-bulk-pak')?.value;
-  const schSel = document.getElementById('bp-zuw-bulk-sch');
-  if (!schSel) return;
-  if (!pakId) { schSel.innerHTML = '<option value="">— unverändert —</option>'; return; }
-  const pak = loadBaupakete().find(p => p.id === pakId);
-  const schichten = pak ? bpGetSchichten(pak) : [];
-  schSel.innerHTML = '<option value="">— unverändert —</option>' +
-    schichten.map(s => '<option value="' + s.schichtNr + '">Schicht ' + s.schichtNr + ' (' + bpFmtDisplay(s.datum) + ')</option>').join('');
-}
-
-function bpZuwApplyBulk() {
-  if (!_bpZuwSelected.size) return;
-  const pakId  = document.getElementById('bp-zuw-bulk-pak')?.value || '';
-  const schNr  = document.getElementById('bp-zuw-bulk-sch')?.value || '';
-  const geraet = document.getElementById('bp-zuw-bulk-ger')?.value || '';
-  const status = document.getElementById('bp-zuw-bulk-st')?.value  || '';
-
-  const zuw  = loadSchichtZuw();
-  const allBp = loadAllBauprojekt();
-
-  _bpZuwSelected.forEach(pairId => {
-    if (pakId) {
-      if (!zuw[pairId]) zuw[pairId] = {};
-      zuw[pairId].paketId   = pakId;
-      zuw[pairId].schichtNr = schNr ? parseInt(schNr) : null;
-    } else if (schNr) {
-      if (!zuw[pairId]) zuw[pairId] = {};
-      zuw[pairId].schichtNr = parseInt(schNr);
-    }
-    if (geraet) {
-      const bp = allBp[pairId] || {};
-      bp.ausfGeraet = geraet;
-      allBp[pairId] = bp;
-    }
-    if (status) {
-      const pd = getPairData(pairId);
-      setPairData(pairId, { ...pd, status });
-    }
-  });
-
-  saveSchichtZuw(zuw);
-  if (geraet) saveAllBauprojekt(allBp);
-  updateBpInfoBar();
-  renderBpZuweisungTable();
-}
 
 // ── FT-Gruppen Kategorien (vordefiniert) ──────────────────────
 const FT_GRUPPEN_KATEGORIEN = [
@@ -22686,7 +22862,39 @@ function openProjEinstModal(tab = 'lose') {
   if (hint) hint.style.display = 'none';
 }
 
+// Stilles Speichern ohne Modal schliessen (für Tab-Wechsel)
+function _autoSaveProjEinst() {
+  const bbFld = document.getElementById('einst-baubeginn');
+  if (!bbFld) return;
+  const teams = _readTeamRows()
+    .map((t, i) => ({ ...t, name: t.name.trim() || ('Los ' + (i+1)) }))
+    .filter(t => t.name);
+  const einst = {
+    ...loadProjEinst(),
+    baubeginn:               bbFld.disabled ? (loadProjEinst().baubeginn || '') : (bbFld.value || ''),
+    abzugMinuten:            parseInt(document.getElementById('einst-abzug')?.value) || 0,
+    berücksichtigeFeiertage: document.getElementById('einst-feiertage')?.checked ?? false,
+    bauGruppeMax:            parseInt(document.getElementById('einst-baugruppe-max')?.value) || 3,
+    standardSperrmusterId:   document.getElementById('einst-std-sperrmuster')?.value || '',
+    aushaerteTage:           parseInt(document.getElementById('einst-aushaerte')?.value) || 28,
+    flMontagePuffer:         parseInt(document.getElementById('einst-fl-puffer')?.value) || 7,
+    bbVersatzTage:           parseInt(document.getElementById('einst-bb-versatz')?.value) || 7,
+    teams,
+  };
+  saveProjEinst(einst);
+  if (einst.baubeginn) {
+    const msList = loadMeilensteine();
+    let bbMs = msList.find(m => m.typ === 'baubeginn');
+    if (!bbMs) { bbMs = { id: 'ms_bb_auto', typ: 'baubeginn', name: 'Baubeginn' }; msList.push(bbMs); }
+    if (bbMs.datum !== einst.baubeginn) { bbMs.datum = einst.baubeginn; saveMeilensteine(msList); }
+  }
+}
+
 function switchBpEinstTab(tab) {
+  // Beim Verlassen von Lose/Zeitplanung: Daten automatisch sichern
+  if (_bpEinstActiveTab === 'lose' || _bpEinstActiveTab === 'zeitplanung') {
+    _autoSaveProjEinst();
+  }
   _bpEinstActiveTab = tab;
   ['lose','zeitplanung','autopak','autozuw'].forEach(t => {
     const panel = document.getElementById('bpeist-tab-' + t);
@@ -22708,6 +22916,15 @@ function switchBpEinstTab(tab) {
   if (genBtn) genBtn.style.display = tab === 'autopak' ? 'flex' : 'none';
   if (zuwBtn) zuwBtn.style.display = tab === 'autozuw' ? 'flex' : 'none';
   if (rstBtn) rstBtn.style.display = (tab === 'lose' || tab === 'zeitplanung') ? '' : 'none';
+
+  // Tab-Inhalt initialisieren (mit frisch gespeicherten Daten)
+  if (tab === 'autopak') {
+    if (!_apakGruppen.length) _prepareApakGruppen();
+    openAutoPaketeModal();
+  }
+  if (tab === 'autozuw') {
+    openAutoZuwModal();
+  }
 }
 
 function _runGeneratePakete() {
@@ -23492,7 +23709,7 @@ function exportBauprogrammIcs() {
   const icsUid = (pakId, schNr) => `bp-${pakId}-s${schNr}-${_activeId}@sondagen-app`;
   const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15) + 'Z';
 
-  let lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Sondagen App//Bauprogramm//DE',
+  let lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Fundamentbau//Bauprogramm//DE',
     'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', `X-WR-CALNAME:Bauprogramm ${pn}`, 'X-WR-TIMEZONE:Europe/Zurich'];
 
   pakete.forEach(pak => {
@@ -23979,6 +24196,58 @@ function setFtBaupaket(ftId, baupaketzuweisungId) {
   renderFundtypProfilGrid();
 }
 
+function selectAllStdFt() {
+  loadFtProfile().filter(t => t.typ === 'standard').forEach(t => _ftSelected.add(t.id));
+  renderFundtypProfilGrid();
+}
+
+function clearFtSelection() {
+  _ftSelected.clear();
+  renderFundtypProfilGrid();
+}
+
+function applyFtLeistungsprofilBulk() {
+  const profilId = document.getElementById('ft-std-bulk-lp')?.value;
+  if (!profilId) { alert('Bitte ein Leistungsprofil wählen.'); return; }
+  const list = loadFtProfile();
+  const ids  = [..._ftSelected];
+  let count  = 0;
+  list.forEach(t => {
+    if (ids.includes(t.id)) { t.leistungsprofilId = profilId; count++; }
+  });
+  saveFtProfile(list);
+  _ftSelected.clear();
+  renderFundtypProfilGrid();
+  renderLpGrid();
+  const lp  = loadLeistungsprofile().find(p => p.id === profilId);
+  const msg = `✓ Leistungsprofil «${lp?.name || profilId}» wurde ${count} Typ${count !== 1 ? 'en' : ''} zugewiesen.`;
+  const hint = document.getElementById('ft-kachel-hint');
+  const txt  = document.getElementById('ft-kachel-hint-text');
+  if (hint && txt) {
+    txt.textContent = msg;
+    hint.style.display = 'flex';
+    hint.style.background = '#f0fdf4'; hint.style.borderColor = '#86efac'; hint.style.color = '#15803d';
+    clearTimeout(hint._hideTimer);
+    hint._hideTimer = setTimeout(() => {
+      hint.style.display = 'none';
+      hint.style.background = '#eff6ff'; hint.style.borderColor = '#bfdbfe'; hint.style.color = '#1d4ed8';
+    }, 3000);
+  }
+}
+
+// Setzt lp_block als Voreinstellung für alle Standardfundamente ohne zugewiesenes Leistungsprofil
+function _initStdFtDefaultLeistungsprofil() {
+  const list = loadFtProfile();
+  let changed = false;
+  list.forEach(t => {
+    if (t.typ === 'standard' && !t.leistungsprofilId) {
+      t.leistungsprofilId = 'lp_block';
+      changed = true;
+    }
+  });
+  if (changed) saveFtProfile(list);
+}
+
 function loadFtZuweisungen()     { try { return JSON.parse(localStorage.getItem(FT_ZUWEISUNG_KEY())) || {}; } catch { return {}; } }
 function saveFtZuweisungen(map)  { localStorage.setItem(FT_ZUWEISUNG_KEY(), JSON.stringify(map)); }
 
@@ -24032,9 +24301,10 @@ function renderFundtypProfilGrid() {
   const spezGrid = document.getElementById('fundtyp-spez-grid');
   if (!stdGrid || !spezGrid) return;
 
-  const typen      = loadFtProfile();
+  const typen       = loadFtProfile();
   const zuweisungen = loadFtZuweisungen();
-  const statik     = loadStatikBerichte();
+  const statik      = loadStatikBerichte();
+  const profiles    = loadLeistungsprofile();
 
   const std  = typen.filter(t => t.typ === 'standard');
   const spez = typen.filter(t => t.typ !== 'standard');
@@ -24061,10 +24331,13 @@ function renderFundtypProfilGrid() {
       : list;
     if (!visible.length) return '';
     return visible.map(t => {
-    const count       = Object.values(zuweisungen).filter(id => id === t.id).length;
+    const count        = Object.values(zuweisungen).filter(id => id === t.id).length;
     const missingBlock = !t.blockAbmessung || t.blockAbmessung === '—';
-    const tiefeStr    = t.tiefe ? parseFloat(t.tiefe).toFixed(2) + ' m' : '';
-    const ftSelStyle = _ftSelected.has(t.id) ? 'outline:2px solid #3b82f6;outline-offset:-2px;background:#eff6ff;' : '';
+    const ftSelStyle   = _ftSelected.has(t.id) ? 'outline:2px solid #3b82f6;outline-offset:-2px;background:#eff6ff;' : '';
+    const lp           = profiles.find(p => p.id === t.leistungsprofilId);
+    const lpChip       = lp
+      ? `<div style="margin-bottom:6px;"><span style="font-size:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px;">${lp.name}</span></div>`
+      : `<div style="margin-bottom:6px;"><span style="font-size:10px;color:#9ca3af;padding:2px 0;border-radius:4px;">Kein Leistungsprofil</span></div>`;
     return `<div class="card" style="${ftSelStyle}" onclick="handleKachelClick('${t.id}')">
       <!-- Header: Name + Leistungs-Button -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
@@ -24079,10 +24352,9 @@ function renderFundtypProfilGrid() {
       <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:6px;">
         ${t.kopfAbmessung ? `<div style="font-size:10px;color:#374151;"><span style="color:#6b7280;font-weight:600;">Kopf</span> ${mmAbmessungToM(t.kopfAbmessung)}${t.kopfHoehe ? ` · h = ${parseFloat(t.kopfHoehe).toFixed(2)} m` : ''}</div>` : ''}
         ${t.blockAbmessung ? `<div style="font-size:10px;color:${missingBlock?'#9ca3af':'#374151'};"><span style="color:${missingBlock?'#9ca3af':'#6b7280'};font-weight:600;">Block</span> ${mmAbmessungToM(t.blockAbmessung)}</div>` : ''}
-        ${tiefeStr ? `<div style="font-size:10px;color:#374151;"><span style="color:#6b7280;font-weight:600;">Tiefe</span> t = ${tiefeStr}</div>` : ''}
       </div>
       ${t.einsatzBedingung ? `<div style="font-size:10px;color:#9ca3af;font-style:italic;margin-bottom:6px;">${t.einsatzBedingung}</div>` : ''}
-      ${t.schraubenAnzahl && t.schraubenDurchmesser ? `<div style="margin-bottom:6px;"><span style="font-size:10px;background:#f3f4f6;color:#374151;padding:1px 5px;border-radius:4px;">${t.schraubenAnzahl}×${t.schraubenDurchmesser}</span></div>` : ''}
+      ${lpChip}
       <div style="margin-top:auto;display:flex;flex-direction:column;gap:4px;">
         <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:4px;color:#6b7280;">${count} Standort${count !== 1 ? 'e' : ''}</span>
         <select onclick="event.stopPropagation()" onchange="setFtBaupaket('${t.id}', this.value)"
@@ -24111,6 +24383,23 @@ function renderFundtypProfilGrid() {
     stdGrid.innerHTML = html;
   } else {
     stdGrid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:#9ca3af;padding:8px 0;">Keine Standardfundamente geladen. App neu laden.</div>';
+  }
+
+  // ── Bulk-Bar für Leistungsprofil-Sammelzuweisung ──
+  const bulkBar   = document.getElementById('ft-std-bulk-bar');
+  const bulkCount = document.getElementById('ft-std-bulk-count');
+  const bulkLp    = document.getElementById('ft-std-bulk-lp');
+  if (bulkBar) {
+    const selCount = _ftSelected.size;
+    bulkBar.style.display = selCount > 0 ? 'flex' : 'none';
+    if (bulkCount) bulkCount.textContent = `${selCount} Typ${selCount !== 1 ? 'en' : ''} ausgewählt`;
+    if (bulkLp) {
+      const prevVal  = bulkLp.value;
+      const profiles = loadLeistungsprofile();
+      bulkLp.innerHTML = '<option value="">— Leistungsprofil —</option>' +
+        profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      bulkLp.value = prevVal || 'lp_block';
+    }
   }
 
   // ── Spezial-Kacheln (editierbar, Duplikat, Statikbericht-Links) ──
@@ -24468,6 +24757,8 @@ function exportFtXlsx() {
 // Sortierstatus der Fundamente-Zuweisung-Tabelle
 let _ftzSort = { col: 'km', dir: 1 };
 
+let _ftzNeedsSave = false;
+
 function renderFundtypZuweisungList() {
   const container = document.getElementById('fundtyp-zuweisung-list');
   if (!container) return;
@@ -24476,6 +24767,7 @@ function renderFundtypZuweisungList() {
   const zuweisungen = loadFtZuweisungen();
   const allPairs    = PAIRS.filter(p => p._phase && p._phase !== 'baugrund');
   const allBp       = loadAllBauprojekt();
+  _ftzNeedsSave = false;
 
   // Zähler-Label
   const countLbl = document.getElementById('ftz-count-label');
@@ -24555,11 +24847,13 @@ function renderFundtypZuweisungList() {
     if (!assignedId && bpFtProfilId) {
       assignedId = bpFtProfilId;
       zuweisungen[p.id] = bpFtProfilId;
+      _ftzNeedsSave = true;
     } else if (!assignedId && bpData.fundtyp) {
-      const byName = typen.find(t => t.name === bpData.fundtyp);
+      const byName = _findFtInCache(typen, bpData.fundtyp);
       if (byName) {
         assignedId = byName.id;
         zuweisungen[p.id] = byName.id;
+        _ftzNeedsSave = true;
       }
     }
     const assigned    = typen.find(t => t.id === assignedId);
@@ -24627,6 +24921,9 @@ function renderFundtypZuweisungList() {
     </thead>
     <tbody>${bodyRows}</tbody>
   </table>`;
+
+  // Fallback-Auflösungen persistieren (einmalig selbstheilend)
+  if (_ftzNeedsSave) saveFtZuweisungen(zuweisungen);
 
   // Zugewiesene Werte in Selects setzen (nach innerHTML-Injection)
   sorted.forEach(p => {
@@ -27315,9 +27612,8 @@ const LIST_COLUMNS = {
   ],
   bauprojekt: [
     { key: 'km',       label: 'KM',          render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
-    { key: 'fundtyp',  label: 'Fundamenttyp', render: p => { const bp=loadAllBauprojekt()[p.id]||{}; return bp.fundtyp||p.fundtyp||'—'; } },
-    { key: 'bestand',  label: 'Bestand/Neu',  render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const b=bp.bestand||p.bestand||''; return b==='neu'?'Neu':b==='prov'?'Prov.':b==='bestand'?'Bestand':'—'; } },
-    { key: 'neigung',  label: 'Neigung',      render: p => { const bp=loadAllBauprojekt()[p.id]||{}; return bp.neigung||p.neigung||'—'; } },
+    { key: 'fundtyp',  label: 'Fundamenttyp', render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const ft=bp.fundtyp||p.fundtyp||'—'; const warn=bp.importVerify?.boden?'<span title="Baugrundkennwerte fehlen" style="margin-left:4px;font-size:9px;color:#d97706;opacity:0.7;">⚠</span>':''; return ft+warn; } },
+    { key: 'neigung',  label: 'Neigung',      render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const n=bp.neigung||p.neigung; if(n) return n; return bp.importVerify?.neigung?'<span title="Geländeneigung fehlt" style="font-size:10px;color:#d97706;opacity:0.7;">? —</span>':'—'; } },
     { key: 'boden',    label: 'Baugrund',     render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const grenz=BK_GRENZWERTE[bp.bkBodentyp]||BK_GRENZWERTE.fein; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
   ],
   ausfuehrung: [
@@ -29075,7 +29371,7 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
 
 <!-- Floating list tag picker -->
 <div id="list-tag-picker" style="display:none;position:fixed;z-index:3000;background:white;border-radius:10px;padding:10px 12px;box-shadow:0 6px 24px rgba(0,0,0,0.18);min-width:160px;flex-direction:column;gap:6px;">
-  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin-bottom:2px;">Tags</div>
+  <div id="list-tag-picker-header" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin-bottom:2px;">Tags</div>
   <div id="list-tag-picker-items"></div>
 </div>
 
@@ -31438,88 +31734,19 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
 
       <!-- ══ TAB: Sidebar ══ -->
       <div class="app-settings-panel" data-panel="sidebar" style="display:none;">
-        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Sichtbarkeit der Sidebar-Sektionen</div>
-        <p style="font-size:11px;color:#6b7280;margin:0 0 14px;line-height:1.5;">
-          Deaktivierte Sektionen werden in der Detailansicht ausgeblendet. Phase-basierte Sichtbarkeit bleibt davon unberührt.
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;">Sichtbarkeit &amp; Reihenfolge</div>
+          <button onclick="resetSbOrder()" style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;font-size:11px;color:#6b7280;cursor:pointer;">↺ Zurücksetzen</button>
+        </div>
+        <p style="font-size:11px;color:#6b7280;margin:0 0 10px;line-height:1.5;">
+          Sichtbarkeit ein-/ausschalten · Reihenfolge per Drag &amp; Drop anpassen.
         </p>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;" id="sidebar-cfg-list">
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;" id="sidebar-cfg-list">
           <!-- Wird durch initAppTabSidebar() befüllt -->
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-meta" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Metadaten</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-begehung" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Begehung</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-termine" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Termine</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-ausfplanung" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Ausführungsplanung</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-zugang" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Zugang &amp; Abklärung</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-fotos" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Fotos</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-skizzen" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Skizzen</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-feld" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Felddaten</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-sicher" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Sicherheit</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-phase-bauprojekt" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Bauprojekt-Felder</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-hoehenkoten" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Höhenkoten</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-bodenkennwerte" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Bodenkennwerte</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-naturschutz" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Naturschutz</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-aushub" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Aushubprotokoll</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-material" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Materialbestellung</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-abnahme-link" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Abnahme-Checkliste</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-changelog" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>Änderungsprotokoll</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151;padding:6px 8px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;">
-            <input type="checkbox" id="sbcfg-sec-pdf" checked style="accent-color:#1a3a5c;width:15px;height:15px;">
-            <span>PDF-Bericht</span>
-          </label>
         </div>
         <button onclick="saveSidebarCfg()"
           style="width:100%;padding:9px;border-radius:8px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;">
-          ✓ Sichtbarkeit speichern
+          ✓ Einstellungen speichern
         </button>
       </div>
 
@@ -31702,6 +31929,7 @@ document.addEventListener('mouseup',   e => { bpResizeEnd(e);  bpMoveEnd(e);  bp
             <thead>
               <tr style="background:#f1f5f9;">
                 <th style="padding:6px 8px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Typ</th>
+                <th style="padding:6px 8px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Hangneigung</th>
                 <th style="padding:6px 8px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Kopf b×b</th>
                 <th style="padding:6px 8px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Kopf h</th>
                 <th style="padding:6px 8px;text-align:left;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap;">Block b×b</th>
