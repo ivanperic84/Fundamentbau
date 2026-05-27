@@ -1419,6 +1419,20 @@
       </div>
     </div>
 
+    <!-- Sektion: Bausitzungsprotokolle (zuoberst) -->
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;">
+      <div onclick="toggleProtoSektion('bsp')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span style="font-size:13px;font-weight:700;color:#1a3a5c;">Bausitzungsprotokolle</span>
+          <span style="font-size:11px;color:#6b7280;">Sitzungsprotokolle · <span onclick="openBspEmailTemplateModal();event.stopPropagation();" style="color:#1a3a5c;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Mailvorlagen</span> · Export</span>
+        </div>
+        <svg id="proto-chevron-bsp" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div id="proto-body-bsp" style="display:none;padding:0 16px 14px;">
+      </div>
+    </div>
+
     <!-- Sektion: Abnahme-Übersicht (einklappbar) -->
     <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;">
       <div onclick="toggleProtoSektion('abnahme')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
@@ -1428,7 +1442,6 @@
           <span style="font-size:11px;color:#6b7280;">Prüfpunkt-Status aller Standorte</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <!-- Export-Button (bleibt sichtbar auch eingeklappt) -->
           <div style="position:relative;" onclick="event.stopPropagation()">
             <button onclick="toggleExportPanel('abnahme-export-panel','abnahme-export-btn')" id="abnahme-export-btn"
               style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
@@ -1442,10 +1455,10 @@
               </div>
             </div>
           </div>
-          <svg id="proto-chevron-abnahme" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg id="proto-chevron-abnahme" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <div id="proto-body-abnahme" style="padding:0 16px 14px;">
+      <div id="proto-body-abnahme" style="display:none;padding:0 16px 14px;">
         <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
           <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:#dcfce7;border:1px solid #86efac;display:inline-block;"></span>OK</span>
           <span style="font-size:11px;display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:#fee2e2;border:1px solid #fca5a5;display:inline-block;"></span>Mangel</span>
@@ -1490,27 +1503,6 @@
           <table id="aushub-list-table" class="list-table" style="min-width:1400px;font-size:11px;"></table>
         </div>
         <div style="font-size:10px;color:#9ca3af;margin-top:10px;">*) L = Länge längs zum Gleis &nbsp; B = Breite quer zum Gleis &nbsp; D = Rohrdurchmesser &nbsp; T = mittlere Eingrabtiefe</div>
-      </div>
-    </div>
-
-    <!-- Sektion: Bausitzungsprotokolle -->
-    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:12px;">
-      <div onclick="toggleProtoSektion('bsp')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;user-select:none;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-          <span style="font-size:13px;font-weight:700;color:#1a3a5c;">Bausitzungsprotokolle</span>
-          <span style="font-size:11px;color:#6b7280;">Sitzungsprotokolle · Templates · Export</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;" onclick="event.stopPropagation()">
-          <button onclick="openBspModal(null)" style="padding:3px 10px;border-radius:6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Neues Protokoll
-          </button>
-          <svg id="proto-chevron-bsp" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-      </div>
-      <div id="proto-body-bsp" style="display:none;padding:0 16px 14px;">
-        <div id="bsp-list-wrap"></div>
       </div>
     </div>
 
@@ -4079,11 +4071,11 @@ function renderCards() {
     const instList = getInstallationen();
     const instSection = document.createElement('div');
     instSection.id = 'inst-section-inline';
-    instSection.style.cssText = 'padding:0 0 8px;';
+    instSection.style.cssText = 'padding:12px 0 8px;';
 
     // Separator
     const sep = document.createElement('div');
-    sep.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0 6px;';
+    sep.style.cssText = 'display:flex;align-items:center;gap:12px;padding:16px 0 12px;';
     sep.innerHTML = `
       <div style="flex:1;height:1px;background:#e5e7eb;"></div>
       <span style="font-size:10px;font-weight:700;color:#9ca3af;white-space:nowrap;letter-spacing:0.06em;text-transform:uppercase;">Baustelleninstallationen</span>
@@ -4260,7 +4252,7 @@ function renderNotizSection() {
   }).join('');
 
   wrap.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;padding:2px 0;margin-top:10px;margin-bottom:5px;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 0 12px;margin-top:4px;">
       <div style="flex:1;height:1px;background:#e5e7eb;"></div>
       <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">Notizen</span>
       <div style="flex:1;height:1px;background:#e5e7eb;"></div>
@@ -7838,6 +7830,8 @@ function setOverviewView(view) {
     if (btn) btn.classList.toggle('active', v===view);
   });
   document.getElementById('cards-grid').style.display        = view==='karten'    ? '' : 'none';
+  const instSectionEl = document.getElementById('inst-section-inline');
+  if (instSectionEl) instSectionEl.style.display = view==='karten' ? '' : 'none';
   document.getElementById('list-wrap').style.display         = view==='liste'     ? 'block' : 'none';
   document.getElementById('overview-map-wrap').style.display = view==='karte'     ? 'block' : 'none';
   document.getElementById('baugrund-wrap').style.display     = view==='baugrund'  ? 'block' : 'none';
@@ -15248,15 +15242,12 @@ try {
   const ftBtn = document.getElementById('vbtn-fundamente');
   if (ftBtn) ftBtn.style.display = (_activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung') ? '' : 'none';
   // Installationen-Tab entfernt — Installationen direkt in Kachelansicht integriert
-  // Abnahmen-Tab nur in Ausführungsphase sichtbar
-  const abnahmeBtn2 = document.getElementById('vbtn-abnahme');
-  if (abnahmeBtn2) abnahmeBtn2.style.display = _activePhase === 'ausfuehrung' ? 'flex' : 'none';
+  // Protokolle-Tab nur in Ausführungsphase sichtbar
+  const protokolleBtn2 = document.getElementById('vbtn-protokolle');
+  if (protokolleBtn2) protokolleBtn2.style.display = _activePhase === 'ausfuehrung' ? 'flex' : 'none';
   // Bauprogramm-Tab nur in Ausführungsphase sichtbar
   const bpTabBtn2 = document.getElementById('vbtn-bauprogramm');
   if (bpTabBtn2) bpTabBtn2.style.display = _activePhase === 'ausfuehrung' ? 'flex' : 'none';
-  // Aushubprotokoll-Tab nur in Ausführungsphase sichtbar
-  const aushubBtn2 = document.getElementById('vbtn-aushub');
-  if (aushubBtn2) aushubBtn2.style.display = _activePhase === 'ausfuehrung' ? 'flex' : 'none';
   // Bestehende Pairs migrieren: tag/nacht → Schicht-Bibliothek (einmalig, idempotent)
   setTimeout(() => autoRegisterSchichtenFromPairs(PAIRS), 100);
   // Verlaufs-Navigation initialisieren (Startzustand eintragen)
@@ -30485,7 +30476,7 @@ function toggleProtoSektion(key) {
   if (chevron) chevron.style.transform = collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
   // Lazy render für Aushub
   if (!collapsed && key === 'aushub') renderAushubView();
-  if (!collapsed && key === 'bsp')    renderBspList();
+  if (!collapsed && key === 'bsp')    renderBspSection();
 }
 
 // ============================================================
@@ -30506,12 +30497,10 @@ function toggleTermineSektion(key) {
 // BAUSITZUNGSPROTOKOLLE (BSP)
 // ============================================================
 function loadBsp() {
-  const k = 'bsp_' + (getActiveProjectKey() || 'default');
-  try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('sp_bsp__' + _activeId) || '[]'); } catch { return []; }
 }
 function saveBsp(data) {
-  const k = 'bsp_' + (getActiveProjectKey() || 'default');
-  localStorage.setItem(k, JSON.stringify(data));
+  localStorage.setItem('sp_bsp__' + _activeId, JSON.stringify(data));
 }
 
 const BSP_TEMPLATES = {
@@ -30546,148 +30535,248 @@ const BSP_TEMPLATES = {
   }
 };
 
-function renderBspList() {
-  const wrap = document.getElementById('bsp-list-wrap');
-  if (!wrap) return;
-  const bsps = loadBsp();
-  if (!bsps.length) {
-    wrap.innerHTML = `<div style="color:#9ca3af;font-size:13px;padding:20px 0;text-align:center;">Noch keine Bausitzungsprotokolle erfasst.</div>`;
-    return;
+// --- State ---
+let _bspViewMode    = 'list';      // 'list' | 'editor'
+let _bspEditorTab   = 'protokoll'; // 'protokoll' | 'aufgaben'
+let _bspCurrentId   = null;
+let _bspImgTargetTraktId = null;
+let _bspImgSelectedSrc   = null;
+let _bspSelectedKontakte = new Set();
+
+// --- Haupt-Dispatch ---
+function renderBspSection() {
+  const body = document.getElementById('proto-body-bsp');
+  if (!body) return;
+  if (_bspViewMode === 'list') {
+    renderBspList();
+  } else {
+    renderBspEditor();
   }
-  wrap.innerHTML = bsps.map(b => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;background:#f9fafb;">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:#1a3a5c;">BSP-${String(b.nr).padStart(3,'0')} · ${b.datum ? b.datum.split('-').reverse().join('.') : '—'}</div>
-        <div style="font-size:11px;color:#6b7280;">${b.ort || '—'} · ${b.traktanden?.length || 0} Traktanden</div>
+}
+
+// --- Editor öffnen / schliessen ---
+function openBspEditor(id) {
+  _bspCurrentId = id;
+  _bspViewMode  = 'editor';
+  _bspEditorTab = 'protokoll';
+  const body = document.getElementById('proto-body-bsp');
+  if (body && body.style.display === 'none') toggleProtoSektion('bsp');
+  renderBspSection();
+}
+
+// Alias für Rückwärtskompatibilität
+function openBspModal(id) { openBspEditor(id); }
+
+function closeBspEditor() {
+  _bspViewMode  = 'list';
+  _bspCurrentId = null;
+  renderBspSection();
+}
+
+function closeBspModal() { closeBspEditor(); }
+
+// --- Editor rendern ---
+function renderBspEditor() {
+  const body = document.getElementById('proto-body-bsp');
+  if (!body) return;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <button onclick="closeBspEditor()" style="display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Zurück
+      </button>
+      <div style="display:flex;gap:4px;">
+        <button onclick="setBspEditorTab('protokoll')" id="bsp-tab-protokoll"
+          style="padding:5px 14px;border-radius:7px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:700;cursor:pointer;">
+          📄 Protokoll
+        </button>
+        <button onclick="setBspEditorTab('aufgaben')" id="bsp-tab-aufgaben"
+          style="padding:5px 14px;border-radius:7px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:11px;font-weight:700;cursor:pointer;">
+          ✓ Aufgaben
+        </button>
       </div>
-      <div style="display:flex;gap:5px;flex-shrink:0;margin-left:10px;">
-        <button onclick="openBspModal(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Öffnen</button>
-        <button onclick="exportBspPdf(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">PDF</button>
-        <button onclick="deleteBsp(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:11px;font-weight:600;cursor:pointer;">✕</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="exportBspPdfCurrent()" style="padding:5px 12px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </button>
+        <button onclick="openBspEmailModal('protokoll', _bspCurrentId)" style="padding:5px 12px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Versenden
+        </button>
+        <button onclick="saveBspEditor()" style="padding:5px 14px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:11px;font-weight:700;cursor:pointer;">
+          Speichern
+        </button>
       </div>
     </div>
-  `).join('');
+    <div id="bsp-editor-tab-content"></div>
+  `;
+
+  renderBspEditorTabContent();
 }
 
-function deleteBsp(id) {
-  if (!confirm('Protokoll löschen?')) return;
-  saveBsp(loadBsp().filter(b => b.id !== id));
-  renderBspList();
-}
-
-let _bspCurrentId = null;
-let _bspImgTargetTraktId = null;
-let _bspImgSelectedSrc = null;
-
-function openBspModal(id) {
-  _bspCurrentId = id;
-  const modal = document.getElementById('bsp-modal');
-  if (!modal) return;
-
-  let bsp = null;
-  if (id) {
-    bsp = loadBsp().find(b => b.id === id);
-  }
-
-  const today = new Date().toISOString().slice(0,10);
-  const allBsps = loadBsp();
-  document.getElementById('bsp-nr').value         = bsp ? bsp.nr : String(allBsps.length + 1);
-  document.getElementById('bsp-datum').value      = bsp ? bsp.datum : today;
-  document.getElementById('bsp-ort').value        = bsp ? (bsp.ort || '') : '';
-  document.getElementById('bsp-teilnehmer').value = bsp ? (bsp.teilnehmer || '') : '';
-
-  const tmplRow = document.getElementById('bsp-template-row');
-  if (tmplRow) tmplRow.style.display = id ? 'none' : 'block';
-
-  if (!bsp) {
-    applyBspTemplate('standard', true);
-  } else {
-    _renderBspTraktanden(bsp.traktanden || []);
-  }
-
-  modal.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeBspModal() {
-  const modal = document.getElementById('bsp-modal');
-  if (modal) modal.style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-function _readBspTraktanden() {
-  const list = document.getElementById('bsp-traktanden-list');
-  if (!list) return [];
-  return Array.from(list.querySelectorAll('.bsp-trakt-item')).map(el => ({
-    id:     parseInt(el.dataset.id),
-    titel:  el.querySelector('.bsp-trakt-titel')?.value || '',
-    inhalt: el.querySelector('.bsp-trakt-inhalt')?.value || '',
-    bilder: JSON.parse(el.dataset.bilder || '[]')
-  }));
-}
-
-function saveBspModal() {
-  const nr         = document.getElementById('bsp-nr')?.value.trim() || '1';
-  const datum      = document.getElementById('bsp-datum')?.value || '';
-  const ort        = document.getElementById('bsp-ort')?.value.trim() || '';
-  const teilnehmer = document.getElementById('bsp-teilnehmer')?.value.trim() || '';
-  const traktanden = _readBspTraktanden();
-
-  const all = loadBsp();
-  if (_bspCurrentId) {
-    const idx = all.findIndex(b => b.id === _bspCurrentId);
-    if (idx !== -1) {
-      all[idx] = { ...all[idx], nr, datum, ort, teilnehmer, traktanden };
-    }
-  } else {
-    all.push({ id: Date.now(), nr, datum, ort, teilnehmer, traktanden });
-  }
-  saveBsp(all);
-  closeBspModal();
-  renderBspList();
-}
-
-function applyBspTemplate(key, silent) {
-  ['standard','abnahme','koordination','leer'].forEach(k => {
-    const btn = document.getElementById('bsp-tmpl-' + k);
-    if (btn) {
-      btn.style.background  = k === key ? '#1a3a5c' : 'white';
-      btn.style.color       = k === key ? 'white' : '#374151';
-      btn.style.borderColor = k === key ? '#1a3a5c' : '#e5e7eb';
-    }
+function setBspEditorTab(tab) {
+  _bspEditorTab = tab;
+  ['protokoll','aufgaben'].forEach(t => {
+    const btn = document.getElementById('bsp-tab-' + t);
+    if (!btn) return;
+    const active = t === tab;
+    btn.style.background  = active ? '#1a3a5c' : 'white';
+    btn.style.color       = active ? 'white'   : '#374151';
+    btn.style.borderColor = active ? '#1a3a5c' : '#e5e7eb';
   });
-  if (key === 'leer') { _renderBspTraktanden([]); return; }
-  const tmpl = BSP_TEMPLATES[key];
-  if (!tmpl) return;
-  const traktanden = tmpl.traktanden.map((titel, i) => ({ id: i+1, titel, inhalt: '', bilder: [] }));
-  _renderBspTraktanden(traktanden);
+  renderBspEditorTabContent();
 }
 
-function _renderBspTraktanden(traktanden) {
-  const list = document.getElementById('bsp-traktanden-list');
-  if (!list) return;
-  list.innerHTML = traktanden.map(t => _bspTraktHtml(t)).join('');
+function renderBspEditorTabContent() {
+  const content = document.getElementById('bsp-editor-tab-content');
+  if (!content) return;
+  if (_bspEditorTab === 'protokoll') {
+    content.innerHTML = _buildBspProtokollTab();
+    _bindBspProtokollTab();
+  } else {
+    content.innerHTML = _buildBspAufgabenTab();
+  }
 }
 
-function _bspTraktHtml(t) {
+// --- Protokoll-Tab ---
+function _buildBspProtokollTab() {
+  const bsp    = _bspCurrentId ? loadBsp().find(b => b.id === _bspCurrentId) : null;
+  const isNew  = !bsp;
+  const allBsps = loadBsp();
+  const prevBsp = allBsps.filter(b => b.id !== _bspCurrentId).slice(-1)[0];
+  const today   = new Date().toISOString().slice(0, 10);
+
+  const nr         = bsp ? bsp.nr         : String(allBsps.length + 1);
+  const datum      = bsp ? (bsp.datum || today) : today;
+  const ort        = bsp ? (bsp.ort    || '') : '';
+  const teilnehmer = bsp ? (bsp.teilnehmer || '') : (prevBsp ? (prevBsp.teilnehmer || '') : '');
+  const traktanden = bsp ? (bsp.traktanden || []) : [];
+
+  let openTaskCount = 0;
+  if (prevBsp) {
+    (prevBsp.traktanden || []).forEach(t => {
+      (t.tasks || []).forEach(task => { if (!task.done) openTaskCount++; });
+    });
+  }
+
+  const traktandenHtml = traktanden.map(t => _bspTraktHtml(t, teilnehmer)).join('');
+
+  return `
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;">Protokoll-Nr.</label>
+          <input id="bsp-nr" type="text" value="${nr}" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;">Datum</label>
+          <input id="bsp-datum" type="date" value="${datum}" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;">Ort</label>
+          <input id="bsp-ort" type="text" value="${ort.replace(/"/g,'&quot;')}" placeholder="Baubüro" style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;box-sizing:border-box;">
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <label style="font-size:11px;font-weight:700;color:#374151;">Teilnehmer</label>
+          <button onclick="openBspKontaktPicker()" style="padding:2px 8px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;cursor:pointer;display:flex;align-items:center;gap:3px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Projektbeteiligte
+          </button>
+        </div>
+        <textarea id="bsp-teilnehmer" rows="3" placeholder="Name, Funktion / Firma (je eine Person pro Zeile)"
+          style="width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;">${teilnehmer.replace(/</g,'&lt;')}</textarea>
+      </div>
+    </div>
+
+    ${isNew ? `
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px;">Template</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="applyBspTemplate('standard')" id="bsp-tmpl-standard" style="padding:5px 12px;border-radius:20px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">Standard</button>
+        <button onclick="applyBspTemplate('abnahme')" id="bsp-tmpl-abnahme" style="padding:5px 12px;border-radius:20px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Abnahme</button>
+        <button onclick="applyBspTemplate('koordination')" id="bsp-tmpl-koordination" style="padding:5px 12px;border-radius:20px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Koordination</button>
+        <button onclick="applyBspTemplate('leer')" id="bsp-tmpl-leer" style="padding:5px 12px;border-radius:20px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Leer</button>
+        ${openTaskCount > 0 ? `<button onclick="importOffeneTasksAlsTraktandum()" style="padding:5px 12px;border-radius:20px;border:2px solid #f59e0b;background:#fffbeb;color:#92400e;font-size:11px;font-weight:600;cursor:pointer;">⚠ ${openTaskCount} offene Aufgabe${openTaskCount>1?'n':''} übernehmen</button>` : ''}
+      </div>
+    </div>` : (openTaskCount > 0 ? `
+    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <span style="font-size:12px;color:#92400e;">⚠ ${openTaskCount} offene Aufgabe${openTaskCount>1?'n':''} aus dem letzten Protokoll</span>
+      <button onclick="importOffeneTasksAlsTraktandum()" style="padding:3px 10px;border-radius:6px;border:1px solid #f59e0b;background:white;color:#92400e;font-size:11px;font-weight:600;cursor:pointer;">Übernehmen</button>
+    </div>` : '')}
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#374151;">Traktanden</div>
+      <button onclick="addBspTraktandum()" style="padding:4px 12px;border-radius:6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">+ Traktandum</button>
+    </div>
+    <div id="bsp-traktanden-list">${traktandenHtml}</div>
+  `;
+}
+
+function _bindBspProtokollTab() {
+  const bsp = _bspCurrentId ? loadBsp().find(b => b.id === _bspCurrentId) : null;
+  if (!bsp) { applyBspTemplate('standard'); return; }
+  // Assignee-Selects befüllen
+  (bsp.traktanden || []).forEach(t => {
+    (t.tasks || []).forEach((task, ti) => {
+      const sel = document.querySelector(`.bsp-trakt-item[data-id="${t.id}"] .bsp-task-assignee[data-tidx="${ti}"]`);
+      if (sel && task.assignee) sel.value = task.assignee;
+    });
+  });
+}
+
+// --- Traktandum HTML ---
+function _bspTraktHtml(t, teilnehmer) {
+  const tnText  = teilnehmer !== undefined ? teilnehmer : (document.getElementById('bsp-teilnehmer')?.value || '');
+  const tnLines = tnText.split('\n').map(l => l.trim()).filter(Boolean);
+
+  const assigneeOpts = '<option value="">— Person —</option>'
+    + tnLines.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
+
+  const tasksHtml = (t.tasks || []).map((task, ti) => `
+    <div class="bsp-task-row" data-tidx="${ti}" style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;">
+      <input type="checkbox" ${task.done ? 'checked' : ''} onchange="_bspToggleTask(${t.id},${ti},this.checked)"
+        style="width:14px;height:14px;accent-color:#1a3a5c;cursor:pointer;flex-shrink:0;">
+      <input type="text" value="${(task.text||'').replace(/"/g,'&quot;')}" placeholder="Aufgabe…"
+        class="bsp-task-text" data-tidx="${ti}"
+        style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;${task.done?'text-decoration:line-through;color:#9ca3af;':''}">
+      <select class="bsp-task-assignee" data-tidx="${ti}" style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;min-width:110px;">
+        ${assigneeOpts}
+      </select>
+      <input type="date" value="${task.dueDate||''}" class="bsp-task-due" data-tidx="${ti}"
+        style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;">
+      <button onclick="_bspRemoveTask(${t.id},${ti})" style="border:none;background:none;color:#d1d5db;font-size:12px;cursor:pointer;padding:0 2px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'">✕</button>
+    </div>`).join('');
+
   const bilderHtml = (t.bilder || []).map((b, bi) => `
     <div style="position:relative;display:inline-block;margin:3px;">
       <img src="${b.src}" style="width:80px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #e5e7eb;">
       ${b.caption ? `<div style="font-size:9px;color:#6b7280;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.caption}</div>` : ''}
       <button onclick="_bspRemoveBild(${t.id},${bi})" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:white;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;line-height:1;padding:0;">✕</button>
     </div>`).join('');
+
   return `
-    <div class="bsp-trakt-item" data-id="${t.id}" data-bilder='${JSON.stringify(t.bilder||[]).replace(/'/g,"&#39;")}'
-         style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+    <div class="bsp-trakt-item" data-id="${t.id}" data-bilder='${JSON.stringify(t.bilder||[]).replace(/'/g,"&#39;")}' data-tasks='${JSON.stringify(t.tasks||[]).replace(/'/g,"&#39;")}'
+         style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:10px;overflow:hidden;background:white;">
       <div style="background:#f8fafc;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e5e7eb;">
         <input class="bsp-trakt-titel" value="${(t.titel||'').replace(/"/g,'&quot;')}" placeholder="Traktandum-Titel"
                style="flex:1;border:none;background:transparent;font-size:12px;font-weight:700;color:#1a3a5c;font-family:inherit;outline:none;">
         <button onclick="_bspRemoveTraktandum(${t.id})" style="border:none;background:none;color:#d1d5db;font-size:14px;cursor:pointer;padding:0;line-height:1;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'">✕</button>
       </div>
       <div style="padding:10px 12px;">
-        <textarea class="bsp-trakt-inhalt" rows="3" placeholder="Besprechungspunkte, Beschlüsse, Pendenzen…"
+        <textarea class="bsp-trakt-inhalt" rows="2" placeholder="Besprechungspunkte, Beschlüsse…"
           style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;">${(t.inhalt||'').replace(/</g,'&lt;')}</textarea>
-        <div style="margin-top:6px;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+
+        <div style="margin-top:8px;">
+          <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;">Aufgaben</div>
+          <div class="bsp-tasks-container" data-traktid="${t.id}">${tasksHtml}</div>
+          <button onclick="_bspAddTask(${t.id})" style="margin-top:5px;padding:3px 8px;border-radius:5px;border:1px dashed #d1d5db;background:white;color:#6b7280;font-size:10px;cursor:pointer;">+ Aufgabe</button>
+        </div>
+
+        <div style="margin-top:8px;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;">
           <div style="display:flex;flex-wrap:wrap;gap:0;">${bilderHtml}</div>
           <button onclick="openBspImgPicker(${t.id})" style="padding:3px 8px;border-radius:5px;border:1px dashed #d1d5db;background:white;color:#6b7280;font-size:10px;cursor:pointer;white-space:nowrap;">📷 Bild einfügen</button>
         </div>
@@ -30695,13 +30784,14 @@ function _bspTraktHtml(t) {
     </div>`;
 }
 
+// --- Traktanden verwalten ---
 function addBspTraktandum() {
   const list = document.getElementById('bsp-traktanden-list');
   if (!list) return;
   const existing = list.querySelectorAll('.bsp-trakt-item');
-  const newId = existing.length + 1;
+  const newId = Date.now();
   const div = document.createElement('div');
-  div.innerHTML = _bspTraktHtml({ id: newId, titel: String(newId) + '. ', inhalt: '', bilder: [] });
+  div.innerHTML = _bspTraktHtml({ id: newId, titel: String(existing.length + 1) + '. ', inhalt: '', bilder: [], tasks: [] });
   list.appendChild(div.firstElementChild);
 }
 
@@ -30722,12 +30812,464 @@ function _bspRemoveBild(traktId, bildIdx) {
   item.dataset.bilder = JSON.stringify(bilder);
   const inhalt = item.querySelector('.bsp-trakt-inhalt')?.value || '';
   const titel  = item.querySelector('.bsp-trakt-titel')?.value || '';
-  const newHtml = _bspTraktHtml({ id: traktId, titel, inhalt, bilder });
+  const tasks  = JSON.parse(item.dataset.tasks || '[]');
+  const newHtml = _bspTraktHtml({ id: traktId, titel, inhalt, bilder, tasks });
   const div = document.createElement('div');
   div.innerHTML = newHtml;
   item.replaceWith(div.firstElementChild);
+  const newItem = document.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (newItem) tasks.forEach((task, ti) => {
+    const sel = newItem.querySelector(`.bsp-task-assignee[data-tidx="${ti}"]`);
+    if (sel && task.assignee) sel.value = task.assignee;
+  });
 }
 
+// --- Task-Hilfsfunktionen ---
+function _bspAddTask(traktId) {
+  const item = document.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (!item) return;
+  let tasks = JSON.parse(item.dataset.tasks || '[]');
+  const newTask = { id: Date.now(), text: '', assignee: '', dueDate: '', done: false };
+  tasks.push(newTask);
+  item.dataset.tasks = JSON.stringify(tasks);
+
+  const container = item.querySelector('.bsp-tasks-container');
+  const tnText    = document.getElementById('bsp-teilnehmer')?.value || '';
+  const tnLines   = tnText.split('\n').map(l => l.trim()).filter(Boolean);
+  const assigneeOpts = '<option value="">— Person —</option>' + tnLines.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n}</option>`).join('');
+
+  const rowHtml = tasks.map((task, ti) => `
+    <div class="bsp-task-row" data-tidx="${ti}" style="display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;">
+      <input type="checkbox" ${task.done ? 'checked' : ''} onchange="_bspToggleTask(${traktId},${ti},this.checked)" style="width:14px;height:14px;accent-color:#1a3a5c;cursor:pointer;">
+      <input type="text" value="${(task.text||'').replace(/"/g,'&quot;')}" placeholder="Aufgabe…" class="bsp-task-text" data-tidx="${ti}" style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;${task.done?'text-decoration:line-through;color:#9ca3af;':''}">
+      <select class="bsp-task-assignee" data-tidx="${ti}" style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;min-width:110px;">${assigneeOpts}</select>
+      <input type="date" value="${task.dueDate||''}" class="bsp-task-due" data-tidx="${ti}" style="padding:3px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;">
+      <button onclick="_bspRemoveTask(${traktId},${ti})" style="border:none;background:none;color:#d1d5db;font-size:12px;cursor:pointer;padding:0 2px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#d1d5db'">✕</button>
+    </div>`).join('');
+  if (container) container.innerHTML = rowHtml;
+
+  tasks.forEach((task, ti) => {
+    const sel = item.querySelector(`.bsp-task-assignee[data-tidx="${ti}"]`);
+    if (sel && task.assignee) sel.value = task.assignee;
+  });
+}
+
+function _bspRemoveTask(traktId, taskIdx) {
+  const item = document.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (!item) return;
+  let tasks = JSON.parse(item.dataset.tasks || '[]');
+  tasks.splice(taskIdx, 1);
+  item.dataset.tasks = JSON.stringify(tasks);
+  _rerenderTraktandum(traktId);
+}
+
+function _bspToggleTask(traktId, taskIdx, done) {
+  const item = document.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (!item) return;
+  let tasks = JSON.parse(item.dataset.tasks || '[]');
+  if (tasks[taskIdx]) {
+    tasks[taskIdx].done = done;
+    item.dataset.tasks = JSON.stringify(tasks);
+    const textInput = item.querySelector(`.bsp-task-text[data-tidx="${taskIdx}"]`);
+    if (textInput) { textInput.style.textDecoration = done ? 'line-through' : ''; textInput.style.color = done ? '#9ca3af' : ''; }
+  }
+}
+
+function _rerenderTraktandum(traktId) {
+  const list = document.getElementById('bsp-traktanden-list');
+  if (!list) return;
+  const item = list.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (!item) return;
+  const tasks  = JSON.parse(item.dataset.tasks || '[]');
+  const bilder = JSON.parse(item.dataset.bilder || '[]');
+  const titel  = item.querySelector('.bsp-trakt-titel')?.value || '';
+  const inhalt = item.querySelector('.bsp-trakt-inhalt')?.value || '';
+  const tnText = document.getElementById('bsp-teilnehmer')?.value || '';
+  const newHtml = _bspTraktHtml({ id: traktId, titel, inhalt, bilder, tasks }, tnText);
+  const div = document.createElement('div');
+  div.innerHTML = newHtml;
+  item.replaceWith(div.firstElementChild);
+  const newItem = list.querySelector(`.bsp-trakt-item[data-id="${traktId}"]`);
+  if (newItem) tasks.forEach((task, ti) => {
+    const sel = newItem.querySelector(`.bsp-task-assignee[data-tidx="${ti}"]`);
+    if (sel && task.assignee) sel.value = task.assignee;
+  });
+}
+
+// --- Speichern ---
+function _readBspTraktandenFromDom() {
+  const list = document.getElementById('bsp-traktanden-list');
+  if (!list) return [];
+  return Array.from(list.querySelectorAll('.bsp-trakt-item')).map(el => {
+    const traktId = parseInt(el.dataset.id);
+    const tasks   = _readTasksFromTraktItem(el);
+    const bilder  = JSON.parse(el.dataset.bilder || '[]');
+    return {
+      id:     traktId,
+      titel:  el.querySelector('.bsp-trakt-titel')?.value || '',
+      inhalt: el.querySelector('.bsp-trakt-inhalt')?.value || '',
+      bilder,
+      tasks
+    };
+  });
+}
+
+function _readTasksFromTraktItem(el) {
+  const rows = el.querySelectorAll('.bsp-task-row');
+  const storedTasks = JSON.parse(el.dataset.tasks || '[]');
+  return Array.from(rows).map((row, ti) => {
+    const stored = storedTasks[ti] || {};
+    return {
+      id:       stored.id || Date.now() + ti,
+      text:     row.querySelector('.bsp-task-text')?.value || '',
+      assignee: row.querySelector('.bsp-task-assignee')?.value || '',
+      dueDate:  row.querySelector('.bsp-task-due')?.value || '',
+      done:     row.querySelector('input[type="checkbox"]')?.checked || false
+    };
+  });
+}
+
+// Rückwärtskompatibilität
+function _readBspTraktanden() { return _readBspTraktandenFromDom(); }
+
+function saveBspEditor() {
+  const nr         = document.getElementById('bsp-nr')?.value.trim() || '1';
+  const datum      = document.getElementById('bsp-datum')?.value || '';
+  const ort        = document.getElementById('bsp-ort')?.value.trim() || '';
+  const teilnehmer = document.getElementById('bsp-teilnehmer')?.value.trim() || '';
+  const traktanden = _readBspTraktandenFromDom();
+
+  const all = loadBsp();
+  if (_bspCurrentId) {
+    const idx = all.findIndex(b => b.id === _bspCurrentId);
+    if (idx !== -1) all[idx] = { ...all[idx], nr, datum, ort, teilnehmer, traktanden };
+    else all.push({ id: _bspCurrentId, nr, datum, ort, teilnehmer, traktanden });
+  } else {
+    const newId = Date.now();
+    _bspCurrentId = newId;
+    all.push({ id: newId, nr, datum, ort, teilnehmer, traktanden });
+  }
+  saveBsp(all);
+  const btn = event?.target;
+  if (btn) { const orig = btn.textContent; btn.textContent = '✓ Gespeichert'; setTimeout(() => { btn.textContent = orig; }, 1500); }
+}
+
+function saveBspModal() { saveBspEditor(); }
+
+function deleteBsp(id) {
+  if (!confirm('Protokoll löschen?')) return;
+  saveBsp(loadBsp().filter(b => b.id !== id));
+  renderBspSection();
+}
+
+// --- Aufgaben-Tab ---
+function _buildBspAufgabenTab() {
+  const bsp = _bspCurrentId ? loadBsp().find(b => b.id === _bspCurrentId) : null;
+  if (!bsp) return '<div style="color:#9ca3af;padding:20px;text-align:center;">Protokoll zuerst speichern.</div>';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let allTasks = [];
+  (bsp.traktanden || []).forEach(t => {
+    (t.tasks || []).forEach(task => {
+      allTasks.push({ ...task, traktTitel: t.titel || '—' });
+    });
+  });
+
+  if (!allTasks.length) return '<div style="color:#9ca3af;padding:20px;text-align:center;">Noch keine Aufgaben erfasst. Im Tab «Protokoll» bei den Traktanden Aufgaben hinzufügen.</div>';
+
+  const rows = allTasks.map(task => {
+    const due      = task.dueDate ? new Date(task.dueDate) : null;
+    const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
+    const isOverdue = daysLeft !== null && daysLeft < 0 && !task.done;
+    const isUrgent  = daysLeft !== null && daysLeft >= 0 && daysLeft < 7 && !task.done;
+    const dueCss    = isOverdue ? 'color:#dc2626;font-weight:700;' : isUrgent ? 'color:#f59e0b;font-weight:700;' : 'color:#6b7280;';
+    const dueStr    = due ? due.toLocaleDateString('de-CH') : '—';
+    const daysStr   = daysLeft !== null ? (daysLeft < 0 ? `${Math.abs(daysLeft)}T überfällig` : daysLeft === 0 ? 'Heute' : `T-${daysLeft}`) : '—';
+    const rowBg     = task.done ? 'background:#f9fafb;' : isOverdue ? 'background:#fff5f5;' : isUrgent ? 'background:#fffbeb;' : '';
+    return `
+      <tr style="${rowBg}">
+        <td style="padding:7px 10px;text-align:center;">
+          <input type="checkbox" ${task.done?'checked':''} onchange="_bspToggleTaskGlobal('${task.id}',this.checked)"
+            style="width:14px;height:14px;accent-color:#1a3a5c;cursor:pointer;">
+        </td>
+        <td style="padding:7px 10px;font-size:12px;${task.done?'text-decoration:line-through;color:#9ca3af;':''}">${task.text||'—'}</td>
+        <td style="padding:7px 10px;font-size:11px;color:#6b7280;">${task.traktTitel}</td>
+        <td style="padding:7px 10px;font-size:11px;color:#374151;">${task.assignee||'—'}</td>
+        <td style="padding:7px 10px;font-size:11px;${dueCss}">${dueStr}</td>
+        <td style="padding:7px 10px;font-size:11px;${dueCss}font-weight:700;">${daysStr}</td>
+      </tr>`;
+  }).join('');
+
+  const openCount = allTasks.filter(t => !t.done).length;
+
+  return `
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;font-weight:700;color:#1a3a5c;">Aufgaben BSP-${String(bsp.nr).padStart(3,'0')}</div>
+        <div style="font-size:11px;color:#6b7280;">${openCount} offen · ${allTasks.length - openCount} erledigt</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:center;width:36px;">✓</th>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:left;">Aufgabe</th>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:left;">Traktandum</th>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:left;">Zuständig</th>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:left;">Bis</th>
+              <th style="background:#1a3a5c;color:white;padding:7px 10px;font-size:10px;font-weight:700;text-align:left;">Frist</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function _bspToggleTaskGlobal(taskId, done) {
+  if (!_bspCurrentId) return;
+  const all = loadBsp();
+  const bsp = all.find(b => b.id === _bspCurrentId);
+  if (!bsp) return;
+  (bsp.traktanden || []).forEach(t => {
+    (t.tasks || []).forEach(task => {
+      if (String(task.id) === String(taskId)) task.done = done;
+    });
+  });
+  saveBsp(all);
+  const content = document.getElementById('bsp-editor-tab-content');
+  if (content) content.innerHTML = _buildBspAufgabenTab();
+}
+
+// --- Aufgaben-Übersicht in der Liste ---
+function _buildBspTaskOverview() {
+  const all   = loadBsp();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  let allTasks = [];
+  all.forEach(bsp => {
+    (bsp.traktanden || []).forEach(t => {
+      (t.tasks || []).forEach(task => {
+        if (!task.done) allTasks.push({ ...task, bspNr: bsp.nr, bspId: bsp.id, bspDatum: bsp.datum, traktTitel: t.titel });
+      });
+    });
+  });
+
+  if (!allTasks.length) return '';
+
+  allTasks.sort((a, b) => {
+    const da = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
+    const db = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
+    return da - db;
+  });
+
+  const rows = allTasks.map(task => {
+    const due      = task.dueDate ? new Date(task.dueDate) : null;
+    const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
+    const isOverdue = daysLeft !== null && daysLeft < 0;
+    const isUrgent  = daysLeft !== null && daysLeft >= 0 && daysLeft < 7;
+    const daysStr   = daysLeft !== null ? (daysLeft < 0 ? `${Math.abs(daysLeft)}T überfällig` : daysLeft === 0 ? 'Heute' : `T-${daysLeft}`) : '—';
+    const rowBg     = isOverdue ? '#fff5f5' : isUrgent ? '#fffbeb' : 'white';
+    const daysCss   = isOverdue ? 'color:#dc2626;font-weight:700;' : isUrgent ? 'color:#f59e0b;font-weight:700;' : 'color:#6b7280;';
+    const daysBg    = isOverdue ? 'background:#fee2e2;' : isUrgent ? 'background:#fef3c7;' : 'background:#f3f4f6;';
+    return `
+      <tr style="background:${rowBg};">
+        <td style="padding:6px 10px;font-size:11px;color:#1a3a5c;font-weight:600;cursor:pointer;" onclick="openBspEditor(${task.bspId})">BSP-${String(task.bspNr).padStart(3,'0')}</td>
+        <td style="padding:6px 10px;font-size:11px;">${task.text||'—'}</td>
+        <td style="padding:6px 10px;font-size:10px;color:#6b7280;">${task.assignee||'—'}</td>
+        <td style="padding:6px 10px;font-size:11px;text-align:center;">
+          <span style="padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;${daysCss}${daysBg}">${daysStr}</span>
+        </td>
+      </tr>`;
+  }).join('');
+
+  const urgentCount = allTasks.filter(t => {
+    const due = t.dueDate ? new Date(t.dueDate) : null;
+    const d   = due ? Math.ceil((due - today) / 86400000) : null;
+    return d !== null && d < 7;
+  }).length;
+
+  return `
+    <div style="background:white;border:1px solid ${urgentCount > 0 ? '#fcd34d' : '#e5e7eb'};border-radius:10px;margin-bottom:12px;overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;background:${urgentCount > 0 ? '#fffbeb' : 'white'};">
+        <div style="font-size:12px;font-weight:700;color:#1a3a5c;">Offene Aufgaben</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:11px;color:#6b7280;">${allTasks.length} offen${urgentCount > 0 ? ` · <span style="color:#f59e0b;font-weight:700;">${urgentCount} dringend</span>` : ''}</div>
+          <button onclick="openBspEmailModal('reminder',null)" style="padding:3px 10px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Reminder senden
+          </button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            <th style="background:#f8fafc;padding:5px 10px;font-size:10px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1px solid #e5e7eb;">Protokoll</th>
+            <th style="background:#f8fafc;padding:5px 10px;font-size:10px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1px solid #e5e7eb;">Aufgabe</th>
+            <th style="background:#f8fafc;padding:5px 10px;font-size:10px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1px solid #e5e7eb;">Zuständig</th>
+            <th style="background:#f8fafc;padding:5px 10px;font-size:10px;font-weight:700;color:#6b7280;text-align:center;border-bottom:1px solid #e5e7eb;">Frist</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// --- Liste rendern ---
+function renderBspList() {
+  const wrap = document.getElementById('proto-body-bsp');
+  if (!wrap) return;
+  const bsps = loadBsp();
+
+  const taskOverview = _buildBspTaskOverview();
+
+  const listHtml = !bsps.length
+    ? '<div style="color:#9ca3af;font-size:13px;padding:20px 0;text-align:center;">Noch keine Bausitzungsprotokolle erfasst.</div>'
+    : bsps.map(b => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;background:white;">
+          <div style="flex:1;min-width:0;cursor:pointer;" onclick="openBspEditor(${b.id})">
+            <div style="font-size:13px;font-weight:700;color:#1a3a5c;">BSP-${String(b.nr).padStart(3,'0')} · ${b.datum ? b.datum.split('-').reverse().join('.') : '—'}</div>
+            <div style="font-size:11px;color:#6b7280;">${b.ort || '—'} · ${b.traktanden?.length || 0} Traktanden</div>
+          </div>
+          <div style="display:flex;gap:5px;flex-shrink:0;margin-left:10px;">
+            <button onclick="openBspEditor(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Öffnen</button>
+            <button onclick="exportBspPdf(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">PDF</button>
+            <button onclick="deleteBsp(${b.id})" style="padding:4px 10px;border-radius:6px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:11px;font-weight:600;cursor:pointer;">✕</button>
+          </div>
+        </div>`).join('');
+
+  wrap.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <button onclick="openBspEditor(null)" style="padding:5px 14px;border-radius:6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:12px;font-weight:600;cursor:pointer;">+ Neues Protokoll</button>
+    </div>
+    ${taskOverview}
+    <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px;">Protokolle</div>
+    ${listHtml}`;
+}
+
+// --- Offene Tasks aus Vorperiode übernehmen ---
+function importOffeneTasksAlsTraktandum() {
+  const allBsps = loadBsp();
+  const prevBsp = allBsps.filter(b => b.id !== _bspCurrentId).slice(-1)[0];
+  if (!prevBsp) return;
+
+  let offeneTasks = [];
+  (prevBsp.traktanden || []).forEach(t => {
+    (t.tasks || []).forEach(task => {
+      if (!task.done) offeneTasks.push({ ...task });
+    });
+  });
+  if (!offeneTasks.length) return;
+
+  const list = document.getElementById('bsp-traktanden-list');
+  if (!list) return;
+  const newId = Date.now();
+  const newTrakt = {
+    id:     newId,
+    titel:  `Pendenzen aus BSP-${String(prevBsp.nr).padStart(3,'0')}`,
+    inhalt: '',
+    bilder: [],
+    tasks:  offeneTasks.map(t => ({ ...t, id: Date.now() + Math.floor(Math.random()*9999) }))
+  };
+  const tnText = document.getElementById('bsp-teilnehmer')?.value || '';
+  const div = document.createElement('div');
+  div.innerHTML = _bspTraktHtml(newTrakt, tnText);
+  list.insertBefore(div.firstElementChild, list.firstChild);
+
+  const newItem = list.querySelector(`.bsp-trakt-item[data-id="${newId}"]`);
+  if (newItem) {
+    newTrakt.tasks.forEach((task, ti) => {
+      const sel = newItem.querySelector(`.bsp-task-assignee[data-tidx="${ti}"]`);
+      if (sel && task.assignee) sel.value = task.assignee;
+    });
+  }
+
+  // Import-Button ausblenden
+  try { event?.target?.closest('div')?.remove?.() || event?.target?.remove?.(); } catch(e) {}
+}
+
+// --- Template anwenden ---
+function applyBspTemplate(key, silent) {
+  ['standard','abnahme','koordination','leer'].forEach(k => {
+    const btn = document.getElementById('bsp-tmpl-' + k);
+    if (btn) {
+      btn.style.background  = k === key ? '#1a3a5c' : 'white';
+      btn.style.color       = k === key ? 'white' : '#374151';
+      btn.style.borderColor = k === key ? '#1a3a5c' : '#e5e7eb';
+    }
+  });
+  if (key === 'leer') { _renderBspTraktanden([]); return; }
+  const tmpl = BSP_TEMPLATES[key];
+  if (!tmpl) return;
+  const traktanden = tmpl.traktanden.map((titel, i) => ({ id: Date.now() + i, titel, inhalt: '', bilder: [], tasks: [] }));
+  _renderBspTraktanden(traktanden);
+}
+
+function _renderBspTraktanden(traktanden) {
+  const list = document.getElementById('bsp-traktanden-list');
+  if (!list) return;
+  const tnText = document.getElementById('bsp-teilnehmer')?.value || '';
+  list.innerHTML = traktanden.map(t => _bspTraktHtml(t, tnText)).join('');
+}
+
+// --- Projektbeteiligte-Picker ---
+function openBspKontaktPicker() {
+  _bspSelectedKontakte = new Set();
+  const picker = document.getElementById('bsp-kontakt-picker');
+  if (!picker) return;
+  picker.style.display = 'flex';
+
+  const listEl = document.getElementById('bsp-kontakt-picker-list');
+  if (!listEl) return;
+  const contacts = (typeof loadContacts === 'function') ? loadContacts() : [];
+  if (!contacts.length) {
+    listEl.innerHTML = '<div style="color:#9ca3af;font-size:12px;padding:10px 0;">Keine Projektbeteiligten erfasst.</div>';
+    return;
+  }
+  listEl.innerHTML = contacts.map(c => `
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;border:1px solid #e5e7eb;margin-bottom:6px;background:white;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+      <input type="checkbox" value="${c.id}" onchange="_bspToggleKontaktSelect('${c.id}',this.checked)" style="width:14px;height:14px;accent-color:#1a3a5c;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:#1a3a5c;">${c.name||'—'}</div>
+        <div style="font-size:10px;color:#6b7280;">${c.rolle||''} ${c.firma ? '· ' + c.firma : ''}</div>
+      </div>
+    </label>`).join('');
+}
+
+function closeBspKontaktPicker() {
+  const picker = document.getElementById('bsp-kontakt-picker');
+  if (picker) picker.style.display = 'none';
+}
+
+function _bspToggleKontaktSelect(contactId, checked) {
+  if (checked) _bspSelectedKontakte.add(contactId);
+  else _bspSelectedKontakte.delete(contactId);
+}
+
+function applyBspKontakteToTeilnehmer() {
+  const contacts = (typeof loadContacts === 'function') ? loadContacts() : [];
+  const existing = (document.getElementById('bsp-teilnehmer')?.value || '').trim();
+  const existingLines = existing ? existing.split('\n').map(l => l.trim()).filter(Boolean) : [];
+
+  const toAdd = [..._bspSelectedKontakte].map(id => {
+    const c = contacts.find(x => x.id === id);
+    if (!c) return null;
+    const parts = [c.name];
+    if (c.rolle) parts.push(c.rolle);
+    if (c.firma) parts.push(c.firma);
+    return parts.filter(Boolean).join(', ');
+  }).filter(Boolean);
+
+  const newLines = [...existingLines];
+  toAdd.forEach(line => { if (!newLines.includes(line)) newLines.push(line); });
+
+  const textarea = document.getElementById('bsp-teilnehmer');
+  if (textarea) textarea.value = newLines.join('\n');
+  closeBspKontaktPicker();
+}
+
+// --- Bild-Picker ---
 function openBspImgPicker(traktId) {
   _bspImgTargetTraktId = traktId;
   _bspImgSelectedSrc   = null;
@@ -30816,10 +31358,16 @@ function confirmBspImg() {
 
   const inhalt = item.querySelector('.bsp-trakt-inhalt')?.value || '';
   const titel  = item.querySelector('.bsp-trakt-titel')?.value || '';
-  const newHtml = _bspTraktHtml({ id: _bspImgTargetTraktId, titel, inhalt, bilder });
+  const tasks  = JSON.parse(item.dataset.tasks || '[]');
+  const newHtml = _bspTraktHtml({ id: _bspImgTargetTraktId, titel, inhalt, bilder, tasks });
   const div = document.createElement('div');
   div.innerHTML = newHtml;
   item.replaceWith(div.firstElementChild);
+  const newItem = list.querySelector(`.bsp-trakt-item[data-id="${_bspImgTargetTraktId}"]`);
+  if (newItem) tasks.forEach((task, ti) => {
+    const sel = newItem.querySelector(`.bsp-task-assignee[data-tidx="${ti}"]`);
+    if (sel && task.assignee) sel.value = task.assignee;
+  });
 
   closeBspImgPicker();
 }
@@ -30828,10 +31376,10 @@ function _getBspById(id) { return loadBsp().find(b => b.id === id); }
 
 function exportBspPdfCurrent() {
   if (_bspCurrentId) {
-    saveBspModal();
+    saveBspEditor();
     exportBspPdf(_bspCurrentId);
   } else {
-    saveBspModal();
+    saveBspEditor();
     const all = loadBsp();
     if (all.length) exportBspPdf(all[all.length - 1].id);
   }
@@ -30929,11 +31477,237 @@ function exportBspPdf(id) {
 }
 
 // ============================================================
-// loadAllFotos (Stub falls nicht vorhanden)
+// BSP E-MAIL — Vorlagen + Versenden
+// ============================================================
+
+const _bspEmailDefaultTemplates = {
+  protokoll: {
+    subject: 'BSP-{nr} – Protokoll der Bausitzung vom {datum}',
+    body: `Guten Tag
+
+Anbei das Protokoll der Bausitzung Nr. {nr} vom {datum}, Ort: {ort}.
+
+Projekt: {projektname}
+
+Traktanden:
+{traktanden}
+
+Bitte melden Sie allfällige Korrekturen innerhalb von 5 Arbeitstagen.
+
+Freundliche Grüsse`
+  },
+  reminder: {
+    subject: 'Pendenzen-Reminder – {projektname}',
+    body: `Guten Tag
+
+Wir erinnern Sie an die folgenden offenen Aufgaben aus den Bausitzungsprotokollen:
+
+{aufgaben}
+
+Bitte erledigen Sie die Aufgaben bis zur angegebenen Frist.
+
+Bei Fragen wenden Sie sich bitte an die Projektleitung.
+
+Freundliche Grüsse`
+  }
+};
+
+function _bspEmailTplKey() { return 'sp_bsp_email_tpl__' + _activeId; }
+
+function loadBspEmailTemplates() {
+  try {
+    const s = localStorage.getItem(_bspEmailTplKey());
+    if (s) {
+      const saved = JSON.parse(s);
+      return {
+        protokoll: { ..._bspEmailDefaultTemplates.protokoll, ...saved.protokoll },
+        reminder:  { ..._bspEmailDefaultTemplates.reminder,  ...saved.reminder  }
+      };
+    }
+  } catch {}
+  return { protokoll: { ..._bspEmailDefaultTemplates.protokoll }, reminder: { ..._bspEmailDefaultTemplates.reminder } };
+}
+
+function _saveBspEmailTemplates(tpls) {
+  localStorage.setItem(_bspEmailTplKey(), JSON.stringify(tpls));
+}
+
+let _bspEmailMode  = 'protokoll';
+let _bspEmailBspId = null;
+
+function _bspSubstitute(tmpl, vars) {
+  return tmpl.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : '{' + k + '}'));
+}
+
+function _bspBuildEmailVars(mode, bspId) {
+  const pn   = (typeof getActiveProjectName === 'function' ? getActiveProjectName() : '') || 'Projekt';
+  const vars = { projektname: pn, nr: '—', datum: '—', ort: '—', traktanden: '', aufgaben: '' };
+
+  if (mode === 'protokoll' && bspId) {
+    const bsp = _getBspById(bspId);
+    if (bsp) {
+      vars.nr          = String(bsp.nr).padStart(3, '0');
+      vars.datum       = bsp.datum ? bsp.datum.split('-').reverse().join('.') : '—';
+      vars.ort         = bsp.ort || '—';
+      vars.traktanden  = (bsp.traktanden || [])
+        .map((t, i) => `  ${i + 1}. ${t.titel || '(kein Titel)'}`)
+        .join('\n') || '  (keine Traktanden)';
+    }
+  }
+
+  if (mode === 'reminder') {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const lines = [];
+    loadBsp().forEach(bsp => {
+      (bsp.traktanden || []).forEach(t => {
+        (t.tasks || []).forEach(task => {
+          if (task.done) return;
+          const due      = task.dueDate ? new Date(task.dueDate) : null;
+          const daysLeft = due ? Math.ceil((due - today) / 86400000) : null;
+          const fristStr = due
+            ? due.toLocaleDateString('de-CH') + (daysLeft !== null
+                ? (daysLeft < 0 ? ` (${Math.abs(daysLeft)}T überfällig)` : ` (T-${daysLeft})`)
+                : '')
+            : 'keine Frist';
+          lines.push(`  • ${task.text || '—'}  |  ${task.assignee || '—'}  |  Frist: ${fristStr}  [BSP-${String(bsp.nr).padStart(3, '0')}]`);
+        });
+      });
+    });
+    vars.aufgaben = lines.join('\n') || '  (keine offenen Aufgaben)';
+  }
+
+  return vars;
+}
+
+function openBspEmailModal(mode, bspId) {
+  _bspEmailMode  = mode || 'protokoll';
+  _bspEmailBspId = bspId ?? _bspCurrentId ?? null;
+
+  const modal = document.getElementById('bsp-email-modal');
+  if (!modal) return;
+
+  const tpl  = loadBspEmailTemplates()[_bspEmailMode];
+  const vars = _bspBuildEmailVars(_bspEmailMode, _bspEmailBspId);
+
+  document.getElementById('bsp-email-modal-title').textContent =
+    _bspEmailMode === 'protokoll' ? 'Protokoll versenden' : 'Pendenzen-Reminder senden';
+  document.getElementById('bsp-email-subject').value = _bspSubstitute(tpl.subject, vars);
+  document.getElementById('bsp-email-body').value    = _bspSubstitute(tpl.body,    vars);
+  document.getElementById('bsp-email-save-tpl').checked = false;
+
+  // Build recipient chips
+  const contacts      = (typeof loadContacts === 'function') ? loadContacts() : [];
+  const emailContacts = contacts.filter(c => c.email);
+  const recipEl       = document.getElementById('bsp-email-recipients');
+
+  if (!emailContacts.length) {
+    recipEl.innerHTML = '<span style="font-size:11px;color:#9ca3af;font-style:italic;">Keine Kontakte mit E-Mail-Adresse erfasst.</span>';
+  } else {
+    // Pre-selection: try to match by name or select all
+    let preSelected = new Set();
+    if (_bspEmailMode === 'protokoll' && _bspEmailBspId) {
+      const bspTn = (_getBspById(_bspEmailBspId)?.teilnehmer || '').toLowerCase();
+      emailContacts.forEach(c => { if (c.name && bspTn.includes(c.name.toLowerCase())) preSelected.add(c.id); });
+    } else if (_bspEmailMode === 'reminder') {
+      const assignees = new Set();
+      loadBsp().forEach(b => (b.traktanden || []).forEach(t => (t.tasks || []).forEach(task => {
+        if (!task.done && task.assignee) assignees.add(task.assignee.toLowerCase());
+      })));
+      emailContacts.forEach(c => { if (c.name && assignees.has(c.name.toLowerCase())) preSelected.add(c.id); });
+    }
+    if (!preSelected.size) emailContacts.forEach(c => preSelected.add(c.id));
+
+    recipEl.innerHTML = emailContacts.map(c => `
+      <label title="${c.email}" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid #e5e7eb;border-radius:20px;cursor:pointer;font-size:11px;background:white;white-space:nowrap;">
+        <input type="checkbox" value="${c.id}" data-email="${c.email}" ${preSelected.has(c.id) ? 'checked' : ''} style="cursor:pointer;">
+        ${c.name || c.email}
+      </label>`).join('');
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeBspEmailModal() {
+  const modal = document.getElementById('bsp-email-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function _bspEmailResetBody() {
+  const tpl  = loadBspEmailTemplates()[_bspEmailMode];
+  const vars = _bspBuildEmailVars(_bspEmailMode, _bspEmailBspId);
+  document.getElementById('bsp-email-subject').value = _bspSubstitute(tpl.subject, vars);
+  document.getElementById('bsp-email-body').value    = _bspSubstitute(tpl.body,    vars);
+}
+
+function sendBspEmail() {
+  const subject = document.getElementById('bsp-email-subject')?.value || '';
+  const body    = document.getElementById('bsp-email-body')?.value    || '';
+  const saveTpl = document.getElementById('bsp-email-save-tpl')?.checked;
+
+  if (saveTpl) {
+    const tpls = loadBspEmailTemplates();
+    tpls[_bspEmailMode] = { subject, body };
+    _saveBspEmailTemplates(tpls);
+  }
+
+  const emails = Array.from(
+    document.querySelectorAll('#bsp-email-recipients input[type="checkbox"]:checked')
+  ).map(cb => cb.dataset.email).filter(Boolean);
+
+  const mailto = 'mailto:' + emails.join(',')
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body='    + encodeURIComponent(body);
+
+  window.location.href = mailto;
+  closeBspEmailModal();
+}
+
+// --- Template-Editor ---
+function openBspEmailTemplateModal() {
+  const tpls = loadBspEmailTemplates();
+  document.getElementById('bsp-tpl-prot-subject').value = tpls.protokoll.subject;
+  document.getElementById('bsp-tpl-prot-body').value    = tpls.protokoll.body;
+  document.getElementById('bsp-tpl-rem-subject').value  = tpls.reminder.subject;
+  document.getElementById('bsp-tpl-rem-body').value     = tpls.reminder.body;
+  const modal = document.getElementById('bsp-email-tpl-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeBspEmailTemplateModal() {
+  const modal = document.getElementById('bsp-email-tpl-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveBspEmailTemplatesFromModal() {
+  _saveBspEmailTemplates({
+    protokoll: {
+      subject: document.getElementById('bsp-tpl-prot-subject')?.value || '',
+      body:    document.getElementById('bsp-tpl-prot-body')?.value    || ''
+    },
+    reminder: {
+      subject: document.getElementById('bsp-tpl-rem-subject')?.value || '',
+      body:    document.getElementById('bsp-tpl-rem-body')?.value    || ''
+    }
+  });
+  closeBspEmailTemplateModal();
+}
+
+function resetBspEmailTemplates() {
+  if (!confirm('Vorlagen auf Standardtexte zurücksetzen?')) return;
+  _saveBspEmailTemplates(_bspEmailDefaultTemplates);
+  closeBspEmailTemplateModal();
+}
+
+// ============================================================
+// loadAllFotos — sammelt Fotos aller Paare aus getPairData
 // ============================================================
 function loadAllFotos() {
-  const k = 'fotos_' + (getActiveProjectKey() || 'default');
-  try { return JSON.parse(localStorage.getItem(k) || '{}'); } catch { return {}; }
+  const result = {};
+  PAIRS.forEach(p => {
+    const fotos = (getPairData(p.id).fotos || []).filter(f => f && f.data);
+    if (fotos.length) result[p.id] = fotos.map(f => ({ src: f.data, caption: f.caption || '' }));
+  });
+  return result;
 }
 
 </script>
@@ -34960,6 +35734,164 @@ function loadAllFotos() {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Excel (.xlsx)
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BAUSITZUNGSPROTOKOLL MODAL ══ -->
+<div id="bsp-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;overflow-y:auto;">
+  <div style="background:white;margin:20px auto;max-width:820px;border-radius:14px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,0.3);min-height:80vh;display:flex;flex-direction:column;">
+
+    <!-- Modal-Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
+      <h3 style="font-size:15px;font-weight:700;color:#1a3a5c;margin:0;">Bausitzungsprotokoll</h3>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="exportBspPdfCurrent()" style="padding:5px 12px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </button>
+        <button onclick="saveBspModal()" style="padding:5px 14px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:11px;font-weight:700;cursor:pointer;">Speichern</button>
+        <button onclick="closeBspModal()" style="padding:5px 10px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#6b7280;font-size:11px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+
+    <!-- Modal-Body -->
+    <div style="padding:20px;flex:1;overflow-y:auto;">
+
+      <!-- (Inhalt wird jetzt inline im proto-body-bsp gerendert — dieses Modal ist veraltet) -->
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ BSP KONTAKT-PICKER ══ -->
+<div id="bsp-kontakt-picker" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3500;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:20px;max-width:460px;width:90%;max-height:70vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h4 style="margin:0;font-size:14px;font-weight:700;color:#1a3a5c;">Projektbeteiligte hinzufügen</h4>
+      <button onclick="closeBspKontaktPicker()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#9ca3af;">✕</button>
+    </div>
+    <div id="bsp-kontakt-picker-list"></div>
+    <div style="margin-top:12px;text-align:right;">
+      <button onclick="applyBspKontakteToTeilnehmer()" style="padding:6px 16px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;">Übernehmen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BSP E-MAIL MODAL ══ -->
+<div id="bsp-email-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3600;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:20px;max-width:600px;width:95%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h4 id="bsp-email-modal-title" style="margin:0;font-size:14px;font-weight:700;color:#1a3a5c;">E-Mail versenden</h4>
+      <button onclick="closeBspEmailModal()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#9ca3af;">✕</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px;">Empfänger</div>
+      <div id="bsp-email-recipients" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;min-height:36px;"></div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:4px;">Betreff</div>
+      <input id="bsp-email-subject" type="text" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:700;color:#374151;">Nachricht</div>
+        <button onclick="_bspEmailResetBody()" style="font-size:10px;color:#6b7280;border:none;background:none;cursor:pointer;padding:0;">↩ Auf Vorlage zurücksetzen</button>
+      </div>
+      <textarea id="bsp-email-body" rows="12" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;font-family:inherit;resize:vertical;line-height:1.5;"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;padding:8px;background:#f9fafb;border-radius:7px;border:1px solid #e5e7eb;">
+      <input type="checkbox" id="bsp-email-save-tpl" style="cursor:pointer;">
+      <label for="bsp-email-save-tpl" style="font-size:11px;color:#6b7280;cursor:pointer;">Betreff und Text als neue Vorlage speichern</label>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="closeBspEmailModal()" style="padding:6px 16px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:12px;font-weight:600;cursor:pointer;">Abbrechen</button>
+      <button onclick="sendBspEmail()" style="padding:6px 18px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        E-Mail öffnen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BSP MAILVORLAGEN-EDITOR ══ -->
+<div id="bsp-email-tpl-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:3700;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:20px;max-width:680px;width:95%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h4 style="margin:0;font-size:14px;font-weight:700;color:#1a3a5c;">E-Mail Vorlagen bearbeiten</h4>
+      <button onclick="closeBspEmailTemplateModal()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#9ca3af;">✕</button>
+    </div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:14px;padding:8px 12px;background:#f0f9ff;border-radius:7px;border:1px solid #bae6fd;line-height:1.6;">
+      Verfügbare Platzhalter:
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{projektname}</code>
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{nr}</code>
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{datum}</code>
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{ort}</code>
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{traktanden}</code>
+      <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{aufgaben}</code>
+    </div>
+    <div style="margin-bottom:16px;padding:14px;border:1px solid #e5e7eb;border-radius:8px;">
+      <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Protokoll versenden
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Betreff</div>
+        <input id="bsp-tpl-prot-subject" type="text" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Text</div>
+        <textarea id="bsp-tpl-prot-body" rows="8" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;font-family:inherit;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+    </div>
+    <div style="margin-bottom:18px;padding:14px;border:1px solid #e5e7eb;border-radius:8px;">
+      <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pendenzen-Reminder
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Betreff</div>
+        <input id="bsp-tpl-rem-subject" type="text" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Text</div>
+        <textarea id="bsp-tpl-rem-body" rows="8" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;font-family:inherit;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <button onclick="resetBspEmailTemplates()" style="padding:6px 14px;border-radius:7px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:11px;font-weight:600;cursor:pointer;">Standard wiederherstellen</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeBspEmailTemplateModal()" style="padding:6px 16px;border-radius:7px;border:1px solid #d1d5db;background:white;color:#374151;font-size:12px;font-weight:600;cursor:pointer;">Abbrechen</button>
+        <button onclick="saveBspEmailTemplatesFromModal()" style="padding:6px 18px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BSP BILD-PICKER MODAL ══ -->
+<div id="bsp-img-picker" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:20px;max-width:640px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h4 style="margin:0;font-size:14px;font-weight:700;color:#1a3a5c;">Bild einfügen</h4>
+      <button onclick="closeBspImgPicker()" style="border:none;background:none;font-size:18px;cursor:pointer;color:#9ca3af;">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button onclick="setBspImgTab('upload')" id="bsp-imgtab-upload" style="padding:4px 12px;border-radius:20px;border:2px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">Datei hochladen</button>
+      <button onclick="setBspImgTab('fotos')" id="bsp-imgtab-fotos" style="padding:4px 12px;border-radius:20px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Fotos aus Projekt</button>
+    </div>
+    <div id="bsp-imgtab-upload-body">
+      <input type="file" id="bsp-img-file-input" accept="image/*" onchange="onBspImgFileSelected(this)" style="display:none;">
+      <div onclick="document.getElementById('bsp-img-file-input').click()" style="border:2px dashed #d1d5db;border-radius:8px;padding:30px;text-align:center;cursor:pointer;color:#9ca3af;font-size:13px;" onmouseover="this.style.borderColor='#1a3a5c'" onmouseout="this.style.borderColor='#d1d5db'">
+        Klicken zum Hochladen oder Bild hierher ziehen
+      </div>
+      <div id="bsp-img-preview-upload" style="margin-top:10px;"></div>
+    </div>
+    <div id="bsp-imgtab-fotos-body" style="display:none;">
+      <div id="bsp-fotos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
+      <input id="bsp-img-caption" type="text" placeholder="Beschriftung (optional)" style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;">
+      <button onclick="confirmBspImg()" style="padding:6px 16px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;">Einfügen</button>
     </div>
   </div>
 </div>
