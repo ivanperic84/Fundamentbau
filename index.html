@@ -7520,7 +7520,8 @@ function getOvColor(pairId, mode) {
     const bp = loadAllBauprojekt()[pairId] || {};
     const me = parseFloat(bp.bkMe), phi = parseFloat(bp.bkPhi);
     if (isNaN(me) && isNaN(phi)) return '#9ca3af';
-    const grenz = BK_GRENZWERTE[bp.bkBodentyp || 'fein'];
+    const normBt = (bp.bkBodentyp === 'fein' || bp.bkBodentyp === 'grob') ? bp.bkBodentyp : _uscsToBodentyp(bp.bkBodentyp);
+    const grenz = BK_GRENZWERTE[normBt] || BK_GRENZWERTE.fein;
     return ((!isNaN(me) ? me >= grenz.me : true) && (!isNaN(phi) ? phi >= 27 : true)) ? '#059669' : '#dc2626';
   }
   if (mode === 'naturschutz') {
@@ -10366,7 +10367,8 @@ function _importFundamentlisteFromBuffer(buffer) {
           bestand:       'neu',
           massnahme:     '',
           neigung:       neigLabel,
-          bkBodentyp:    bkUscs,
+          bkBodentyp:    _uscsToBodentyp(bkUscs),
+          bkUscs,
           bkMe,
           bkPhi,
           bkGamma,
@@ -10405,14 +10407,15 @@ function _importFundamentlisteFromBuffer(buffer) {
         if (!profilId) {
           newProfCount++;
           profilId = 'bg_imp_' + importTs + '_' + newProfCount;
-          const bodentyp = uscsToBodentyp(bp.bkBodentyp);
+          const bodentyp = bp.bkBodentyp; // bereits normalisiert ('fein'/'grob')
+          const uscsRaw  = bp.bkUscs || '';
           newBgProfiles.push({
             id:          profilId,
             name:        `Import-Profil ${existingBgProfiles.length + newProfCount}` +
-                         (bp.bkBodentyp ? ` — ${bp.bkBodentyp}` : ''),
+                         (uscsRaw ? ` — ${uscsRaw}` : ''),
             beschrieb:   '',
             bodentyp,
-            uscs:        bp.bkBodentyp,
+            uscs:        uscsRaw,
             me:          bp.bkMe,
             phi:         bp.bkPhi,
             gamma:       bp.bkGamma,
@@ -16118,7 +16121,8 @@ const BK_GRENZWERTE = {
 };
 
 function setBkBodentyp(typ, save = true) {
-  _bkBodentyp = typ;
+  // USCS-Code normalisieren → 'fein'/'grob' (für BK_GRENZWERTE-Lookup)
+  _bkBodentyp = (typ === 'fein' || typ === 'grob') ? typ : _uscsToBodentyp(typ);
   if (save) { saveBodenkennwerte(); updateBodenkennwerteUI(); }
 }
 
@@ -29330,7 +29334,7 @@ const LIST_COLUMNS = {
     { key: 'km',       label: 'KM',          render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
     { key: 'fundtyp',  label: 'Fundamenttyp', render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const ft=bp.fundtyp||p.fundtyp||'—'; const warn=bp.importVerify?.boden?'<span title="Baugrundkennwerte fehlen" style="margin-left:4px;font-size:9px;color:#d97706;opacity:0.7;">⚠</span>':''; return ft+warn; } },
     { key: 'neigung',  label: 'Neigung',      render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const n=bp.neigung||p.neigung; if(n) return n; return bp.importVerify?.neigung?'<span title="Geländeneigung fehlt" style="font-size:10px;color:#d97706;opacity:0.7;">? —</span>':'—'; } },
-    { key: 'boden',    label: 'Baugrund',     render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const grenz=BK_GRENZWERTE[bp.bkBodentyp]||BK_GRENZWERTE.fein; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
+    { key: 'boden',    label: 'Baugrund',     render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const nbt=(bp.bkBodentyp==='fein'||bp.bkBodentyp==='grob')?bp.bkBodentyp:_uscsToBodentyp(bp.bkBodentyp); const grenz=BK_GRENZWERTE[nbt]||BK_GRENZWERTE.fein; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
   ],
   ausfuehrung: [
     { key: 'km',      label: 'KM',      render: p => p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—' },
