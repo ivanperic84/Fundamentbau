@@ -1425,7 +1425,7 @@
         <div style="display:flex;align-items:center;gap:10px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span style="font-size:13px;font-weight:700;color:#1a3a5c;">Bausitzungsprotokolle</span>
-          <span style="font-size:11px;color:#6b7280;">Sitzungsprotokolle · <span onclick="openBspEmailTemplateModal();event.stopPropagation();" style="color:#1a3a5c;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Mailvorlagen</span> · Export</span>
+          <span style="font-size:11px;color:#6b7280;">Sitzungsprotokolle · Export</span>
         </div>
         <svg id="proto-chevron-bsp" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
@@ -1445,14 +1445,24 @@
           <div style="position:relative;" onclick="event.stopPropagation()">
             <button onclick="toggleExportPanel('abnahme-export-panel','abnahme-export-btn')" id="abnahme-export-btn"
               style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Teilen
             </button>
-            <div id="abnahme-export-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:300;min-width:160px;">
-              <div style="display:flex;gap:6px;">
-                <button onclick="exportAbnahmeListXlsx()" style="flex:1;padding:6px 0;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Excel</button>
-                <button onclick="exportAbnahmeListPdf()" style="flex:1;padding:6px 0;border-radius:6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">PDF</button>
-              </div>
+            <div id="abnahme-export-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:300;min-width:170px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.04em;padding:4px 8px 6px;text-transform:uppercase;">Format wählen</div>
+              <button onclick="exportAbnahmeListPdf()" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                PDF exportieren
+              </button>
+              <button onclick="exportAbnahmeListXlsx()" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                Excel exportieren
+              </button>
+              <div style="border-top:1px solid #f3f4f6;margin:4px 0;"></div>
+              <button onclick="openProtoEmailModal('abnahme');toggleExportPanel('abnahme-export-panel','abnahme-export-btn')" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Per E-Mail senden
+              </button>
             </div>
           </div>
           <svg id="proto-chevron-abnahme" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1480,19 +1490,26 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="position:relative;" onclick="event.stopPropagation()">
-            <button onclick="openAushubKopfModal()" style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Kopf</button>
-          </div>
-          <div style="position:relative;" onclick="event.stopPropagation()">
             <button onclick="toggleExportPanel('aushub-export-panel','aushub-export-btn')" id="aushub-export-btn"
               style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Export
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Teilen
             </button>
-            <div id="aushub-export-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:300;min-width:160px;">
-              <div style="display:flex;gap:6px;">
-                <button onclick="exportAushubXlsx()" style="flex:1;padding:6px 0;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">Excel</button>
-                <button onclick="exportAushubPdf()" style="flex:1;padding:6px 0;border-radius:6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">PDF</button>
-              </div>
+            <div id="aushub-export-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:300;min-width:170px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.04em;padding:4px 8px 6px;text-transform:uppercase;">Format wählen</div>
+              <button onclick="exportAushubPdf()" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                PDF exportieren
+              </button>
+              <button onclick="exportAushubXlsx()" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                Excel exportieren
+              </button>
+              <div style="border-top:1px solid #f3f4f6;margin:4px 0;"></div>
+              <button onclick="openProtoEmailModal('aushub');toggleExportPanel('aushub-export-panel','aushub-export-btn')" style="width:100%;text-align:left;padding:7px 10px;border-radius:7px;border:none;background:none;color:#374151;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Per E-Mail senden
+              </button>
             </div>
           </div>
           <svg id="proto-chevron-aushub" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="transition:transform .2s;transform:rotate(-90deg)"><polyline points="6 9 12 15 18 9"/></svg>
@@ -3381,6 +3398,12 @@ function savePairs() { localStorage.setItem(PAIRS_KEY, JSON.stringify(PAIRS)); }
 let PAIRS = loadPairs();
 let liveDistances = {};   // pairId -> meters, filled when GPS active
 
+// Installationstyp-Labels (global, vor renderCards benötigt)
+const INST_TYP_LABELS = {
+  kran: 'Kran', lagerplatz: 'Lagerplatz', baueinrichtung: 'Baueinrichtung',
+  zufahrt: 'Zufahrt', sonstig: 'Sonstiges'
+};
+
 // Einmalige Migration: setzt _objType auf bestehenden PAIRS-Einträgen
 function _migrateObjType() {
   let changed = false;
@@ -3393,6 +3416,32 @@ function _migrateObjType() {
   if (changed) savePairs();
 }
 _migrateObjType();
+
+// Einmalige Migration: ftProfilId + ftZuweisungen aus fundtyp-Text reparieren
+// Tritt auf wenn Daten via Import gespeichert wurden ohne assignFundtyp() zu rufen
+function _migrateFtProfilId() {
+  const ftProfiles  = loadFtProfile();
+  const allBp       = loadAllBauprojekt();
+  const ftZuw       = loadFtZuweisungen();
+  let bpChanged = false, zuwChanged = false;
+  PAIRS.filter(p => p._objType === 'fundament').forEach(p => {
+    const bpd = allBp[p.id];
+    if (!bpd) return;
+    // ftProfilId aus fundtyp-Text ableiten falls leer
+    if (!bpd.ftProfilId && bpd.fundtyp) {
+      const match = ftProfiles.find(x => x.name === bpd.fundtyp);
+      if (match) { bpd.ftProfilId = match.id; bpChanged = true; }
+    }
+    // ftZuweisungen mit bpData.ftProfilId synchronisieren
+    if (bpd.ftProfilId && !ftZuw[p.id]) {
+      ftZuw[p.id] = bpd.ftProfilId;
+      zuwChanged = true;
+    }
+  });
+  if (bpChanged)  saveAllBauprojekt(allBp);
+  if (zuwChanged) saveFtZuweisungen(ftZuw);
+}
+_migrateFtProfilId();
 
 function getFundamente()     { return PAIRS.filter(p => p._objType === 'fundament'); }
 function getSondagen()       { return PAIRS.filter(p => p._objType === 'sondage'); }
@@ -4098,17 +4147,22 @@ function renderCards() {
       instCard.style.backgroundColor = 'white';
       instCard.style.borderColor = '#e5e7eb';
       instCard.addEventListener('click', (e) => {
-        if (e.target.closest('.card-actions')) return;
+        if (e.target.closest('.card-actions') || e.target.closest('.qs-wrap') || e.target.closest('.qs-picker')) return;
         showDetail(p.id);
       });
+      const _instPd = getPairData(p.id);
       instCard.innerHTML = `
         <div class="card-top">
           <div class="card-id">${p.bezeichnung || ('Installation ' + p.id)}</div>
           <div style="background:#f3f4f6;color:#374151;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;">${typLabel}</div>
         </div>
         <div class="card-km">${flaecheStr}</div>
-        ${zeitraum ? `<div class="card-zugang">🗓 ${zeitraum}</div>` : ''}
+        ${zeitraum ? `<div class="card-zugang" style="font-size:11px;color:#4b5563;">${zeitraum}</div>` : ''}
         <div class="card-footer" style="margin-top:auto;">
+          <div class="qs-wrap" onclick="event.stopPropagation()">
+            <button class="qs-badge" style="${qsBadgeStyle(_instPd.status)}" onclick="toggleQsPicker(${p.id},this)">${statusLabel(_instPd.status)}<span class="qs-chevron">▾</span></button>
+            <div class="qs-picker" id="qs-picker-${p.id}">${buildQsOpts(p.id, _instPd.status)}</div>
+          </div>
           <div class="card-actions" style="display:flex;gap:5px;">
             <button onclick="event.stopPropagation();openCreateInstallation(${p.id})"
               style="padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;font-weight:600;cursor:pointer;">Bearbeiten</button>
@@ -4377,17 +4431,41 @@ function showDetail(pairId) {
     if (_si) {
       const typLabel = INST_TYP_LABELS[pair.installTyp] || pair.installTyp || '—';
       const fStr = pair.flaeche ? `${pair.flaeche} m²` : (pair.flaecheL && pair.flaecheB ? `${pair.flaecheL} × ${pair.flaecheB} m` : '—');
-      const zeitraum = (pair.von || pair.bis) ? `${pair.von || '?'} – ${pair.bis || '?'}` : '—';
+      const vonStr = pair.von ? pair.von.split('-').reverse().join('.') : null;
+      const bisStr = pair.bis ? pair.bis.split('-').reverse().join('.') : null;
+      const zeitraum = (vonStr || bisStr) ? `${vonStr || '?'} – ${bisStr || '?'}` : '—';
+      const _cbRow = (key, label) => {
+        const checked = !!pair[key];
+        const col = checked ? '#1a3a5c' : '#6b7280';
+        return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;border-bottom:1px solid #f3f4f6;" onclick="toggleInstStatus(${pair.id},'${key}')">
+          <div style="width:15px;height:15px;border-radius:3px;border:1.5px solid ${checked ? '#1a3a5c' : '#d1d5db'};background:${checked ? '#1a3a5c' : 'white'};display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+            ${checked ? '<svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6 5 9 10 3"/></svg>' : ''}
+          </div>
+          <span style="font-size:12px;color:${col};font-weight:${checked ? '600' : '400'};">${label}</span>
+        </label>`;
+      };
+      const bestelltDatumVal = pair.instBestelltDatum || '';
       _si.innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <tr><td style="color:#9ca3af;padding:3px 0;width:90px;">Typ</td><td style="font-weight:600;color:#0891b2;">${typLabel}</td></tr>
-          <tr><td style="color:#9ca3af;padding:3px 0;">Fläche</td><td>${fStr}</td></tr>
-          <tr><td style="color:#9ca3af;padding:3px 0;">Zeitraum</td><td>${zeitraum}</td></tr>
-          ${pair.bemerkung ? `<tr><td style="color:#9ca3af;padding:3px 0;vertical-align:top;">Bemerkung</td><td style="white-space:pre-wrap;">${pair.bemerkung}</td></tr>` : ''}
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;">
+          <tr><td style="color:#9ca3af;padding:4px 0;width:80px;font-size:11px;">Typ</td><td style="font-weight:600;color:#1a3a5c;font-size:12px;">${typLabel}</td></tr>
+          <tr><td style="color:#9ca3af;padding:4px 0;font-size:11px;">Fläche</td><td style="color:#374151;font-size:12px;">${fStr}</td></tr>
+          <tr><td style="color:#9ca3af;padding:4px 0;font-size:11px;">Zeitraum</td><td style="color:#374151;font-size:12px;">${zeitraum}</td></tr>
+          ${pair.bemerkung ? `<tr><td style="color:#9ca3af;padding:4px 0;font-size:11px;vertical-align:top;">Bemerkung</td><td style="white-space:pre-wrap;color:#374151;font-size:12px;">${pair.bemerkung}</td></tr>` : ''}
+          ${pair.instBestellLink ? `<tr><td style="color:#9ca3af;padding:4px 0;font-size:11px;vertical-align:top;">Bestelllink</td><td style="font-size:12px;"><a href="${pair.instBestellLink}" target="_blank" rel="noopener" style="color:#1a3a5c;font-weight:600;text-decoration:none;word-break:break-all;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Öffnen <svg style="vertical-align:middle" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td></tr>` : ''}
         </table>
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">Status</div>
+        ${_cbRow('instBestellt',     'Bestellt')}
+        <div id="inst-bestellt-datum-row" style="padding:4px 0 6px 23px;border-bottom:1px solid #f3f4f6;${pair.instBestellt ? '' : 'display:none;'}">
+          <label style="font-size:10px;color:#9ca3af;display:block;margin-bottom:3px;">Bestelldatum</label>
+          <input type="date" id="inst-bestellt-datum" value="${bestelltDatumVal}"
+            onchange="saveInstBestelltDatum(${pair.id}, this.value)"
+            style="padding:4px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:11px;font-family:inherit;color:#374151;background:white;cursor:pointer;">
+        </div>
+        ${_cbRow('instRueckmeldung', 'Rückmeldung pendent')}
+        ${_cbRow('instBestaetigt',   'Bestätigt')}
         <div style="margin-top:10px;">
           <button onclick="openCreateInstallation(${pair.id})"
-            style="padding:4px 10px;border-radius:6px;border:1px solid #0891b2;background:white;color:#0891b2;font-size:11px;font-weight:600;cursor:pointer;">Bearbeiten</button>
+            style="padding:4px 12px;border-radius:6px;border:1px solid #1a3a5c;background:white;color:#1a3a5c;font-size:11px;font-weight:600;cursor:pointer;">Bearbeiten</button>
         </div>`;
     }
   }
@@ -9279,6 +9357,68 @@ function renderList() {
     tbody.appendChild(tr);
   });
   updateBulkBar();
+
+  // ── Installationsflächen-Tabelle anhängen ──
+  const _instWrap = document.getElementById('inst-list-section');
+  if (_instWrap) _instWrap.remove();
+  if (isBPlist) {
+    const instArr = getInstallationen();
+    if (instArr.length) {
+      const _iSec = document.createElement('div');
+      _iSec.id = 'inst-list-section';
+      _iSec.style.cssText = 'margin-top:18px;';
+      const _iRows = instArr.map(p => {
+        const typL   = INST_TYP_LABELS[p.installTyp] || p.installTyp || '—';
+        const fStr   = p.flaeche ? `${p.flaeche} m²` : (p.flaecheL && p.flaecheB ? `${p.flaecheL}×${p.flaecheB} m` : '—');
+        const vonStr = p.von ? p.von.split('-').reverse().join('.') : '—';
+        const bisStr = p.bis ? p.bis.split('-').reverse().join('.') : '—';
+        const _pd    = getPairData(p.id);
+        const stCol  = getStatusColor(_pd.status);
+        const stLbl  = statusLabel(_pd.status);
+        const linkCell = p.instBestellLink
+          ? `<a href="${p.instBestellLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#1a3a5c;font-weight:600;font-size:11px;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Link <svg style="vertical-align:middle" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`
+          : '<span style="color:#d1d5db;">—</span>';
+        return `<tr class="list-hover-row" onclick="showDetail(${p.id})" style="cursor:pointer;">
+          <td style="padding:7px 10px;font-weight:600;font-size:12px;">${p.bezeichnung || 'Installation ' + p.id}</td>
+          <td style="padding:7px 10px;font-size:12px;">${typL}</td>
+          <td style="padding:7px 10px;font-size:12px;">${fStr}</td>
+          <td style="padding:7px 10px;font-size:12px;white-space:nowrap;">${vonStr}</td>
+          <td style="padding:7px 10px;font-size:12px;white-space:nowrap;">${bisStr}</td>
+          <td style="padding:7px 10px;font-size:12px;">${linkCell}</td>
+          <td style="padding:7px 10px;"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${stCol}22;color:${stCol};border:1px solid ${stCol}44;">${stLbl}</span></td>
+          <td style="padding:7px 10px;" onclick="event.stopPropagation()">
+            <div style="display:flex;gap:4px;">
+              <button onclick="openCreateInstallation(${p.id})" style="padding:2px 7px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;font-weight:600;cursor:pointer;">Bearbeiten</button>
+              <button onclick="deleteInstallation(${p.id})" style="padding:2px 7px;border-radius:5px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:10px;font-weight:600;cursor:pointer;">Löschen</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+      _iSec.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+          <span style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;">Baustelleninstallationen</span>
+          <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+        </div>
+        <table class="list-table" style="width:100%;">
+          <thead>
+            <tr>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;">Bezeichnung</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Typ</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Fläche</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Von</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Bis</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Bestelllink</th>
+              <th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:600;">Status</th>
+              <th style="padding:9px 10px;"></th>
+            </tr>
+          </thead>
+          <tbody>${_iRows}</tbody>
+        </table>`;
+      const _listWrap = document.getElementById('list-wrap');
+      if (_listWrap) _listWrap.appendChild(_iSec);
+    }
+  }
 }
 
 function _showListEditNotice(msg, isWarn) {
@@ -11978,6 +12118,8 @@ function quickStatus(pairId, status) {
   logChange(pairId, 'Status', statusLabel(status));
   updateProgress();
   renderCards();
+  renderInstallationen();
+  if (currentOverviewView === 'liste') renderList();
 }
 
 // ============================================================
@@ -13312,6 +13454,49 @@ function locateCreateMap() {
   }, () => alert('Standort konnte nicht ermittelt werden.'), { timeout: 8000 });
 }
 
+function toggleInstStatus(pairId, key) {
+  const p = PAIRS.find(x => x.id === pairId);
+  if (!p) return;
+  p[key] = !p[key];
+  savePairs();
+  // Sidebar ohne volle showDetail-Neu-Render aktualisieren
+  const _si = document.getElementById('sec-inst-content');
+  if (_si) {
+    // Checkbox-DIVs direkt toggling
+    const labels = _si.querySelectorAll('label[onclick]');
+    labels.forEach(lbl => {
+      const onclk = lbl.getAttribute('onclick') || '';
+      if (!onclk.includes(`'${key}'`)) return;
+      const checked = !!p[key];
+      const box = lbl.querySelector('div');
+      if (box) {
+        box.style.borderColor  = checked ? '#1a3a5c' : '#d1d5db';
+        box.style.background   = checked ? '#1a3a5c' : 'white';
+        box.innerHTML = checked
+          ? '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6 5 9 10 3"/></svg>'
+          : '';
+      }
+      const span = lbl.querySelector('span');
+      if (span) {
+        span.style.color      = checked ? '#1a3a5c' : '#6b7280';
+        span.style.fontWeight = checked ? '600' : '400';
+      }
+    });
+    // Bestelldatum-Zeile ein-/ausblenden
+    if (key === 'instBestellt') {
+      const _row = document.getElementById('inst-bestellt-datum-row');
+      if (_row) _row.style.display = p.instBestellt ? '' : 'none';
+    }
+  }
+}
+
+function saveInstBestelltDatum(pairId, value) {
+  const p = PAIRS.find(x => x.id === pairId);
+  if (!p) return;
+  p.instBestelltDatum = value || '';
+  savePairs();
+}
+
 function openCreateInstallation(id) {
   _createInstallMode = true;
   openCreateView(id || null);
@@ -13378,7 +13563,7 @@ function openCreateView(id) {
     // Installations-Felder füllen (wenn Installation)
     if (p._objType === 'installation') {
       const _ib = id => { const el = document.getElementById(id); if (el) el.value = ''; };
-      _ib('c-inst-bezeichnung'); _ib('c-inst-typ'); _ib('c-inst-flaeche-l'); _ib('c-inst-flaeche-b'); _ib('c-inst-flaeche'); _ib('c-inst-von'); _ib('c-inst-bis'); _ib('c-inst-bemerkung');
+      _ib('c-inst-bezeichnung'); _ib('c-inst-typ'); _ib('c-inst-flaeche-l'); _ib('c-inst-flaeche-b'); _ib('c-inst-flaeche'); _ib('c-inst-von'); _ib('c-inst-bis'); _ib('c-inst-bestelllink'); _ib('c-inst-bemerkung');
       const _is = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
       _is('c-inst-bezeichnung', p.bezeichnung);
       _is('c-inst-typ', p.installTyp);
@@ -13387,6 +13572,7 @@ function openCreateView(id) {
       _is('c-inst-flaeche', p.flaeche);
       _is('c-inst-von', p.von);
       _is('c-inst-bis', p.bis);
+      _is('c-inst-bestelllink', p.instBestellLink);
       _is('c-inst-bemerkung', p.bemerkung);
     }
     // Koordinaten
@@ -14013,10 +14199,11 @@ function saveCreate() {
       flaecheL:    fL || null,
       flaecheB:    fB || null,
       flaeche:     flaeche || null,
-      von:         v('c-inst-von') || null,
-      bis:         v('c-inst-bis') || null,
-      bemerkung:   v('c-inst-bemerkung').trim(),
-      rs:          { e: instE, n: instN },
+      von:           v('c-inst-von') || null,
+      bis:           v('c-inst-bis') || null,
+      instBestellLink: v('c-inst-bestelllink').trim() || null,
+      bemerkung:     v('c-inst-bemerkung').trim(),
+      rs:            { e: instE, n: instN },
     };
     pushUndo();
     let savedId;
@@ -18771,10 +18958,6 @@ function renderBaugrundView() {
 // ============================================================
 // INSTALLATIONEN-TAB
 // ============================================================
-const INST_TYP_LABELS = {
-  kran: 'Kran', lagerplatz: 'Lagerplatz', baueinrichtung: 'Baueinrichtung',
-  zufahrt: 'Zufahrt', sonstig: 'Sonstiges'
-};
 
 function renderInstallationen() {
   const container = document.getElementById('installationen-cards');
@@ -18795,22 +18978,33 @@ function renderInstallationen() {
     card.style.cssText = 'background:white;border-radius:10px;border:1px solid #e5e7eb;padding:14px 15px;cursor:pointer;transition:box-shadow .15s;';
     card.onmouseover = () => card.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
     card.onmouseout  = () => card.style.boxShadow = '';
-    card.onclick = () => showDetail(p.id);
+    card.onclick = (e) => {
+      if (e.target.closest('.qs-wrap') || e.target.closest('.qs-picker') || e.target.closest('button') || e.target.closest('a')) return;
+      showDetail(p.id);
+    };
+    const _ipd = getPairData(p.id);
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
         <div style="font-size:13px;font-weight:700;color:#1a3a5c;">${p.bezeichnung || 'Installation ' + p.id}</div>
-        <div style="background:#0891b2;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border-radius:4px;">I</div>
+        <div style="background:#0891b2;color:white;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;border-radius:4px;">I</div>
       </div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">
-        <span style="font-weight:600;color:#0891b2;">${typLabel}</span> · ${flaecheStr}
+        <span style="font-weight:600;color:#374151;">${typLabel}</span> · ${flaecheStr}
       </div>
-      ${zeitraum ? `<div style="font-size:11px;color:#6b7280;">🗓 ${zeitraum}</div>` : ''}
-      ${p.bemerkung ? `<div style="font-size:11px;color:#9ca3af;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.bemerkung}</div>` : ''}
-      <div style="margin-top:10px;display:flex;gap:6px;">
-        <button onclick="event.stopPropagation();openCreateInstallation(${p.id})"
-          style="padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;font-weight:600;cursor:pointer;">Bearbeiten</button>
-        <button onclick="event.stopPropagation();deleteInstallation(${p.id})"
-          style="padding:3px 8px;border-radius:5px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:10px;font-weight:600;cursor:pointer;">Löschen</button>
+      ${zeitraum ? `<div style="font-size:11px;color:#6b7280;margin-bottom:4px;">${zeitraum}</div>` : ''}
+      ${p.instBestellLink ? `<div style="margin-bottom:4px;"><a href="${p.instBestellLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-size:11px;color:#1a3a5c;font-weight:600;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Bestelllink <svg style="vertical-align:middle" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></div>` : ''}
+      ${p.bemerkung ? `<div style="font-size:11px;color:#9ca3af;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.bemerkung}</div>` : ''}
+      <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;">
+        <div class="qs-wrap" onclick="event.stopPropagation()">
+          <button class="qs-badge" style="${qsBadgeStyle(_ipd.status)}" onclick="toggleQsPicker(${p.id},this)">${statusLabel(_ipd.status)}<span class="qs-chevron">▾</span></button>
+          <div class="qs-picker" id="qs-picker-${p.id}">${buildQsOpts(p.id, _ipd.status)}</div>
+        </div>
+        <div style="display:flex;gap:5px;">
+          <button onclick="event.stopPropagation();openCreateInstallation(${p.id})"
+            style="padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:white;color:#374151;font-size:10px;font-weight:600;cursor:pointer;">Bearbeiten</button>
+          <button onclick="event.stopPropagation();deleteInstallation(${p.id})"
+            style="padding:3px 8px;border-radius:5px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:10px;font-weight:600;cursor:pointer;">Löschen</button>
+        </div>
       </div>`;
     container.appendChild(card);
   });
@@ -18823,6 +19017,8 @@ function deleteInstallation(id) {
   if (idx !== -1) PAIRS.splice(idx, 1);
   savePairs();
   renderCards();
+  renderInstallationen();
+  if (currentOverviewView === 'liste') renderList();
 }
 
 function renderFundtypView() {
@@ -21152,8 +21348,8 @@ function renderBpFundamenteGantt() {
       const kmStr  = p.km_rs ? 'km ' + parseFloat(p.km_rs).toFixed(3) : '';
       const glStr  = p.gleis ? 'Gl '  + p.gleis : '';
       const sub    = [kmStr, glStr].filter(Boolean).join(' · ');
-      svg += `<text x="${8+indent}" y="${rowY+13}" font-size="11" fill="#374151" font-weight="${r.indent?'400':'600'}" font-family="system-ui">${lbl}</text>`;
-      if (sub) svg += `<text x="${8+indent}" y="${rowY+25}" font-size="9" fill="#9ca3af" font-family="system-ui">${sub}</text>`;
+      svg += `<text x="${8+indent}" y="${rowY+11}" font-size="9" fill="#374151" font-weight="${r.indent?'400':'600'}" font-family="system-ui">${lbl}</text>`;
+      if (sub) svg += `<text x="${8+indent}" y="${rowY+22}" font-size="8" fill="#9ca3af" font-family="system-ui">${sub}</text>`;
 
       if (r.type === 'fund-abbruch') {
         const sd = getAbbruchStartDate(p);
@@ -23450,6 +23646,7 @@ function recalcBaupakete() {
   const ftList  = loadFtProfile();
   const spList  = loadSperrmuster();
   const allBpD  = loadAllBauprojekt();
+  const lps     = loadLeistungsprofile();
 
   const aenderungen = [];
 
@@ -23479,10 +23676,15 @@ function recalcBaupakete() {
           neuNaechte += calc.total;
           details.push({ name: ft.name, intervall: `${effPfahlLeistung}h/Pf ×${ft.anzahlPfaehle}`, naechte: calc.total });
         }
-      } else if (ft?.ftIntervall) {
-        const n = Math.ceil(ft.ftIntervall / sp.nettoH);
-        neuNaechte += n;
-        details.push({ name: ft.name, intervall: ft.ftIntervall, naechte: n });
+      } else {
+        // Effektives ftIntervall: LP hat Vorrang (konsistent mit getFtLeistung)
+        const _effLp   = ft?.leistungsprofilId ? lps.find(p => p.id === ft.leistungsprofilId) : null;
+        const _effIntv = _effLp?.ftIntervall ?? ft?.ftIntervall ?? null;
+        if (_effIntv) {
+          const n = Math.ceil(_effIntv / sp.nettoH);
+          neuNaechte += n;
+          details.push({ name: ft?.name || '?', intervall: _effIntv, naechte: n });
+        }
       }
     });
 
@@ -23829,6 +24031,11 @@ function autoZuweisenSchichten(config) {
       return totalSchichten;
     } else {
       neueZuw[p.id] = { paketId: pak.id, schichtNr: Math.min(sNr, pak.anzahlNaechte || 1) };
+      // Multi-Schicht-Fundamente: wenn ftIntervall > nettoH braucht ein Fundament mehrere Nächte
+      if (curSp?.nettoH) {
+        const _ftL = getFtLeistung(ft, curSp.nettoH, einst.abzugMinuten);
+        if (_ftL != null && _ftL > 0 && _ftL < 1) return Math.ceil(1 / _ftL);
+      }
       return 1;
     }
   };
@@ -23879,6 +24086,7 @@ function autoZuweisenSchichten(config) {
         const _fxGleis = String(p.gleis).trim();
         const _maxNr   = pak.anzahlNaechte || 1;
         let _fxGuard   = 0;
+        let _fxMoved   = false;
         while (fxNr <= _maxNr && _fxGuard++ < 300) {
           const _fxSch = getPakSchichten(pak).find(s => s.schichtNr === fxNr);
           if (!_fxSch) break;
@@ -23886,12 +24094,16 @@ function autoZuweisenSchichten(config) {
           fxNr++;
           while (fxNr <= _maxNr && !isSchichtValid(pak, fxNr)) fxNr++;
           fxRest = pakKap;
+          _fxMoved = true;
         }
         if (fxNr > _maxNr) return; // kein kompatibler Slot → Pair überspringen
-        // Kapazität auf tatsächliches SP dieses Gleises setzen
-        const _fxSch2 = getPakSchichten(pak).find(s => s.schichtNr === fxNr);
-        const _fxSp   = _fxSch2?.datum ? resolveSpForGleis(_fxGleis, _fxSch2.datum) : null;
-        if (_fxSp?.nettoH) fxRest = Math.max(0, _fxSp.nettoH * 60 - (einst.abzugMinuten || 0));
+        // Kapazität nur zurücksetzen wenn wir tatsächlich auf eine neue Nacht gesprungen sind —
+        // sonst wird die bisherige Buchung des vorherigen Fundamentes überschrieben.
+        if (_fxMoved) {
+          const _fxSch2 = getPakSchichten(pak).find(s => s.schichtNr === fxNr);
+          const _fxSp   = _fxSch2?.datum ? resolveSpForGleis(_fxGleis, _fxSch2.datum) : null;
+          if (_fxSp?.nettoH) fxRest = Math.max(0, _fxSp.nettoH * 60 - (einst.abzugMinuten || 0));
+        }
       }
 
       // SP für dieses Pair (gleis-spezifisch) für Kapazitätsberechnung
@@ -23934,20 +24146,24 @@ function autoZuweisenSchichten(config) {
     if (p.gleis) {
       const _pGleis = String(p.gleis).trim();
       let _guard = 0;
+      let _moved = false;
       while (paketIdx < aktivePakete.length && _guard++ < 300) {
         const _sch = getPakSchichten(aktivePakete[paketIdx]).find(s => s.schichtNr === schichtNr);
         if (!_sch) break; // kein Schicht-Eintrag → nicht weiterrücken
         if (resolveSpForGleis(_pGleis, _sch.datum)) break; // gültiges SP für dieses Gleis → kompatibel
         // Kein SP für dieses Gleis an diesem Datum → Nacht überspringen
         advanceSchicht();
+        _moved = true;
         if (paketIdx < aktivePakete.length) schichtRestMin = getPaketKap(aktivePakete[paketIdx]);
       }
       if (paketIdx >= aktivePakete.length) return;
-      // schichtRestMin auf tatsächliche Kapazität für dieses Gleis setzen
-      const _advSch = getPakSchichten(aktivePakete[paketIdx]).find(s => s.schichtNr === schichtNr);
-      const _advSp  = _advSch?.datum ? resolveSpForGleis(_pGleis, _advSch.datum) : null;
-      if (_advSp?.nettoH) {
-        schichtRestMin = Math.max(0, _advSp.nettoH * 60 - (einst.abzugMinuten || 0));
+      // schichtRestMin nur zurücksetzen wenn wir tatsächlich auf eine neue Nacht gesprungen sind,
+      // sonst wird die bisherige Kapazitätsbuchung (aus vorherigen Fundamenten in derselben Nacht)
+      // überschrieben und jedes Fundament landet fälschlicherweise in einer eigenen Nacht.
+      if (_moved) {
+        const _advSch = getPakSchichten(aktivePakete[paketIdx]).find(s => s.schichtNr === schichtNr);
+        const _advSp  = _advSch?.datum ? resolveSpForGleis(_pGleis, _advSch.datum) : null;
+        if (_advSp?.nettoH) schichtRestMin = Math.max(0, _advSp.nettoH * 60 - (einst.abzugMinuten || 0));
       }
     }
 
@@ -24028,8 +24244,12 @@ function autoZuweisenSchichten(config) {
         if (durMin != null && durMin > 0) {
           schichtRestMin -= durMin;
           if (schichtRestMin <= 0) {
-            advanceSchicht();
-            if (paketIdx < aktivePakete.length) schichtRestMin = getPaketKap(aktivePakete[paketIdx]);
+            // Multi-Schicht-Fundament: Cursor um ceil(1/ftLeistung) Nächte vorrücken
+            const _nAdv = (ftLeistung > 0 && ftLeistung < 1) ? Math.ceil(1 / ftLeistung) : 1;
+            for (let _ai = 0; _ai < _nAdv && paketIdx < aktivePakete.length; _ai++) {
+              advanceSchicht();
+              if (paketIdx < aktivePakete.length) schichtRestMin = getPaketKap(aktivePakete[paketIdx]);
+            }
           }
         } else {
           // Kein Kapazitätswert ermittelbar oder Kapazität = 0 → Einzelzuweisung
@@ -24809,8 +25029,16 @@ function showFpCtxMenu(pairId, clientX, clientY) {
   menu.style.left = Math.min(clientX, window.innerWidth  - mw - 8) + 'px';
   menu.style.top  = Math.min(clientY, window.innerHeight - mh - 8) + 'px';
 
-  // Schliessen bei Klick ausserhalb
-  setTimeout(() => document.addEventListener('click', hideFpCtxMenu, { once: true }), 0);
+  // Schliessen bei Klick ausserhalb des Menus
+  setTimeout(() => {
+    function _fpCtxOutside(e) {
+      if (!document.getElementById('fp-ctx-menu').contains(e.target)) {
+        hideFpCtxMenu();
+        document.removeEventListener('click', _fpCtxOutside, true);
+      }
+    }
+    document.addEventListener('click', _fpCtxOutside, true);
+  }, 0);
 }
 
 function hideFpCtxMenu() {
@@ -31696,6 +31924,68 @@ function resetBspEmailTemplates() {
   if (!confirm('Vorlagen auf Standardtexte zurücksetzen?')) return;
   _saveBspEmailTemplates(_bspEmailDefaultTemplates);
   closeBspEmailTemplateModal();
+  renderMailvorlagenPanel();
+}
+
+// Teilen-Button für Abnahme/Aushub — öffnet E-Mail mit exportiertem PDF als Hinweis
+function openProtoEmailModal(type) {
+  const pn = (typeof getActiveProjectName === 'function' ? getActiveProjectName() : '') || 'Projekt';
+  const tpl = loadBspEmailTemplates();
+  const subject = encodeURIComponent(`${type === 'abnahme' ? 'Abnahme-Übersicht' : 'Aushubprotokoll'} – ${pn}`);
+  const body = encodeURIComponent(
+    `Guten Tag\n\nIm Anhang finden Sie ${type === 'abnahme' ? 'die Abnahme-Übersicht' : 'das Aushubprotokoll'} für das Projekt ${pn}.\n\nBitte laden Sie zuerst den PDF-Export herunter und fügen Sie diesen als Anhang hinzu.\n\nFreundliche Grüsse`
+  );
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function renderMailvorlagenPanel() {
+  const el = document.getElementById('mailvorlagen-panel-content');
+  if (!el) return;
+  const tpls = loadBspEmailTemplates();
+  el.innerHTML = `
+    <div style="margin-bottom:16px;padding:14px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
+      <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Protokoll versenden
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Betreff</div>
+        <input id="mv-prot-subject" type="text" value="${(tpls.protokoll.subject||'').replace(/"/g,'&quot;')}" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Text</div>
+        <textarea id="mv-prot-body" rows="6" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;font-family:inherit;resize:vertical;line-height:1.5;">${tpls.protokoll.body||''}</textarea>
+      </div>
+    </div>
+    <div style="padding:14px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
+      <div style="font-size:12px;font-weight:700;color:#1a3a5c;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pendenzen-Reminder
+      </div>
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Betreff</div>
+        <input id="mv-rem-subject" type="text" value="${(tpls.reminder.subject||'').replace(/"/g,'&quot;')}" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:12px;font-family:inherit;">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:3px;">Text</div>
+        <textarea id="mv-rem-body" rows="6" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;font-family:inherit;resize:vertical;line-height:1.5;">${tpls.reminder.body||''}</textarea>
+      </div>
+    </div>`;
+}
+
+function saveMailvorlagenFromPanel() {
+  _saveBspEmailTemplates({
+    protokoll: {
+      subject: document.getElementById('mv-prot-subject')?.value || '',
+      body:    document.getElementById('mv-prot-body')?.value    || ''
+    },
+    reminder: {
+      subject: document.getElementById('mv-rem-subject')?.value  || '',
+      body:    document.getElementById('mv-rem-body')?.value     || ''
+    }
+  });
+  const btn = document.querySelector('[onclick*="saveMailvorlagenFromPanel"]');
+  if (btn) { btn.textContent = '✓ Gespeichert'; setTimeout(() => btn.textContent = 'Speichern', 1500); }
 }
 
 // ============================================================
@@ -32021,6 +32311,10 @@ function loadAllFotos() {
             <label class="create-lbl">Bis</label>
             <input class="create-input" id="c-inst-bis" type="date">
           </div>
+        </div>
+        <div class="create-field" style="margin-bottom:8px;">
+          <label class="create-lbl">Bestelllink (URL)</label>
+          <input class="create-input" id="c-inst-bestelllink" type="url" placeholder="https://…">
         </div>
         <div class="create-field" style="margin-bottom:8px;">
           <label class="create-lbl">Bemerkung</label>
@@ -32757,7 +33051,13 @@ function loadAllFotos() {
   <div class="modal-box" style="max-width:820px;width:97%;max-height:92vh;display:flex;flex-direction:column;">
     <div class="modal-header">
       <div class="modal-title" id="aushub-modal-title">Aushubprotokoll</div>
-      <button class="modal-close" onclick="closeAushubModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="openAushubKopfModal()" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Kopfdaten
+        </button>
+        <button class="modal-close" onclick="closeAushubModal()">✕</button>
+      </div>
     </div>
 
     <div style="flex:1;overflow-y:auto;">
@@ -34571,12 +34871,13 @@ function loadAllFotos() {
 
     <!-- Tab-Leiste -->
     <div style="display:flex;gap:4px;padding:14px 22px 0;flex-shrink:0;border-bottom:1px solid #f0f2f5;padding-bottom:0;overflow-x:auto;scrollbar-width:none;">
-      <button class="app-settings-tab-btn" data-tab="allgemein" onclick="openAppSettingsTab('allgemein')">Allgemein</button>
-      <button class="app-settings-tab-btn" data-tab="status"    onclick="openAppSettingsTab('status')">Status</button>
-      <button class="app-settings-tab-btn" data-tab="sidebar"   onclick="openAppSettingsTab('sidebar')">Sidebar</button>
-      <button class="app-settings-tab-btn" data-tab="phasen"    onclick="openAppSettingsTab('phasen')">Phasen</button>
-      <button class="app-settings-tab-btn" data-tab="vorlage"   onclick="openAppSettingsTab('vorlage')">Vorlage</button>
-      <button class="app-settings-tab-btn" data-tab="paramdb"   onclick="openAppSettingsTab('paramdb')" style="white-space:nowrap;">Parameterdatenbank</button>
+      <button class="app-settings-tab-btn" data-tab="allgemein"    onclick="openAppSettingsTab('allgemein')">Allgemein</button>
+      <button class="app-settings-tab-btn" data-tab="status"       onclick="openAppSettingsTab('status')">Status</button>
+      <button class="app-settings-tab-btn" data-tab="sidebar"      onclick="openAppSettingsTab('sidebar')">Sidebar</button>
+      <button class="app-settings-tab-btn" data-tab="phasen"       onclick="openAppSettingsTab('phasen')">Phasen</button>
+      <button class="app-settings-tab-btn" data-tab="vorlage"      onclick="openAppSettingsTab('vorlage')">Vorlage</button>
+      <button class="app-settings-tab-btn" data-tab="mailvorlagen" onclick="openAppSettingsTab('mailvorlagen');renderMailvorlagenPanel()" style="white-space:nowrap;">Mailvorlagen</button>
+      <button class="app-settings-tab-btn" data-tab="paramdb"      onclick="openAppSettingsTab('paramdb')" style="white-space:nowrap;">Parameterdatenbank</button>
     </div>
 
     <!-- Scrollbarer Inhalt -->
@@ -34800,6 +35101,26 @@ function loadAllFotos() {
           </label>
         </div>
         <p style="font-size:11px;color:#9ca3af;margin:0;">Vorlagen können zwischen Geräten oder Mitarbeitern geteilt werden.</p>
+      </div>
+
+      <!-- ══ TAB: Mailvorlagen ══ -->
+      <div class="app-settings-panel" data-panel="mailvorlagen" style="display:none;">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">E-Mail Vorlagen</div>
+        <p style="font-size:11px;color:#6b7280;margin:0 0 14px;line-height:1.5;">Standardtexte für das Versenden von Protokollen und Pendenzen-Reminders. Platzhalter werden beim Versenden automatisch ersetzt.</p>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:14px;padding:8px 12px;background:#f0f9ff;border-radius:7px;border:1px solid #bae6fd;line-height:1.7;">
+          <strong style="color:#1a3a5c;">Verfügbare Platzhalter:</strong><br>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{projektname}</code>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{nr}</code>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{datum}</code>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{ort}</code>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{traktanden}</code>
+          <code style="background:#e0f2fe;padding:1px 5px;border-radius:3px;margin:0 2px;">{aufgaben}</code>
+        </div>
+        <div id="mailvorlagen-panel-content"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+          <button onclick="resetBspEmailTemplates()" style="padding:6px 14px;border-radius:7px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;font-size:11px;font-weight:600;cursor:pointer;">Standard wiederherstellen</button>
+          <button onclick="saveMailvorlagenFromPanel()" style="padding:6px 18px;border-radius:7px;border:none;background:#1a3a5c;color:white;font-size:12px;font-weight:700;cursor:pointer;">Speichern</button>
+        </div>
       </div>
 
       <!-- ══ TAB: Parameterdatenbank ══ -->
