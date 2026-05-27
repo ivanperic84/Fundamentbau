@@ -1200,6 +1200,16 @@
           </div>
         </div>
         <div style="display:flex;gap:6px;">
+          <!-- Spalten ein-/ausblenden -->
+          <div style="position:relative;">
+            <button onclick="toggleBgzColPanel()" id="bgz-col-btn"
+              style="padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+              Spalten
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="bgz-col-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:300;min-width:160px;"></div>
+          </div>
           <div style="position:relative;">
             <button onclick="toggleExportPanel('bgz-export-panel','bgz-export-btn')" id="bgz-export-btn"
               style="padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
@@ -3069,8 +3079,11 @@
           <button class="tool-btn active" id="btn-pen" onclick="setTool('pen')" title="Stift" style="display:flex;align-items:center;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
-          <button class="tool-btn" id="btn-poly" onclick="setTool('poly')" title="Polylinie: Klick = Punkt, Doppelklick = Fertig, ESC = Abbrechen" style="display:flex;align-items:center;gap:4px;">
+          <button class="tool-btn" id="btn-poly" onclick="setTool('poly')" title="Polylinie: Klick = Punkt, Rechtsklick = Fertig, ESC = Abbrechen" style="display:flex;align-items:center;gap:4px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="20" r="2" fill="currentColor" stroke="none"/><circle cx="12" cy="5" r="2" fill="currentColor" stroke="none"/><circle cx="20" cy="15" r="2" fill="currentColor" stroke="none"/><polyline points="4 20 12 5 20 15"/></svg> Linie
+          </button>
+          <button class="tool-btn" id="btn-polygon" onclick="setTool('polygon')" title="Fläche: Klick = Punkt, Rechtsklick = Schliessen, ESC = Abbrechen" style="display:flex;align-items:center;gap:4px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 20 12 4 20 14 14 20"/></svg> Fläche
           </button>
           <button class="tool-btn" id="btn-text" onclick="setTool('text')" title="Text: Klick auf Karte, Text eingeben, Enter bestätigen" style="display:flex;align-items:center;">T</button>
           <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')" title="Radierer" style="display:flex;align-items:center;">
@@ -3555,6 +3568,14 @@ function initMap() {
   leafletMap.on('click', (e) => {
     if (currentMode !== 'pan' || !parcelQueryActive) return;
     queryParcelInfo(e.latlng);
+  });
+
+  // Rechtsklick → Karten-Kontextmenü
+  leafletMap.on('contextmenu', (e) => {
+    if (currentMode !== 'pan') return;
+    L.DomEvent.preventDefault(e.originalEvent);
+    const rect = leafletMap.getContainer().getBoundingClientRect();
+    showMapCtxMenu('detail', e.latlng, rect.left + e.containerPoint.x, rect.top + e.containerPoint.y);
   });
 
   addMarkers(pair);
@@ -6861,7 +6882,7 @@ function onCanvasClick(e) {
     if (sketchStrokes.length !== before) { redrawSketch(); saveSketchToStorage(); }
     return;
   }
-  if (currentTool === 'poly') {
+  if (currentTool === 'poly' || currentTool === 'polygon') {
     const pos = getCanvasPos(e);
     polyPoints.push({ ...canvasPosToLatLng(pos) });
     polyActive = true;
@@ -6878,7 +6899,10 @@ function onCanvasClick(e) {
 function onCanvasRightClick(e) {
   if (!isDrawMode) return;
   e.preventDefault();
-  if (currentTool === 'poly' && polyActive) commitPolyline();
+  if (polyActive) {
+    if (currentTool === 'poly')     commitPolyline();
+    if (currentTool === 'polygon')  commitPolygon();
+  }
 }
 
 function onCanvasDblClick(e) {
@@ -6887,6 +6911,8 @@ function onCanvasDblClick(e) {
     const idx = findTextStrokeAt(getCanvasPos(e));
     if (idx >= 0) startEditText(idx);
   }
+  if (currentTool === 'poly'    && polyActive) commitPolyline();
+  if (currentTool === 'polygon' && polyActive) commitPolygon();
 }
 
 function onCanvasMouseMove(e) {
@@ -6908,7 +6934,7 @@ function onCanvasMouseMove(e) {
     return;
   }
 
-  if (currentTool === 'poly' && polyActive) {
+  if ((currentTool === 'poly' || currentTool === 'polygon') && polyActive) {
     polyPreviewPos = pos;
     redrawSketch(); drawPolyPreview();
   }
@@ -6936,6 +6962,8 @@ function drawPolyPreview() {
     ctx.stroke();
   }
 
+  const isPolygonTool = currentTool === 'polygon';
+
   // Gestrichelte Vorschaulinie vom letzten Punkt zum Mauszeiger
   if (polyPreviewPos) {
     const last = polyPoints[polyPoints.length - 1];
@@ -6945,13 +6973,29 @@ function drawPolyPreview() {
     ctx.moveTo(lp.x, lp.y);
     ctx.lineTo(polyPreviewPos.x, polyPreviewPos.y);
     ctx.stroke();
+
+    // Polygon: gestrichelte Schliess-Linie vom Mauszeiger zurück zum ersten Punkt
+    if (isPolygonTool && polyPoints.length >= 2) {
+      const first = polyPoints[0];
+      const fp = latLngToCanvasPos(L.latLng(first.lat, first.lng));
+      ctx.setLineDash([4, 6]);
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(polyPreviewPos.x, polyPreviewPos.y);
+      ctx.lineTo(fp.x, fp.y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
   }
 
   // Tooltip am Mauszeiger (ab 1 gesetztem Punkt)
   if (polyPreviewPos && polyPoints.length >= 1) {
     ctx.setLineDash([]);
     ctx.font = 'bold 11px Segoe UI, sans-serif';
-    const hint = polyPoints.length >= 2 ? 'Rechtsklick = Fertig · ESC = Abbrechen' : 'Klick = Punkt setzen · ESC = Abbrechen';
+    const minPts = isPolygonTool ? 3 : 2;
+    const hint = polyPoints.length >= minPts
+      ? 'Rechtsklick = Schliessen · ESC = Abbrechen'
+      : 'Klick = Punkt setzen · ESC = Abbrechen';
     const tw = ctx.measureText(hint).width;
     const tx = Math.min(polyPreviewPos.x - tw/2 - 6, canvas.width / canvasDpr - tw - 16);
     ctx.fillStyle = 'rgba(26,58,92,0.85)';
@@ -6966,6 +7010,13 @@ function drawPolyPreview() {
 function commitPolyline() {
   if (!polyActive || polyPoints.length < 2) { cancelPolyline(); return; }
   sketchStrokes.push({ tool:'poly', color:currentColor, size:brushSize, points:[...polyPoints] });
+  polyActive = false; polyPoints = []; polyPreviewPos = null;
+  redrawSketch(); saveSketchToStorage();
+}
+
+function commitPolygon() {
+  if (!polyActive || polyPoints.length < 3) { cancelPolyline(); return; }
+  sketchStrokes.push({ tool:'polygon', color:currentColor, size:brushSize, points:[...polyPoints] });
   polyActive = false; polyPoints = []; polyPreviewPos = null;
   redrawSketch(); saveSketchToStorage();
 }
@@ -7093,6 +7144,19 @@ function redrawSketch() {
       ctx.beginPath();
       pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
       ctx.stroke();
+    } else if (stroke.tool === 'polygon') {
+      // Geschlossene Fläche: Füllung + Kontur
+      ctx.lineWidth = stroke.size;
+      ctx.beginPath();
+      pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.closePath();
+      // Halbtransparente Füllung
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = stroke.color;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = stroke.color;
+      ctx.stroke();
     } else {
       // Maus / Touch Freehand: Catmull-Rom-Spline → sehr glatte Kurve
       ctx.lineWidth = stroke.size;
@@ -7183,8 +7247,8 @@ function setMapOpacity(val, step) {
 }
 
 function setTool(t) {
-  // Laufende Polylinie abbrechen wenn Tool wechselt
-  if (polyActive && t !== 'poly') cancelPolyline();
+  // Laufende Poly/Polygon-Eingabe abbrechen wenn Tool wechselt
+  if (polyActive && t !== 'poly' && t !== 'polygon') cancelPolyline();
   // Text-Eingabe verstecken wenn Tool wechselt
   if (t !== 'text') {
     const ti = document.getElementById('sketch-text-input');
@@ -7192,7 +7256,7 @@ function setTool(t) {
     textInputPending = false;
   }
   currentTool = t;
-  ['pen','poly','text','eraser'].forEach(id => {
+  ['pen','poly','polygon','text','eraser'].forEach(id => {
     const btn = document.getElementById('btn-' + id);
     if (btn) btn.classList.toggle('active', id === t);
   });
@@ -7230,7 +7294,7 @@ function setColor(c) {
   currentColor = c;
   const btn = document.getElementById('sketch-color-btn');
   if (btn) btn.style.background = c;
-  setTool('pen');
+  // Tool nicht zurücksetzen — aktives Tool behalten
 }
 
 function toggleSketchColorPicker() {
@@ -7438,9 +7502,107 @@ function setOverviewOpacityFromSelect(val) {
   setOverviewMapOpacity(parseInt(val), null);
 }
 
+let _detailMapOpacity = 75;
+
 function setDetailOpacityFromSelect(val) {
   const pct = parseInt(val);
+  _detailMapOpacity = pct;
   setMapOpacity(pct, null);
+}
+
+// ── Karten-Kontextmenü ────────────────────────────────────────
+let _mapCtxTarget = null; // 'detail' | 'overview'
+let _mapCtxLatlng = null;
+
+function showMapCtxMenu(target, latlng, clientX, clientY) {
+  _mapCtxTarget = target;
+  _mapCtxLatlng = latlng;
+  const isDetail  = target === 'detail';
+  const curBase   = isDetail ? detailBaseLayerKey : overviewBaseLayerKey;
+  const curOp     = isDetail ? _detailMapOpacity : Math.round(overviewMapOpacity * 100);
+
+  const bases = [
+    { key:'swiss-luft',  label:'Luftbild' },
+    { key:'swiss-karte', label:'swisstopo' },
+    { key:'umwelt',      label:'Umwelt' },
+  ];
+  const btnS  = 'display:block;width:100%;text-align:left;padding:6px 10px;border:none;background:none;font-size:12px;font-family:inherit;cursor:pointer;border-radius:6px;color:#374151;';
+  const sBtnS = btnS + 'font-weight:700;color:#1a3a5c;background:#eff6ff;';
+  const opBtnS = (active) => `padding:5px 0;border:1px solid ${active?'#1a3a5c':'#e5e7eb'};border-radius:6px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:${active?'700':'400'};background:${active?'#1a3a5c':'white'};color:${active?'white':'#374151'};`;
+
+  const menu = document.getElementById('map-ctx-menu');
+  menu.innerHTML = `
+    <div style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 2px;">Kartenart</div>
+    ${bases.map(b =>
+      `<button style="${curBase===b.key?sBtnS:btnS}" onmouseenter="this.style.background='${curBase===b.key?'#dbeafe':'#f9fafb'}'" onmouseleave="this.style.background='${curBase===b.key?'#eff6ff':'none'}'" onclick="mapCtxSetBase('${b.key}')">
+        ${curBase===b.key?`<svg style="display:inline;vertical-align:middle;margin-right:4px;" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`:'<span style="display:inline-block;width:14px;"></span>'}${b.label}
+      </button>`
+    ).join('')}
+    <div style="height:1px;background:#f3f4f6;margin:5px 0;"></div>
+    <div style="font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding:2px 10px 4px;">Transparenz</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:2px 10px 4px;">
+      ${[25,50,75,100].map(p =>
+        `<button style="${opBtnS(curOp===p)}" onclick="mapCtxSetOpacity(${p})">${p}%</button>`
+      ).join('')}
+    </div>
+    ${isDetail ? `
+    <div style="height:1px;background:#f3f4f6;margin:5px 0;"></div>
+    <button style="${btnS}" onmouseenter="this.style.background='#f9fafb'" onmouseleave="this.style.background='none'" onclick="mapCtxPlaceText()">
+      <svg style="display:inline;vertical-align:middle;margin-right:5px;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>Text setzen
+    </button>` : ''}`;
+
+  const mw = 200, mh = isDetail ? 240 : 200;
+  menu.style.left    = Math.min(clientX, window.innerWidth  - mw - 10) + 'px';
+  menu.style.top     = Math.min(clientY, window.innerHeight - mh - 10) + 'px';
+  menu.style.display = '';
+
+  setTimeout(() => {
+    function _mCtxOut(e) {
+      const m = document.getElementById('map-ctx-menu');
+      if (m && !m.contains(e.target)) {
+        hideMapCtxMenu();
+        document.removeEventListener('click', _mCtxOut, true);
+      }
+    }
+    document.addEventListener('click', _mCtxOut, true);
+  }, 0);
+}
+
+function hideMapCtxMenu() {
+  const m = document.getElementById('map-ctx-menu');
+  if (m) m.style.display = 'none';
+}
+
+function mapCtxSetBase(key) {
+  if (_mapCtxTarget === 'detail') setDetailBaseLayer(key);
+  else setOverviewBaseLayer(key);
+  hideMapCtxMenu();
+}
+
+function mapCtxSetOpacity(pct) {
+  if (_mapCtxTarget === 'detail') {
+    setDetailOpacityFromSelect(String(pct));
+    const sel = document.getElementById('detail-opacity-select');
+    if (sel) sel.value = String(pct);
+  } else {
+    setOverviewOpacityFromSelect(String(pct));
+    const sel = document.getElementById('ov-opacity-select');
+    if (sel) sel.value = String(pct);
+  }
+  hideMapCtxMenu();
+}
+
+function mapCtxPlaceText() {
+  hideMapCtxMenu();
+  if (!leafletMap || !_mapCtxLatlng) return;
+  if (currentMode !== 'draw') setMode('draw');
+  setTool('text');
+  const canvasPos = latLngToCanvasPos(L.latLng(_mapCtxLatlng.lat, _mapCtxLatlng.lng));
+  textInputLatlng  = { lat: _mapCtxLatlng.lat, lng: _mapCtxLatlng.lng };
+  textInputPending = true;
+  editingTextIdx   = -1;
+  editingTextBackup = null;
+  showTextInputAt(canvasPos, '', currentColor, fontSizeFromBrush());
 }
 
 let _overviewInfoLayer = 'status';
@@ -9511,6 +9673,13 @@ function initOverviewMap() {
 
   // Basis-Karte setzen (zuletzt gewählte Kartenart)
   setOverviewBaseLayer(overviewBaseLayerKey);
+
+  // Rechtsklick → Karten-Kontextmenü
+  overviewMap.on('contextmenu', (e) => {
+    L.DomEvent.preventDefault(e.originalEvent);
+    const rect = overviewMap.getContainer().getBoundingClientRect();
+    showMapCtxMenu('overview', e.latlng, rect.left + e.containerPoint.x, rect.top + e.containerPoint.y);
+  });
 
   // Standard-Info-Layer je Phase setzen
   _overviewInfoLayer = _activePhase === 'baugrund' ? 'status' : 'massnahme';
@@ -19225,12 +19394,75 @@ function renderBgProfileGrid() {
   grid.innerHTML = cards + addTile;
 }
 
+// ── Baugrund-Zuweisung: Spalten-Konfiguration ───────────────────
+const BGZ_COL_DEFS = [
+  { id:'massnahme', label:'Massnahme',      def:true  },
+  { id:'km',        label:'KM',             def:true  },
+  { id:'fundtyp',   label:'Fundamenttyp',   def:true  },
+  { id:'profil',    label:'Baugrundprofil', def:true  },
+  { id:'uscs',      label:'USCS',           def:true  },
+  { id:'me',        label:'ME [MPa]',       def:true  },
+  { id:'phi',       label:'φ\' [°]',        def:true  },
+  { id:'gamma',     label:'γ [kN/m³]',      def:false },
+  { id:'c',         label:'c [kN/m²]',      def:false },
+  { id:'gw',        label:'Grundwasser',    def:false },
+];
+let _bgzCols = null;
+
+function _loadBgzCols() {
+  if (_bgzCols) return _bgzCols;
+  const raw = localStorage.getItem('bgz_cols__' + _activeId);
+  if (raw) { try { _bgzCols = JSON.parse(raw); return _bgzCols; } catch(e) {} }
+  _bgzCols = {};
+  BGZ_COL_DEFS.forEach(c => { _bgzCols[c.id] = c.def !== false; });
+  return _bgzCols;
+}
+function _saveBgzCols() {
+  localStorage.setItem('bgz_cols__' + _activeId, JSON.stringify(_bgzCols));
+}
+function toggleBgzColPanel() {
+  const panel = document.getElementById('bgz-col-panel');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : '';
+  if (!isOpen) {
+    const cols = _loadBgzCols();
+    panel.innerHTML = `<div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Spalten</div>` +
+      BGZ_COL_DEFS.map(c =>
+        `<label style="display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer;font-size:11px;color:#374151;white-space:nowrap;">
+          <input type="checkbox" ${cols[c.id] ? 'checked' : ''} onchange="setBgzCol('${c.id}',this.checked)"
+            style="cursor:pointer;width:13px;height:13px;accent-color:#1a3a5c;flex-shrink:0;">
+          ${c.label}
+        </label>`
+      ).join('');
+    setTimeout(() => {
+      function _bgzColOutside(e) {
+        const p2 = document.getElementById('bgz-col-panel');
+        const btn = document.getElementById('bgz-col-btn');
+        if (p2 && !p2.contains(e.target) && !btn.contains(e.target)) {
+          p2.style.display = 'none';
+          document.removeEventListener('click', _bgzColOutside, true);
+        }
+      }
+      document.addEventListener('click', _bgzColOutside, true);
+    }, 0);
+  }
+}
+function setBgzCol(id, visible) {
+  _bgzCols = _loadBgzCols();
+  _bgzCols[id] = visible;
+  _saveBgzCols();
+  renderBgZuweisungList();
+}
+
 function renderBgZuweisungList() {
   const table = document.getElementById('baugrund-zuweisung-list');
   if (!table) return;
   const profile     = loadBgProfile();
   const zuweisungen = loadBgZuweisungen();
   const fundamente  = getFundamente();
+  const cols        = _loadBgzCols();
+  const col         = id => !!cols[id];
 
   // Zähler-Label und Bulk-Select aktualisieren
   const countLbl = document.getElementById('bgz-count-label');
@@ -19243,14 +19475,22 @@ function renderBgZuweisungList() {
     bulkSel.value = prev;
   }
 
+  const visCount = 2 + BGZ_COL_DEFS.filter(c => cols[c.id]).length; // checkbox + Standort + sichtbare + Status
   if (fundamente.length === 0) {
-    table.innerHTML = `<tbody><tr><td colspan="7" style="text-align:center;padding:32px;font-size:12px;color:#9ca3af;">
+    table.innerHTML = `<tbody><tr><td colspan="${visCount + 1}" style="text-align:center;padding:32px;font-size:12px;color:#9ca3af;">
       Noch keine Fundamentstandorte vorhanden. Diese werden im Bauprojekt erfasst.</td></tr></tbody>`;
     return;
   }
 
-  const allBp = loadAllBauprojekt();
-  const thS   = 'padding:8px 10px;font-size:10px;font-weight:700;text-align:left;white-space:nowrap;';
+  const allBp  = loadAllBauprojekt();
+  const thS    = 'padding:8px 10px;font-size:10px;font-weight:700;text-align:left;white-space:nowrap;color:white;';
+  const gwLbls = { nicht_angetroffen:'Nicht angetroffen', angetroffen:'Angetroffen', gespannt:'Gespannt', unbekannt:'Unbekannt' };
+
+  const bkCell = (val, ok) => {
+    if (!val && val !== 0) return `<span style="font-size:11px;color:#d1d5db;">—</span>`;
+    const c = ok === true ? '#16a34a' : ok === false ? '#dc2626' : '#374151';
+    return `<span style="font-size:11px;color:${c};font-weight:${ok !== null ? '600' : '400'};">${val}</span>`;
+  };
 
   const rows = fundamente.map((p, i) => {
     const assignedId = zuweisungen[p.id] || '';
@@ -19263,6 +19503,22 @@ function renderBgZuweisungList() {
     const km         = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : '—';
     const bg         = i % 2 === 0 ? '#ffffff' : '#f9fafb';
 
+    // BK-Werte: bevorzugt aus zugewiesenem Profil, sonst aus BP-Daten
+    const meVal  = (assigned?.me   || bpData.bkMe)    || '';
+    const phiVal = (assigned?.phi  || bpData.bkPhi)   || '';
+    const gamVal = (assigned?.gamma|| bpData.bkGamma) || '';
+    const cVal   = (assigned?.c    || bpData.bkC)     || '';
+    const uscsVal= (assigned?.uscs || bpData.bkUscs)  || '';
+    const gwEnum = (assigned?.grundwasser || bpData.bkGrundwasser) || '';
+    const gwVal  = gwLbls[gwEnum] || gwEnum || '';
+
+    const normBt = assigned?.bodentyp || ((bpData.bkBodentyp === 'fein' || bpData.bkBodentyp === 'grob') ? bpData.bkBodentyp : _uscsToBodentyp(bpData.bkBodentyp));
+    const grenz  = BK_GRENZWERTE[normBt] || BK_GRENZWERTE.fein;
+    const meNum  = parseFloat(meVal);
+    const phiNum = parseFloat(phiVal);
+    const meOk   = !isNaN(meNum)  ? (meNum  >= grenz.me) : null;
+    const phiOk  = !isNaN(phiNum) ? (phiNum >= 27)       : null;
+
     const statusBadge = assigned ? (() => {
       const b = beurteileBgProfil(assigned);
       if (b.ok === true)  return `<span style="font-size:10px;color:#16a34a;font-weight:700;background:#dcfce7;padding:3px 8px;border-radius:5px;white-space:nowrap;">✓ Erfüllt</span>`;
@@ -19274,46 +19530,55 @@ function renderBgZuweisungList() {
       `<option value="${pr.id}" ${assignedId === pr.id ? 'selected' : ''}>${pr.name}</option>`
     ).join('');
 
+    const tdS = 'padding:8px 10px;';
     return `<tr class="list-hover-row" style="background:${bg};cursor:pointer;"
         onclick="event.target.type!=='checkbox'&&event.target.tagName!=='SELECT'&&showDetail(${p.id})">
-      <td style="padding:8px 10px;" onclick="event.stopPropagation()">
+      <td style="${tdS}" onclick="event.stopPropagation()">
         <input type="checkbox" class="bgz-row-cb" data-id="${p.id}" onchange="bgzUpdateBulkBar()"
           style="cursor:pointer;width:14px;height:14px;accent-color:#1a3a5c;">
       </td>
-      <td style="padding:8px 10px;">
+      <td style="${tdS}">
         <span style="font-size:12px;font-weight:700;color:#1a3a5c;">Mast ${p.mast || p.id}</span>
       </td>
-      <td style="padding:8px 10px;white-space:nowrap;">
-        ${massSet
-          ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:${massCol}22;color:${massCol};border:1px solid ${massCol}44;">${massLbl}</span>`
-          : `<span style="font-size:10px;color:#d1d5db;">—</span>`}
-      </td>
-      <td style="padding:8px 10px;font-size:11px;color:#6b7280;">${km}</td>
-      <td style="padding:8px 10px;font-size:11px;color:#374151;">${fundtyp || '—'}</td>
-      <td style="padding:8px 10px;" onclick="event.stopPropagation()">
+      ${col('massnahme') ? `<td style="${tdS}white-space:nowrap;">${massSet
+        ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:${massCol}22;color:${massCol};border:1px solid ${massCol}44;">${massLbl}</span>`
+        : `<span style="font-size:10px;color:#d1d5db;">—</span>`}</td>` : ''}
+      ${col('km')       ? `<td style="${tdS}font-size:11px;color:#6b7280;">${km}</td>` : ''}
+      ${col('fundtyp')  ? `<td style="${tdS}font-size:11px;color:#374151;">${fundtyp || '—'}</td>` : ''}
+      ${col('profil')   ? `<td style="${tdS}" onclick="event.stopPropagation()">
         <select onchange="assignBgProfil(${p.id},this.value)"
           style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;background:white;min-width:140px;">
-          <option value="">— kein Profil —</option>
-          ${selOpts}
-        </select>
-      </td>
-      <td style="padding:8px 10px;">${statusBadge}</td>
+          <option value="">— kein Profil —</option>${selOpts}
+        </select></td>` : ''}
+      ${col('uscs')     ? `<td style="${tdS}font-size:11px;color:#374151;">${uscsVal || '—'}</td>` : ''}
+      ${col('me')       ? `<td style="${tdS}">${bkCell(meVal, meOk)}</td>` : ''}
+      ${col('phi')      ? `<td style="${tdS}">${bkCell(phiVal, phiOk)}</td>` : ''}
+      ${col('gamma')    ? `<td style="${tdS}font-size:11px;color:#374151;">${gamVal || '—'}</td>` : ''}
+      ${col('c')        ? `<td style="${tdS}font-size:11px;color:#374151;">${cVal || '—'}</td>` : ''}
+      ${col('gw')       ? `<td style="${tdS}font-size:11px;color:#374151;">${gwVal || '—'}</td>` : ''}
+      <td style="${tdS}">${statusBadge}</td>
     </tr>`;
   }).join('');
 
   table.innerHTML = `
     <thead>
-      <tr style="background:#1a3a5c;color:white;">
+      <tr style="background:#1a3a5c;">
         <th style="padding:8px 10px;width:34px;">
           <input type="checkbox" id="bgz-all-cb" onchange="bgzSelectAll(this.checked)"
             style="cursor:pointer;width:14px;height:14px;accent-color:#fff;">
         </th>
-        <th style="${thS}color:white;">Standort</th>
-        <th style="${thS}color:white;">Massnahme</th>
-        <th style="${thS}color:white;">KM</th>
-        <th style="${thS}color:white;">Fundamenttyp</th>
-        <th style="${thS}color:white;">Baugrundprofil</th>
-        <th style="${thS}color:white;">Status</th>
+        <th style="${thS}">Standort</th>
+        ${col('massnahme') ? `<th style="${thS}">Massnahme</th>` : ''}
+        ${col('km')        ? `<th style="${thS}">KM</th>` : ''}
+        ${col('fundtyp')   ? `<th style="${thS}">Fundamenttyp</th>` : ''}
+        ${col('profil')    ? `<th style="${thS}">Baugrundprofil</th>` : ''}
+        ${col('uscs')      ? `<th style="${thS}">USCS</th>` : ''}
+        ${col('me')        ? `<th style="${thS}">ME [MPa]</th>` : ''}
+        ${col('phi')       ? `<th style="${thS}">φ' [°]</th>` : ''}
+        ${col('gamma')     ? `<th style="${thS}">γ [kN/m³]</th>` : ''}
+        ${col('c')         ? `<th style="${thS}">c [kN/m²]</th>` : ''}
+        ${col('gw')        ? `<th style="${thS}">Grundwasser</th>` : ''}
+        <th style="${thS}">Status</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>`;
@@ -29573,6 +29838,7 @@ function openBegehungSkizze(pairId, bgImageDataUrl, idx) {
   const count = bskCount(pairId, _activePhase);
   const view = document.getElementById('beg-skizze-view');
   view.style.display = 'flex';
+  _bskActivatePaste();
 
   const title = document.getElementById('beg-skizze-title');
   const phaseLabel = PHASEN_CONFIG[_activePhase]?.label || _activePhase;
@@ -29677,6 +29943,7 @@ async function captureMapScreenshot() {
 
 function closeBegehungSkizze() {
   bskSave();
+  _bskDeactivatePaste();
   document.getElementById('beg-skizze-view').style.display = 'none';
   if (_bskMap) { _bskMap.remove(); _bskMap = null; }
   const picker = document.getElementById('bsk-map-picker');
@@ -30129,35 +30396,82 @@ async function bskCaptureMap() {
 }
 
 // Foto als Hintergrund laden
+// Gemeinsame Hilfsfunktion: Blob/File als Hintergrundbild laden
+function bskLoadImageFromBlob(blob) {
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const bgCanvas = document.getElementById('bsk-bg-canvas');
+    const wrap     = document.getElementById('bsk-canvas-wrap');
+    if (!bgCanvas) { URL.revokeObjectURL(url); return; }
+    if (wrap) {
+      const w = wrap.offsetWidth || window.innerWidth;
+      wrap.style.height = Math.round(w * img.height / img.width) + 'px';
+    }
+    setTimeout(() => {
+      bgCanvas.width  = wrap ? wrap.offsetWidth  : bgCanvas.offsetWidth;
+      bgCanvas.height = wrap ? wrap.offsetHeight : bgCanvas.offsetHeight;
+      const ctx = bgCanvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, bgCanvas.width, bgCanvas.height);
+      bgCanvas.style.opacity = _bskBgOpacity;
+      const dc = document.getElementById('bsk-draw-canvas');
+      if (dc) { dc.width = bgCanvas.width; dc.height = bgCanvas.height; bskRedraw(); }
+      URL.revokeObjectURL(url);
+    }, 50);
+  };
+  img.src = url;
+}
+
 function bskLoadFoto(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      const bgCanvas = document.getElementById('bsk-bg-canvas');
-      const wrap     = document.getElementById('bsk-canvas-wrap');
-      if (!bgCanvas) return;
-      // Wrap-Höhe an Bild-Seitenverhältnis anpassen
-      if (wrap) {
-        const w = wrap.offsetWidth;
-        wrap.style.height = Math.round(w * img.height / img.width) + 'px';
-      }
-      setTimeout(() => {
-        bgCanvas.width  = wrap ? wrap.offsetWidth  : bgCanvas.offsetWidth;
-        bgCanvas.height = wrap ? wrap.offsetHeight : bgCanvas.offsetHeight;
-        const ctx = bgCanvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, bgCanvas.width, bgCanvas.height);
-        bgCanvas.style.opacity = _bskBgOpacity;
-        const dc = document.getElementById('bsk-draw-canvas');
-        if (dc) { dc.width = bgCanvas.width; dc.height = bgCanvas.height; bskRedraw(); }
-      }, 50);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+  bskLoadImageFromBlob(file);
   input.value = '';
+}
+
+// Paste-Handler: aktiv während Skizze offen ist
+let _bskPasteHandler = null;
+
+function _bskActivatePaste() {
+  _bskDeactivatePaste();
+  _bskPasteHandler = e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
+        if (blob) { bskLoadImageFromBlob(blob); e.preventDefault(); return; }
+      }
+    }
+  };
+  document.addEventListener('paste', _bskPasteHandler);
+}
+
+function _bskDeactivatePaste() {
+  if (_bskPasteHandler) {
+    document.removeEventListener('paste', _bskPasteHandler);
+    _bskPasteHandler = null;
+  }
+}
+
+// Paste-Button: versucht navigator.clipboard.read(), Fallback zeigt Hinweis
+async function bskPasteBtn() {
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const imgType = item.types.find(t => t.startsWith('image/'));
+      if (imgType) {
+        const blob = await item.getType(imgType);
+        bskLoadImageFromBlob(blob);
+        return;
+      }
+    }
+    alert('Kein Bild in der Zwischenablage.');
+  } catch {
+    // Clipboard-API nicht erlaubt → Hinweis
+    const hint = document.getElementById('bsk-paste-hint');
+    if (hint) { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 2500); }
+  }
 }
 
 // Hintergrund entfernen
@@ -33321,6 +33635,11 @@ function loadAllFotos() {
         style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
       </button>
+      <!-- Bild aus Zwischenablage einfügen (Ctrl+V) -->
+      <button onclick="bskPasteBtn()" title="Bild aus Zwischenablage einfügen (Ctrl+V)"
+        style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      </button>
       <!-- Exportieren -->
       <button onclick="bskExport()" title="Als Bild speichern"
         style="width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;">
@@ -33340,9 +33659,13 @@ function loadAllFotos() {
       <canvas id="bsk-bg-canvas" style="position:absolute;top:0;left:0;display:block;"></canvas>
       <canvas id="bsk-draw-canvas" style="position:absolute;top:0;left:0;display:block;touch-action:none;cursor:crosshair;"></canvas>
     </div>
-    <!-- Hinweis -->
+    <!-- Hinweis Touch -->
     <div id="bsk-hint" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(26,58,92,0.65);color:white;font-size:10px;padding:4px 12px;border-radius:20px;pointer-events:none;white-space:nowrap;opacity:1;transition:opacity 1s;">
       ✏️ 1 Finger zeichnen &nbsp;·&nbsp; 👌 2 Finger verschieben / zoomen
+    </div>
+    <!-- Hinweis Paste (kurz sichtbar wenn Clipboard-API blockiert) -->
+    <div id="bsk-paste-hint" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(26,58,92,0.85);color:white;font-size:11px;padding:6px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity 0.4s;">
+      Ctrl+V zum Einfügen eines Screenshots
     </div>
   </div>
 
@@ -35719,6 +36042,9 @@ function loadAllFotos() {
 </div>
 
 <!-- ══ FUNDAMENT-GANTT KONTEXTMENÜ ══ -->
+<!-- KARTEN-KONTEXTMENÜ ══════════════════════════════════════════════════════ -->
+<div id="map-ctx-menu" style="display:none;position:fixed;z-index:9400;background:white;border:1px solid #e5e7eb;border-radius:10px;padding:5px 0;box-shadow:0 8px 28px rgba(0,0,0,.15);min-width:190px;font-family:system-ui,sans-serif;"></div>
+
 <div id="fp-ctx-menu" style="display:none;position:fixed;z-index:9500;background:white;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:220px;overflow:hidden;font-family:system-ui,sans-serif;">
   <div id="fp-ctx-header" style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#374151;"></div>
   <div style="padding:4px 0;">
