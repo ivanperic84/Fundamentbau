@@ -9498,6 +9498,15 @@ function renderList() {
               <option value=">33°" ${nv==='>33°'?'selected':''}>>33°</option>
             </select></td>`;
         }
+        if (c.key === 'reftyp') {
+          const rv = getBpRefFamilie(bpData);
+          const fams = getFtFamilies();
+          return `<td onclick="event.stopPropagation()" style="padding:4px 8px;">
+            <select onchange="saveListRefFamilie(${p.id},this.value)" style="padding:3px 5px;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;font-family:inherit;background:white;">
+              <option value="">—</option>
+              ${fams.map(f => `<option value="${f}"${rv===f?' selected':''}>${f}</option>`).join('')}
+            </select></td>`;
+        }
       }
       const clickAct = c.clickFn
         ? `${c.clickFn(p.id)};event.stopPropagation()`
@@ -10529,8 +10538,12 @@ function _importFundamentlisteFromBuffer(buffer) {
       // Nur echte Header-Zeilen werden gescannt — kein falsches Matching auf Titel-
       // oder Datenzellen. Header-Zeilen werden anhand eindeutiger Zellwerte gefunden.
       const _nh = s => typeof s === 'string' ? s.toLowerCase().replace(/\s+/g, ' ').trim() : '';
-      // Primäre Header-Zeile: enthält 'Fundamenttyp Standard' (eindeutig für diese Tabelle)
-      const _hdrA = rows.find(r => r && r.some(c => _nh(c) === 'fundamenttyp standard'));
+      // Primäre Header-Zeile: enthält BEIDE Bezeichnungen in derselben Zeile —
+      // "Fundamenttyp Standard" (evtl. mit Zusatz) UND "Spezial Fundament" (Spalte U).
+      // Nur die eigentliche Header-Zeile 7 erfüllt beide Bedingungen gleichzeitig.
+      const _hdrA = rows.find(r => r &&
+        r.some(c => _nh(c).includes('fundamenttyp standard')) &&
+        r.some(c => _nh(c).includes('spezial fundament')));
       // Sub-Header-Zeile: enthält gleichzeitig 'Km' und 'E-Achse'
       const _hdrB = rows.find(r => r && r.some(c => _nh(c) === 'km') && r.some(c => _nh(c) === 'e-achse'));
       // Spalten-Karte aufbauen: normierter Zelltext → Spalten-Index
@@ -10546,6 +10559,11 @@ function _importFundamentlisteFromBuffer(buffer) {
       const _ciPart = (partial, fallback) => {
         const p = _nh(partial);
         for (const [k, v] of Object.entries(_colMap)) { if (k.includes(p)) return v; }
+        return fallback;
+      };
+      // Versucht mehrere alternative Bezeichnungen; liefert ersten Treffer oder Fallback
+      const _ciAny = (partials, fallback) => {
+        for (const s of partials) { const r = _ciPart(s, null); if (r !== null) return r; }
         return fallback;
       };
 
@@ -10570,8 +10588,14 @@ function _importFundamentlisteFromBuffer(buffer) {
         bkGamma:     _ciPart('raumlast',               16),
         bkC:         _ciPart('kohäsion',               17),
         gwsp:        _ciPart('gwsp',                   18),
-        ftStd:       _ciPart('fundamenttyp standard',  20),
-        ftSpez:      _ciPart('fundamenttyp spezial',   23),
+        ftStd:       _ciAny(['fundamenttyp standard', 'standardtyp', 'ft standard'], 21),
+        // Spezialfundament-Spalte: verschiedene mögliche Bezeichnungen im SBB-Excel
+        // In der aktuellen SBB-Vorlage: "Spezial Fundament Typ" (Spalte U, eine vor dem Standard)
+        // Fallback: eine Stelle links vom Standard (ftStd - 1)
+        get ftSpez() { return _ciAny(
+          ['spezial fundament', 'fundamenttyp spezial', 'spezialfundament', 'spezialtyp', 'spezial-typ', 'ft spezial', 'spez.'],
+          (COL.ftStd ?? 21) - 1
+        ); },
         bemerkung:   _ci('bemerkungen',                25),
       };
 
@@ -10585,10 +10609,16 @@ function _importFundamentlisteFromBuffer(buffer) {
       const newPairs = [];
       const newBP    = {};
       const ftCache  = loadFtProfile();
+      // Neu importierte Spezialtypen: Name → generierte ID (werden nach dem Loop gespeichert)
+      const _impSpezNew = {};
+      const _impTs      = Date.now().toString(36);
+      let   _impCnt     = 0;
       dataRows.forEach((r, i) => {
         const id         = i + 1;
         const ftStdName  = normFt(r[COL.ftStd]);
-        const ftSpezVal  = r[COL.ftSpez] != null ? String(r[COL.ftSpez]).trim() : '';
+        const _ftSpezRaw = r[COL.ftSpez] != null ? String(r[COL.ftSpez]).trim() : '';
+        // Platzhalter ("-", "—", "–") gelten als leer — Einsatzbedingungen erfüllt
+        const ftSpezVal  = /^[-–—]+$/.test(_ftSpezRaw) ? '' : _ftSpezRaw;
         const refFamilie = (ftStdName.split('/')[0] || '').trim();
 
         // ── Geländeneigung ────────────────────────────────────────
@@ -10612,12 +10642,19 @@ function _importFundamentlisteFromBuffer(buffer) {
         if (noBoden)   importVerify.boden   = true;
         if (ftSpezVal) importVerify.spezial = true;
 
-        // ── Fundamenttyp: Standard oder Spezial (col 23 hat Wert) ────────────
-        let _ftEntry, _ftNachweisLink;
+        // ── Fundamenttyp: Standard oder Spezial ─────────────────────────────
+        // Spezial wenn Spalte ftSpez einen Wert enthält (z.B. Plannummer, Typname)
+        let _ftEntry, _ftNachweisLink, _ftSpezName;
         if (ftSpezVal) {
           const spezCache = ftCache.filter(t => t.typ === 'spezial');
-          _ftEntry        = _findFtInCache(spezCache, ftSpezVal) || spezCache[0] || null;
+          _ftEntry        = _findFtInCache(spezCache, ftSpezVal) || null;
+          _ftSpezName     = _ftEntry?.name || ftSpezVal;
           _ftNachweisLink = ftSpezVal;
+          // Kein Bibliotheks-Treffer → ID für neuen Eintrag reservieren
+          if (!_ftEntry && !_impSpezNew[ftSpezVal]) {
+            const slug = ftSpezVal.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20);
+            _impSpezNew[ftSpezVal] = `ft_imp_${slug}_${_impTs}${_impCnt++}`;
+          }
         } else {
           _ftEntry        = _findFtInCache(ftCache, ftStdName);
           _ftNachweisLink = '';
@@ -10663,8 +10700,8 @@ function _importFundamentlisteFromBuffer(buffer) {
           bkGamma,
           bkC,
           bkGrundwasser: bkGw,
-          fundtyp:       _ftEntry?.name || (ftSpezVal ? ftCache.find(t => t.typ === 'spezial')?.name || ftStdName : ftStdName),
-          ftProfilId:    _ftEntry?.id || '',
+          fundtyp:       ftSpezVal ? _ftSpezName : (_ftEntry?.name || ftStdName),
+          ftProfilId:    _ftEntry?.id || (ftSpezVal ? (_impSpezNew[ftSpezVal] || '') : ''),
           refFamilie,
           nachweisLink:  _ftNachweisLink,
           bemerkung:     r[COL.bemerkung] != null ? String(r[COL.bemerkung]) : '',
@@ -10672,6 +10709,29 @@ function _importFundamentlisteFromBuffer(buffer) {
           ...(Object.keys(importVerify).length ? { importVerify } : {}),
         };
       });
+
+      // ── Neu importierte Spezialtypen in die FT-Bibliothek eintragen ──────────
+      // Für jeden unbekannten Code (B3, C3, LSP …) wird ein minimaler Eintrag angelegt.
+      // Der Benutzer kann später Name, Beschreibung und Parameter ergänzen.
+      if (Object.keys(_impSpezNew).length) {
+        const ftList = loadFtProfile();
+        let ftChanged = false;
+        for (const [name, id] of Object.entries(_impSpezNew)) {
+          if (!ftList.some(t => t.name === name)) {
+            ftList.push({
+              id, name, typ: 'spezial',
+              fundamentArt:     'sonstige',
+              kopfAbmessung: '', blockAbmessung: '',
+              anzahlPfaehle: '', pfahlLaenge: '', tiefe: '',
+              einsatzBedingung: 'Spezialfundament — aus Import (bitte Typ prüfen)',
+              nachweisRequired: true,
+              bemerkung:        '',
+            });
+            ftChanged = true;
+          }
+        }
+        if (ftChanged) saveFtProfile(ftList);
+      }
 
       const ftZuwNew = {};
       Object.entries(newBP).forEach(([id, bp]) => { if (bp.ftProfilId) ftZuwNew[id] = bp.ftProfilId; });
@@ -29743,14 +29803,16 @@ const LIST_COLUMNS = {
     { key: 'fundtyp',  label: 'Fundamenttyp', render: p => {
       const bp    = loadAllBauprojekt()[p.id] || {};
       const ft    = bp.fundtyp || p.fundtyp || '—';
-      const ref   = getBpRefFamilie(bp);
-      const isSpez = isFtSpezial(ft);
       const warnB = bp.importVerify?.boden   ? '<span title="Baugrundkennwerte fehlen" style="margin-left:4px;font-size:9px;color:#d97706;opacity:0.7;">⚠</span>' : '';
       const warnS = bp.importVerify?.spezial ? '<span title="Spezialtyp bitte prüfen" style="margin-left:4px;font-size:9px;color:#d97706;opacity:0.7;">⚠</span>' : '';
-      if (isSpez && ref) {
-        return `<span style="font-weight:600">${ref}</span><span style="font-size:10px;color:#6b7280;margin-left:4px;">${ft}</span>${warnS}${warnB}`;
-      }
-      return ft + warnB;
+      return ft + warnS + warnB;
+    } },
+    { key: 'reftyp', label: 'Ref.typ', render: p => {
+      const bp  = loadAllBauprojekt()[p.id] || {};
+      const ref = getBpRefFamilie(bp);
+      return ref
+        ? `<span style="font-size:11px;font-weight:600;color:#374151;">${ref}</span>`
+        : '<span style="color:#d1d5db;">—</span>';
     } },
     { key: 'neigung',  label: 'Neigung',      render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const n=bp.neigung||p.neigung; if(n) return n; return bp.importVerify?.neigung?'<span title="Geländeneigung fehlt" style="font-size:10px;color:#d97706;opacity:0.7;">? —</span>':'—'; } },
     { key: 'boden',    label: 'Baugrund',     render: p => { const bp=loadAllBauprojekt()[p.id]||{}; const me=bp.bkMe; const phi=bp.bkPhi; if(!me&&!phi) return '—'; const nbt=(bp.bkBodentyp==='fein'||bp.bkBodentyp==='grob')?bp.bkBodentyp:_uscsToBodentyp(bp.bkBodentyp); const grenz=BK_GRENZWERTE[nbt]||BK_GRENZWERTE.fein; const ok=(!me||parseFloat(me)>=grenz.me)&&(!phi||parseFloat(phi)>=27); return `<span style="color:${ok?'#16a34a':'#dc2626'};font-weight:600;">${ok?'Erfüllt':'Nicht erfüllt'}</span>`; } },
@@ -29857,6 +29919,21 @@ function saveListGleis(pairId, value) {
   if (!pair) return;
   pair.gleis = value.trim() || null;
   savePairs();
+}
+
+function saveListRefFamilie(pairId, value) {
+  const allBP = loadAllBauprojekt();
+  if (!allBP[pairId]) allBP[pairId] = {};
+  allBP[pairId].refFamilie = value;
+  // Spezialtyp-Warnflag quittieren, sobald Referenztyp gesetzt wird
+  if (value && allBP[pairId].importVerify?.spezial) {
+    const iv = { ...allBP[pairId].importVerify };
+    delete iv.spezial;
+    if (Object.keys(iv).length) allBP[pairId].importVerify = iv;
+    else delete allBP[pairId].importVerify;
+  }
+  saveAllBauprojekt(allBP);
+  renderList();
 }
 
 // Schließt den Spalten-Picker bei Klick außerhalb
