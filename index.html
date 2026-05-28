@@ -1251,19 +1251,6 @@
         <div style="font-size:11px;color:#6b7280;">Typengeprüfte Standard- und Spezialfundamente · Statikberichte · Zuweisung</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <!-- Filter Alle / Zugeordnet -->
-        <div style="display:flex;gap:0;">
-          <button id="ft-f-alle" onclick="setFtFilter('alle')"
-            style="padding:4px 12px;border-radius:6px 0 0 6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">Alle</button>
-          <button id="ft-f-zugeordnet" onclick="setFtFilter('zugeordnet')"
-            style="padding:4px 12px;border-radius:0 6px 6px 0;border:1px solid #e5e7eb;border-left:none;background:white;color:#6b7280;font-size:11px;font-weight:600;cursor:pointer;">Zugeordnet</button>
-        </div>
-        <!-- Global ändern Button -->
-        <button onclick="openGlobalFtModal()"
-          style="padding:4px 12px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Global ändern
-        </button>
         <!-- Einheitlicher Export-Button mit Dropdown -->
         <div style="position:relative;">
           <button onclick="toggleFtExportPanel()" id="ft-export-btn"
@@ -1361,22 +1348,17 @@
         <div style="font-size:13px;font-weight:700;color:#374151;">Typengeprüfte Standardfundamente</div>
         <span style="font-size:10px;font-weight:600;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;border:1px solid #e5e7eb;">✓ Kein Nachweis erforderlich</span>
         <span style="font-size:11px;color:#9ca3af;">SBB Dok. 0161.1011.0002</span>
-        <button onclick="selectAllStdFt()" title="Alle Standardfundamente auswählen"
-          style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;color:#374151;font-size:11px;font-weight:600;cursor:pointer;">
-          Alle auswählen
-        </button>
+        <div style="display:flex;gap:0;">
+          <button id="ft-f-alle" onclick="setFtFilter('alle')"
+            style="padding:4px 12px;border-radius:6px 0 0 6px;border:1px solid #1a3a5c;background:#1a3a5c;color:white;font-size:11px;font-weight:600;cursor:pointer;">Alle</button>
+          <button id="ft-f-zugeordnet" onclick="setFtFilter('zugeordnet')"
+            style="padding:4px 12px;border-radius:0 6px 6px 0;border:1px solid #e5e7eb;border-left:none;background:white;color:#6b7280;font-size:11px;font-weight:600;cursor:pointer;">Zugeordnet</button>
+        </div>
         <button onclick="openFtDatenbank()" title="Parameterdatenbank aller Standardfundamente"
           style="margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
           Parameterdatenbank
         </button>
-      </div>
-      <!-- Bulk-Bar: Leistungsprofil-Sammelzuweisung -->
-      <div id="ft-std-bulk-bar" style="display:none;align-items:center;gap:8px;padding:8px 12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:10px;flex-wrap:wrap;">
-        <span id="ft-std-bulk-count" style="font-size:12px;font-weight:600;color:#1d4ed8;white-space:nowrap;"></span>
-        <select id="ft-std-bulk-lp" style="font-size:11px;padding:4px 8px;border:1px solid #bfdbfe;border-radius:6px;background:white;cursor:pointer;"></select>
-        <button onclick="applyFtLeistungsprofilBulk()" style="padding:4px 12px;border-radius:6px;border:1px solid #2563eb;background:#2563eb;color:white;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">Leistungsprofil zuweisen</button>
-        <button onclick="clearFtSelection()" style="padding:4px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;font-size:11px;color:#6b7280;cursor:pointer;margin-left:auto;white-space:nowrap;">✕ Auswahl aufheben</button>
       </div>
       <div id="fundtyp-std-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
     </div>
@@ -1386,6 +1368,11 @@
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;color:#374151;">Spezialfundamente</div>
         <span style="font-size:10px;font-weight:600;background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;border:1px solid #e5e7eb;">⚠ PGV-Nachweis erforderlich</span>
+      </div>
+      <div id="ft-sel-bar" style="display:none;align-items:center;gap:10px;padding:7px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;font-size:12px;color:#374151;">
+        <span id="ft-sel-bar-count" style="font-weight:600;"></span>
+        <span style="color:#9ca3af;font-size:11px;">· Ctrl+Klick zum Hinzufügen · ESC aufheben</span>
+        <button onclick="clearFtSelection()" style="padding:3px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;font-size:11px;color:#6b7280;cursor:pointer;margin-left:auto;">Auswahl aufheben</button>
       </div>
       <div id="fundtyp-spez-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;"></div>
     </div>
@@ -1973,14 +1960,14 @@
       <div class="sidebar-section" id="sec-begehung">
         <h3 onclick="toggleSection('sec-begehung')">
           <span>Begehung</span>
-          <span style="display:flex;align-items:center;gap:4px;">
+          <span style="display:flex;align-items:center;gap:6px;">
             <span id="begehung-status-dot"></span>
-            <label onclick="event.stopPropagation()" title="Foto aus Galerie" style="cursor:pointer;color:#6b7280;display:flex;align-items:center;padding:5px;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <label onclick="event.stopPropagation()" title="Foto aus Galerie" style="cursor:pointer;color:#6b7280;display:flex;align-items:center;padding:6px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               <input type="file" accept="image/*" style="display:none" multiple onchange="addFotosBegehung(this)">
             </label>
-            <button onclick="event.stopPropagation();openCameraBegehung()" title="Foto aufnehmen" style="cursor:pointer;background:none;border:none;padding:5px;color:#6b7280;display:flex;align-items:center;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <button onclick="event.stopPropagation();openCameraBegehung()" title="Foto aufnehmen" style="cursor:pointer;background:none;border:none;padding:6px;color:#6b7280;display:flex;align-items:center;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             </button>
             <span class="sb-chevron">▾</span>
           </span>
@@ -2595,9 +2582,18 @@
             <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:11px;color:#15803d;margin-bottom:5px;">
               Familie des Standardtyps — definiert Anzahl und Durchmesser der Fundamentschrauben
             </div>
-            <select id="bp-ref-familie" onchange="saveBauprojektFeld()" style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
+            <select id="bp-ref-familie" onchange="saveBauprojektFeld();refreshBpNutzungsartSelect(loadAllBauprojekt()[currentPairId]||{},this.value)" style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
               <option value="">— nicht angegeben —</option>
             </select>
+          </div>
+
+          <!-- Masttyp / Nutzungsart (editierbar, abhängig von Ref.Typ) -->
+          <div id="bp-nutzungsart-wrap" style="display:none;margin-bottom:10px;">
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:4px;">Masttyp / Nutzungsart</label>
+            <select id="bp-nutzungsart" onchange="saveBpNutzungsart(currentPairId, this.value)"
+              style="width:100%;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;">
+            </select>
+            <div id="bp-nutzungsart-info" style="font-size:10px;color:#9ca3af;margin-top:3px;"></div>
           </div>
 
           <!-- Geländeneigung -->
@@ -2627,25 +2623,45 @@
           <span class="sb-chevron">▾</span>
         </h3>
         <div class="sb-body">
+          <!-- Geländehöhe + Fundamentkopf -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
             <div>
               <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Geländehöhe</label>
               <div id="hk-gelaende" style="font-size:12px;padding:5px 8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;color:#374151;min-height:29px;">—</div>
             </div>
             <div>
-              <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Fundamentkopf</label>
-              <input id="sb-fundkopf-mueM" type="number" step="0.1" onchange="saveHoehenkoten()" placeholder="m ü.M."
+              <label style="font-size:11px;font-weight:600;color:#374151;display:flex;align-items:baseline;gap:4px;margin-bottom:3px;">
+                OK Fundamentkopf
+                <span id="hk-kopf-source" style="font-size:9px;font-weight:400;color:#9ca3af;"></span>
+              </label>
+              <input id="sb-fundkopf-mueM" type="number" step="0.1" onchange="onHkKopfChange()" placeholder="m ü.M."
                 style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;">
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">Sohle</label>
-              <input id="sb-sohle-mueM" type="number" step="0.1" onchange="saveHoehenkoten()" placeholder="m ü.M."
-                style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;">
+              <div id="hk-fundkopf-ref" style="display:none;font-size:10px;color:#9ca3af;margin-top:3px;line-height:1.5;">
+                <span id="hk-fundkopf-diff" style="font-weight:700;font-size:11px;"></span>
+                <span id="hk-fundkopf-ref-val" style="margin-left:3px;"></span>
+              </div>
             </div>
           </div>
+          <!-- UK Fundament (Sohle, auto-berechnet) -->
+          <div style="margin-bottom:6px;">
+            <label style="font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;">UK Fundament (Sohle)</label>
+            <!-- visible display -->
+            <div id="hk-sohle-display" style="font-size:12px;padding:5px 8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;color:#374151;min-height:29px;">—</div>
+            <!-- hidden input kept for _updateGwSpiegelStatus + saveHoehenkoten compatibility -->
+            <input id="sb-sohle-mueM" type="hidden">
+            <div id="hk-sohle-formel" style="display:none;font-size:10px;color:#9ca3af;margin-top:3px;"></div>
+          </div>
+          <!-- GW-Kote (abgeleitet aus bkGrundwasser) -->
+          <div id="hk-gw-row" style="display:none;margin-bottom:6px;padding:5px 8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;color:#374151;">
+            <span style="font-weight:600;color:#374151;">Grundwasser</span>
+            <span id="hk-gw-kote-val" style="margin-left:8px;"></span>
+            <span id="hk-gw-tiefe-val" style="margin-left:6px;color:#9ca3af;font-size:10px;"></span>
+          </div>
+          <!-- GW-Check Status -->
+          <div id="hk-gw-check" style="display:none;margin-bottom:6px;padding:6px 8px;border-radius:6px;font-size:11px;line-height:1.5;"></div>
           <div id="hk-hinweis" style="font-size:10px;color:#6b7280;line-height:1.5;margin-bottom:5px;"></div>
-          <button onclick="recalcHoehenkoten()" title="Startwerte aus Geländehöhe + Neigung + Fundamenttyp berechnen"
-            style="width:100%;padding:5px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;cursor:pointer;color:#374151;">
+          <button onclick="recalcHoehenkoten()" title="Geländehöhe von swisstopo abrufen und Koten berechnen"
+            style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;font-size:11px;cursor:pointer;color:#374151;">
             ↺ Startwerte berechnen
           </button>
         </div>
@@ -2720,8 +2736,8 @@
                    style="font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #6b7280;background:#fff;color:#374151;cursor:pointer;text-decoration:none;white-space:nowrap;">↗ Kanton GIS</a>
               </div>
             </div>
-            <!-- GW-Kote / Schwankung -->
-            <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <!-- GW-Kote / Schwankung (ausgeblendet – wird aus bkGrundwasser abgeleitet) -->
+            <div style="display:none;gap:6px;margin-bottom:6px;">
               <div style="flex:1;">
                 <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:2px;">Mittl. GW-Kote (m ü.M.)</label>
                 <input type="number" id="ns-gw-kote" step="0.1" oninput="saveNaturschutz(); _autoCheckGwRelevant();"
@@ -2911,6 +2927,21 @@
 
           <!-- Mini-Profil (wenn Horizonte vorhanden) -->
           <div id="aushub-mini-profil" style="margin-bottom:8px;"></div>
+
+          <!-- Koten-Info: UK Fundament + GW-Kote -->
+          <div id="au-koten-info" style="display:none;margin-bottom:8px;padding:6px 8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;color:#374151;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#6b7280;">UK Fundament</span>
+              <span id="au-sohle-val" style="font-weight:600;">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:3px;">
+              <span style="color:#6b7280;">Grundwasser</span>
+              <span id="au-gw-val" style="font-weight:600;">—</span>
+            </div>
+            <div id="au-gw-delta-row" style="display:none;margin-top:3px;padding-top:3px;border-top:1px solid #f3f4f6;font-size:10px;font-weight:700;">
+              <span id="au-gw-delta"></span>
+            </div>
+          </div>
 
           <!-- Bodenbefund -->
           <div style="margin-bottom:6px;">
@@ -3846,6 +3877,8 @@ function openQuickEdit(id) {
   document.getElementById('qe-rs-n').value  = p.rs?.n  || '';
   document.getElementById('qe-rks-e').value = isBG ? (p.rks?.e || '') : '';
   document.getElementById('qe-rks-n').value = isBG ? (p.rks?.n || '') : '';
+  const zEl = document.getElementById('qe-rs-z');
+  if (zEl) zEl.value = p.z != null && !isNaN(parseFloat(p.z)) ? parseFloat(p.z).toFixed(2) : '';
   const rksFields = document.getElementById('qe-rks-fields');
   if (rksFields) rksFields.parentElement.style.display = isBG ? '' : 'none';
   // RKS-N-Feld auch verstecken wenn BP
@@ -3958,6 +3991,8 @@ function saveQuickEdit() {
   const rsN  = parseInt(v('qe-rs-n'))  || p.rs?.n;
   const rksE = isBG ? (parseInt(v('qe-rks-e')) || p.rks?.e) : rsE;
   const rksN = isBG ? (parseInt(v('qe-rks-n')) || p.rks?.n) : rsN;
+  const zRaw = parseFloat(v('qe-rs-z'));
+  const zVal = !isNaN(zRaw) ? zRaw : (p.z ?? undefined);
 
   PAIRS[idx] = {
     ...p,
@@ -3974,6 +4009,7 @@ function saveQuickEdit() {
     tiefe:        isBG ? (parseFloat(v('qe-tiefe')) || p.tiefe) : p.tiefe,
     rs:  (rsE  && rsN)  ? { e: rsE,  n: rsN  } : null,
     rks: (rksE && rksN) ? { e: rksE, n: rksN } : null,
+    ...(zVal != null ? { z: zVal } : {}),
   };
   savePairs();
   // Schicht-Kurzbezeichnung automatisch in Bibliothek eintragen
@@ -3985,6 +4021,8 @@ function saveQuickEdit() {
   updateProgress();
   closeQuickEdit();
   refreshCurrentView();
+  // Höhenkoten-Anzeige aktualisieren wenn aktueller Standort
+  if (_qeId === currentPairId) loadHoehenkoten(currentPairId);
 }
 
 function closeQuickEdit() {
@@ -4742,9 +4780,13 @@ function toggleMapFullscreen() {
   // Skizzen-Canvas neu ausrichten
   if (typeof resizeSketchCanvas === 'function') setTimeout(resizeSketchCanvas, 60);
 }
-// ESC verlässt den Vollbildmodus
+// ESC verlässt den Vollbildmodus / hebt FT-Selektion auf
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && _mapFullscreen) toggleMapFullscreen();
+  if (e.key === 'Escape' && typeof _ftSelected !== 'undefined' && _ftSelected.size > 0) {
+    clearFtSelection();
+    e.stopPropagation();
+  }
 });
 
 // Beim Verlassen der Detailansicht Vollbild zurücksetzen
@@ -4781,10 +4823,8 @@ function navigatePair(dir) {
   if (!isInst) {
     if (_activePhase === 'bauprojekt') loadBauprojektFelder(currentPairId);
     else if (_activePhase === 'ausfuehrung') loadAusfuehrungFelder(currentPairId);
-    else {
-      loadBegehungFelder(currentPairId);
-      loadSidebar_Termine(currentPairId);
-    }
+    loadBegehungFelder(currentPairId);
+    loadSidebar_Termine(currentPairId);
   }
   // Vollbild-Modus aufrechterhalten — Leaflet nach Neu-Render informieren
   if (_mapFullscreen && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 80);
@@ -4817,7 +4857,8 @@ function renderMetaSection(pair) {
       ${_schichtHtml}
       ${pair.schlitz ? `<div class="meta-item"><label>Baggerschlitz</label><span>${pair.schlitz} m</span></div>` : ''}
       ${hasFund ? `<div class="meta-item"><label>Fundament LV95</label><span style="font-size:10px;">${pair.fund.e} / ${pair.fund.n}</span></div>`
-                : anchor ? `<div class="meta-item"><label>Standort LV95</label><span style="font-size:10px;">${anchor.e} / ${anchor.n}</span></div>` : ''}`;
+                : anchor ? `<div class="meta-item"><label>Standort LV95</label><span style="font-size:10px;">${anchor.e} / ${anchor.n}</span></div>` : ''}
+      ${pair.z != null && !isNaN(parseFloat(pair.z)) ? `<div class="meta-item"><label>Z-Achse OK Kopf</label><span>${parseFloat(pair.z).toFixed(2)} m ü.M.</span></div>` : ''}`;
   } else {
     document.getElementById('meta-grid').innerHTML = `
       ${hasRS  ? `<div class="meta-item"><label>KM (RS)</label><span>${fmt(pair.km_rs)}</span></div>` : ''}
@@ -8666,10 +8707,46 @@ function openAushubModal(pairId) {
     _ahHorizonte.sort((a, b) => a.von - b.von);
   }
 
-  // Geländehöhe + Sohle-Soll anzeigen
-  const gelaende = parseFloat(pair.gelaendehoehe);
+  // Geländehöhe anzeigen
+  const gelaende   = parseFloat(bp.gelaende_swisstopo ?? pair.gelaendehoehe);
   const gelaendeEl = document.getElementById('ah-gelaende-info');
   if (gelaendeEl) gelaendeEl.textContent = !isNaN(gelaende) ? gelaende.toFixed(1) + ' m ü.M.' : '—';
+
+  // Auto-fill Grundwasserspiegel from bkGrundwasser when not yet manually set
+  if (!ah.grundwasser && !fd.rs_gw_tiefe && bp.bkGrundwasser) {
+    const gwNum = parseFloat(bp.bkGrundwasser);
+    if (!isNaN(gwNum) && gwNum > 0) set('ah-grundwasser', gwNum.toFixed(1));
+  }
+
+  // Referenzkoten (absolute m ü.M.)
+  const gwKote  = getBpGwKote(pairId);
+  const refEl   = document.getElementById('ah-koten-ref');
+  if (refEl) {
+    const kopf  = bp.fundkopf_mueM != null ? parseFloat(bp.fundkopf_mueM) : NaN;
+    const sohle = bp.sohle_mueM    != null ? parseFloat(bp.sohle_mueM)    : NaN;
+    const hasAny = !isNaN(kopf) || !isNaN(sohle) || gwKote !== null;
+    refEl.style.display = hasAny ? '' : 'none';
+    const _v = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    _v('ah-ref-kopf',  !isNaN(kopf)  ? kopf.toFixed(1)     + ' m ü.M.' : '—');
+    _v('ah-ref-sohle', !isNaN(sohle) ? sohle.toFixed(1)    + ' m ü.M.' : '—');
+    _v('ah-ref-gw',    gwKote !== null ? gwKote.toFixed(1)  + ' m ü.M.' : '—');
+    const gwCheckEl = document.getElementById('ah-ref-gw-check');
+    if (gwCheckEl) {
+      if (!isNaN(sohle) && gwKote !== null) {
+        const delta = sohle - gwKote;
+        gwCheckEl.style.display = '';
+        if (delta >= 0) {
+          gwCheckEl.style.color = '#16a34a';
+          gwCheckEl.textContent = `UK Fundament ${delta.toFixed(1)} m über GW — Standardfundament zulässig`;
+        } else {
+          gwCheckEl.style.color = '#dc2626';
+          gwCheckEl.textContent = `UK Fundament ${Math.abs(delta).toFixed(1)} m unter GW — Wasserhaltung / Spezialfundament prüfen`;
+        }
+      } else {
+        gwCheckEl.style.display = 'none';
+      }
+    }
+  }
 
   document.getElementById('aushub-modal').style.display = 'flex';
   renderAushubHorizonteList();
@@ -10360,7 +10437,7 @@ function locateModalMap() {
   if (!navigator.geolocation) { alert('GPS nicht verfügbar'); return; }
   navigator.geolocation.getCurrentPosition(pos => {
     modalMapLeaflet.setView([pos.coords.latitude, pos.coords.longitude], 17);
-  }, () => alert('Standort konnte nicht ermittelt werden.'), { timeout: 8000 });
+  }, () => alert('Standort konnte nicht ermittelt werden.'), { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
 }
 
 function deletePair(id) {
@@ -10610,16 +10687,20 @@ function _importFundamentlisteFromBuffer(buffer) {
       const newBP    = {};
       const ftCache  = loadFtProfile();
       // Neu importierte Spezialtypen: Name → generierte ID (werden nach dem Loop gespeichert)
-      const _impSpezNew = {};
-      const _impTs      = Date.now().toString(36);
-      let   _impCnt     = 0;
+      const _impSpezNew    = {};
+      const _impSpezRefTyp = {}; // Name → refFamilie (für referenzTyp auf dem FT-Eintrag)
+      const _impTs         = Date.now().toString(36);
+      let   _impCnt        = 0;
       dataRows.forEach((r, i) => {
         const id         = i + 1;
         const ftStdName  = normFt(r[COL.ftStd]);
         const _ftSpezRaw = r[COL.ftSpez] != null ? String(r[COL.ftSpez]).trim() : '';
         // Platzhalter ("-", "—", "–") gelten als leer — Einsatzbedingungen erfüllt
         const ftSpezVal  = /^[-–—]+$/.test(_ftSpezRaw) ? '' : _ftSpezRaw;
-        const refFamilie = (ftStdName.split('/')[0] || '').trim();
+        const masttyp     = String(r[COL.masttyp] ?? '').trim();
+        const nutzungsart = MAST_DATEN[masttyp] ? masttyp : '';
+        const refFromMast = MASTTYP_REFTYP[masttyp] || '';
+        const refFamilie = (ftStdName.split('/')[0] || '').trim() || refFromMast;
 
         // ── Geländeneigung ────────────────────────────────────────
         const neigRaw   = r[COL.neigung];
@@ -10650,10 +10731,15 @@ function _importFundamentlisteFromBuffer(buffer) {
           _ftEntry        = _findFtInCache(spezCache, ftSpezVal) || null;
           _ftSpezName     = _ftEntry?.name || ftSpezVal;
           _ftNachweisLink = ftSpezVal;
-          // Kein Bibliotheks-Treffer → ID für neuen Eintrag reservieren
-          if (!_ftEntry && !_impSpezNew[ftSpezVal]) {
-            const slug = ftSpezVal.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20);
-            _impSpezNew[ftSpezVal] = `ft_imp_${slug}_${_impTs}${_impCnt++}`;
+          // Kein Bibliotheks-Treffer → ID + Referenztyp für neuen Eintrag reservieren
+          if (!_ftEntry) {
+            if (!_impSpezNew[ftSpezVal]) {
+              const slug = ftSpezVal.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20);
+              _impSpezNew[ftSpezVal] = `ft_imp_${slug}_${_impTs}${_impCnt++}`;
+            }
+            if (refFamilie && !_impSpezRefTyp[ftSpezVal]) {
+              _impSpezRefTyp[ftSpezVal] = refFamilie;
+            }
           }
         } else {
           _ftEntry        = _findFtInCache(ftCache, ftStdName);
@@ -10665,13 +10751,30 @@ function _importFundamentlisteFromBuffer(buffer) {
         const validCoord = eCoord > 2400000 && eCoord < 2900000 && nCoord > 1000000 && nCoord < 1400000;
         const coordObj   = validCoord ? { e: eCoord, n: nCoord } : { e: 0, n: 0 };
 
+        // Z-Achse = OK Fundamentkopf (m ü.M.) — direkt als Höhenkote übernehmen
+        const zVal   = r[COL.zAchse] != null ? parseFloat(r[COL.zAchse]) : NaN;
+        const validZ = !isNaN(zVal);
+        let sohleFromZ = null;
+        if (validZ) {
+          const ftNameZ  = ftSpezVal ? _ftSpezName : (_ftEntry?.name || ftStdName);
+          const neigKZ   = neigLabel.includes('14–33') ? '14–33°' : '≤14°';
+          const abmZ     = FUND_ABMESSUNGEN[`${ftNameZ}|${neigKZ}`];
+          if (abmZ) {
+            sohleFromZ = parseFloat((zVal - 1.00 - parseFloat(abmZ.tiefe)).toFixed(1));
+          } else {
+            const ftZ = ftCache.find(t => t.name === ftNameZ);
+            if (ftZ?.tiefe != null && !isNaN(parseFloat(ftZ.tiefe)))
+              sohleFromZ = parseFloat((zVal - 1.00 - parseFloat(ftZ.tiefe)).toFixed(1));
+          }
+        }
+
         newPairs.push({
           id,
           _objType:    'fundament',
           km_rs:       parseFloat(r[COL.km]) || 0,
           km_rks:      parseFloat(r[COL.km]) || 0,
           mast:        String(r[COL.mast]        ?? ''),
-          masttyp:     String(r[COL.masttyp]     ?? ''),
+          masttyp:     masttyp,
           gleis:       String(r[COL.gleis]       ?? ''),
           ueberhohung: r[COL.ueberhohung] ?? null,
           massA:       r[COL.massA]       ?? null,
@@ -10703,9 +10806,12 @@ function _importFundamentlisteFromBuffer(buffer) {
           fundtyp:       ftSpezVal ? _ftSpezName : (_ftEntry?.name || ftStdName),
           ftProfilId:    _ftEntry?.id || (ftSpezVal ? (_impSpezNew[ftSpezVal] || '') : ''),
           refFamilie,
+          nutzungsart,
           nachweisLink:  _ftNachweisLink,
           bemerkung:     r[COL.bemerkung] != null ? String(r[COL.bemerkung]) : '',
           vfk:           false,
+          ...(validZ ? { fundkopf_mueM: parseFloat(zVal.toFixed(1)) } : {}),
+          ...(sohleFromZ !== null ? { sohle_mueM: sohleFromZ } : {}),
           ...(Object.keys(importVerify).length ? { importVerify } : {}),
         };
       });
@@ -10718,9 +10824,11 @@ function _importFundamentlisteFromBuffer(buffer) {
         let ftChanged = false;
         for (const [name, id] of Object.entries(_impSpezNew)) {
           if (!ftList.some(t => t.name === name)) {
+            const refTyp = _impSpezRefTyp[name] || null;
             ftList.push({
               id, name, typ: 'spezial',
               fundamentArt:     'sonstige',
+              ...(refTyp ? { referenzTyp: refTyp } : {}),
               kopfAbmessung: '', blockAbmessung: '',
               anzahlPfaehle: '', pfahlLaenge: '', tiefe: '',
               einsatzBedingung: 'Spezialfundament — aus Import (bitte Typ prüfen)',
@@ -13013,14 +13121,14 @@ function _berichtPdfUmwelt(doc, pairId, startY) {
   const bp = loadAllBauprojekt()[pairId] || {};
   let y = startY;
 
-  // GW-Spiegel-Status berechnen
-  const gwKote = parseFloat(ns.gwKote);
+  // GW-Spiegel-Status berechnen (GW-Kote aus Baugrundprofil abgeleitet)
+  const gwKote = getBpGwKote(pairId);
   const sohle  = parseFloat(bp.sohle_mueM);
-  const diff   = !isNaN(gwKote) && !isNaN(sohle) ? sohle - gwKote : null;
+  const diff   = gwKote !== null && !isNaN(sohle) ? sohle - gwKote : null;
   let gwStatus = '—';
   if (diff !== null) {
-    if (diff <= 0)       gwStatus = `⚠ Spiegel ${Math.abs(diff).toFixed(2)} m über UK Fund. — Wasserhaltung`;
-    else if (diff <= 0.5) gwStatus = `⚠ Spiegel ${diff.toFixed(2)} m unter UK Fund. — Vorsicht`;
+    if (diff <= 0)       gwStatus = `Spiegel ${Math.abs(diff).toFixed(2)} m über UK Fund. — Wasserhaltung`;
+    else if (diff <= 0.5) gwStatus = `Spiegel ${diff.toFixed(2)} m unter UK Fund. — Vorsicht`;
     else                 gwStatus = `OK (${diff.toFixed(1)} m unter UK Fund.)`;
   }
 
@@ -13041,8 +13149,8 @@ function _berichtPdfUmwelt(doc, pairId, startY) {
     headStyles: { fillColor: [22, 101, 52], textColor: 255 },
     head: [['Thema', 'Wert', 'Thema', 'Wert']],
     body: [
-      ['GW-Kote',      ns.gwKote     ? ns.gwKote + ' m ü.M.' : '—',
-       'GW-Schwankung', ns.gwSchwankung ? '± ' + ns.gwSchwankung + ' m' : '—'],
+      ['GW-Kote',      gwKote !== null ? gwKote.toFixed(1) + ' m ü.M.' : '—',
+       'GW-Tiefe ab Gel.', (() => { const t=parseFloat(bp.bkGrundwasser); return !isNaN(t)&&t>0 ? t.toFixed(1)+' m' : '—'; })()],
       ['GW-Schutzzone', GW_ZONE_LABEL[ns.gwZone || ''] || '—', 'GW-Spiegel', gwStatus],
       ['Schutzgebiete', { content: schutzItems.length ? schutzItems.join(', ') : 'Keine', colSpan: 3 }],
       ...(ns.auflagen ? [['Auflagen', { content: ns.auflagen, colSpan: 3 }]] : []),
@@ -13804,7 +13912,7 @@ function locateCreateMap() {
   navigator.geolocation.getCurrentPosition(pos => {
     const ll = [pos.coords.latitude, pos.coords.longitude];
     createMapLeaflet.setView(ll, 17);
-  }, () => alert('Standort konnte nicht ermittelt werden.'), { timeout: 8000 });
+  }, () => alert('Standort konnte nicht ermittelt werden.'), { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 });
 }
 
 function toggleInstStatus(pairId, key) {
@@ -16026,7 +16134,11 @@ function onBpFtBearbeitenClick() {
   const ft = loadFtProfile().find(t => t.name === name);
   if (!ft) return;
   if (ft.typ === 'standard') openFtDatenbank();
-  else openFundtypProfilModal(ft.id);
+  else {
+    // Fallback: refFamilie aus Standort-Daten mitgeben, falls FT-Eintrag noch kein referenzTyp hat
+    const bpRef = (loadAllBauprojekt()[currentPairId] || {}).refFamilie || '';
+    openFundtypProfilModal(ft.id, bpRef);
+  }
 }
 
 // Befüllt #bp-ft-familie; stellt gespeicherten Wert wieder her
@@ -16137,23 +16249,24 @@ function renderBpFtInfo() {
   const name = document.getElementById('bp-fundtyp')?.value || '';
   const ft   = name ? loadFtProfile().find(t => t.name === name) : null;
 
-  // VFK-Checkbox: für alle Standard-Flachgründungen anbieten (VFK = Baumethode, nicht FT-Eigenschaft)
+  // VFK-Checkbox: für Standard- und Spezialfundamente anbieten (VFK = Baumethode, nicht FT-Eigenschaft)
   const vfkWrap = document.getElementById('bp-vfk-wrap');
   if (vfkWrap) {
-    vfkWrap.style.display = (ft?.typ === 'standard') ? '' : 'none';
+    vfkWrap.style.display = (ft?.typ === 'standard' || ft?.typ === 'spezial') ? '' : 'none';
     const zeich = document.getElementById('bp-vfk-zeich');
     if (zeich) zeich.textContent = ft?.vfkZeichnungsNr || '';
   }
 
   if (!ft) {
     wrap.innerHTML = '';
+    refreshBpNutzungsartSelect({}, '');
     return;
   }
 
   // Hilfsfunktionen
   const m2 = v => (v != null && v !== '' && v !== 'null' && !isNaN(parseFloat(v))) ? parseFloat(v).toFixed(2) : null;
   const mmStr2m = str => str ? str
-    .replace(/(\d+(?:\.\d+)?)×(\d+(?:\.\d+)?)\s*mm/g, (_, a, b) => `${(+a/1000).toFixed(2)}×${(+b/1000).toFixed(2)} m`)
+    .replace(/(\d+(?:\.\d+)?)×(\d+(?:\.\d+)?)\s*mm/g, (_, a, b) => `${(+a/1000).toFixed(2)} × ${(+b/1000).toFixed(2)} m`)
     .replace(/(\d+(?:\.\d+)?)\s*mm/g, (_, a) => `${(+a/1000).toFixed(2)} m`) : str;
   const fmt = (v, unit) => { const n = m2(v); return n ? `${n}${unit ? ' ' + unit : ''}` : null; };
   const row = (lbl, val) => val ? `<div style="display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid #f0f2f5;">
@@ -16165,26 +16278,26 @@ function renderBpFtInfo() {
   const artLabel = ART_LABELS[ft.fundamentArt] || (ft.fundamentArt ? ft.fundamentArt.charAt(0).toUpperCase() + ft.fundamentArt.slice(1) : '');
 
   // Kopf-Abmessungen
-  let kopf = '';
+  let kopfBL = '';
+  let kopfH  = '';
   if (ft.kopfB != null) {
     const bStr = m2(ft.kopfB);
     if (bStr) {
       const lStr = (ft.kopfL != null && ft.kopfL !== ft.kopfB) ? m2(ft.kopfL) : null;
-      kopf = lStr ? `${bStr}×${lStr} m` : `${bStr} m`;
-      const hStr = m2(ft.kopfHoehe);
-      if (hStr) kopf += ` · h = ${hStr} m`;
+      kopfBL = lStr ? `${bStr} × ${lStr} m` : `${bStr} × ${bStr} m`;
     }
-  } else if (ft.kopfAbmessung) { kopf = mmStr2m(ft.kopfAbmessung); }
+  } else if (ft.kopfAbmessung) { kopfBL = mmStr2m(ft.kopfAbmessung); }
+  if (ft.kopfHoehe != null) { const hStr = m2(ft.kopfHoehe); if (hStr) kopfH = `${hStr} m`; }
 
   // Block-Abmessungen
-  let block = '';
+  let blockBL = '';
   if (ft.blockB != null) {
     const bStr = m2(ft.blockB);
     if (bStr) {
       const lStr = (ft.blockL != null && ft.blockL !== ft.blockB) ? m2(ft.blockL) : null;
-      block = lStr ? `${bStr}×${lStr} m` : `${bStr} m`;
+      blockBL = lStr ? `${bStr} × ${lStr} m` : `${bStr} × ${bStr} m`;
     }
-  } else if (ft.blockAbmessung && ft.blockAbmessung !== '—') { block = mmStr2m(ft.blockAbmessung); }
+  } else if (ft.blockAbmessung && ft.blockAbmessung !== '—') { blockBL = mmStr2m(ft.blockAbmessung); }
 
   // Pfahl-Info
   let pfahl = '';
@@ -16201,23 +16314,41 @@ function renderBpFtInfo() {
   const schrauben = ft.schraubenAnzahl && ft.schraubenDurchmesser
     ? `${ft.schraubenAnzahl}×${ft.schraubenDurchmesser}${ft.schraubenLaenge ? ', L='+ft.schraubenLaenge+' cm' : ''}${ft.schraubenArtikelNr ? ' ('+ft.schraubenArtikelNr+')' : ''}` : null;
 
+  const isSpezial = ft.typ === 'spezial';
+
+  // Referenztyp + Einsatzbedingung + Nachweis + Nutzungsart (per Standort)
+  const bpD        = currentPairId ? (loadAllBauprojekt()[currentPairId] || {}) : {};
+  refreshBpNutzungsartSelect(bpD, getBpRefFamilie(bpD) || (ft.name?.includes('/') ? ft.name.split('/')[0].trim() : ''));
+  const refTyp     = isSpezial ? (ft.referenzTyp || bpD.refFamilie || null) : null;
+  const nachweis   = isSpezial ? (bpD.nachweisLink || null) : null;
+  const einsatz    = isSpezial ? (ft.einsatzBedingung || null) : null;
+  const ftBemerkung = isSpezial ? (ft.bemerkung || null) : null;
+  const effNutz   = bpD.nutzungsart || ft.nutzungsart || null;
+  const nutzLabel  = effNutz ? (MAST_DATEN[effNutz]?.label || effNutz) : null;
+
   const rows = [
-    row('Fundamentart',   artLabel),
-    row('Kopf (B × L)',   kopf || null),
-    row('Block (B × L)',  block || null),
-    row('Pfähle',         pfahl || null),
-    row('Blocktiefe',     fmt(ft.tiefe, 'm')),
-    row('Zeichnung Nr.',  ft.zeichnungsNr || null),
-    row('Beton',          ft.beton || null),
-    row('Betondeckung',   ft.betondeckung ? ft.betondeckung + ' mm' : null),
-    row('Bewehrungsstahl',ft.bewehrungsstahl || null),
-    row('Längsbewehrung', laengs),
-    row('Bügel',          buegel),
-    row('Ankerbolzen',    schrauben),
-    row('Schrauben Art.', ft.schraubenArtikelNr || null),
+    row('Fundamentart',    artLabel),
+    isSpezial ? row('Referenztyp',    refTyp) : null,
+    nutzLabel   ? row('Nutzungsart',   nutzLabel) : null,
+    row('Kopf b × b',      kopfBL || null),
+    row('Kopf h',          kopfH  || null),
+    row('Block b × b',     blockBL || null),
+    row('Pfähle',          pfahl || null),
+    row('Tiefe',           fmt(ft.tiefe, 'm')),
+    isSpezial ? row('Stat. Nachweis', nachweis) : null,
+    isSpezial ? row('Einsatzbedingung', einsatz) : null,
+    isSpezial ? row('Bemerkung',      ftBemerkung) : null,
+    !isSpezial ? row('Zeichnung Nr.',  ft.zeichnungsNr || null) : null,
+    !isSpezial ? row('Beton',          ft.beton || null) : null,
+    !isSpezial ? row('Betondeckung',   ft.betondeckung ? ft.betondeckung + ' mm' : null) : null,
+    !isSpezial ? row('Bewehrungsstahl',ft.bewehrungsstahl || null) : null,
+    !isSpezial ? row('Längsbewehrung', laengs) : null,
+    !isSpezial ? row('Bügel',          buegel) : null,
+    !isSpezial ? row('Ankerbolzen',    schrauben) : null,
+    !isSpezial ? row('Schrauben Art.', ft.schraubenArtikelNr || null) : null,
   ].filter(Boolean).join('');
 
-  const vfkVisible = ft?.typ === 'standard';
+  const vfkVisible = ft.typ === 'standard';
   wrap.innerHTML = rows ? `
     <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:${vfkVisible ? '7px 7px 0 0' : '7px'};padding:8px 10px;margin-bottom:0;">
       <div style="margin-bottom:6px;">
@@ -16241,6 +16372,7 @@ function loadBauprojektFelder(pairId) {
   v('bp-sicherung-bemerkung', d.sicherungBemerkung);
   refreshBpFamilieSelect(d.fundtyp); // zweistufig: Familie + Tiefe
   refreshBpRefFamilieSelect(d);      // Referenztyp-Familie (bei Spezialfundamenten)
+  refreshBpNutzungsartSelect(d, getBpRefFamilie(d)); // Masttyp / Nutzungsart
   const vfkCb = document.getElementById('bp-vfk');
   if (vfkCb) vfkCb.checked = !!(d.vfk);
   renderBpFtInfo();
@@ -16532,7 +16664,11 @@ function updateBodenkennwerteUI() {
   const hint = (ok, txt) => `<div style="font-size:10px;color:${ok?'#9ca3af':'#b91c1c'};padding:1px 0 2px 90px;">${txt}</div>`;
 
   const gwLabels = { nicht_angetroffen:'Nicht angetroffen', angetroffen:'Angetroffen', gespannt:'Gespannt', unbekannt:'Unbekannt' };
-  const gwLabel  = _bkGrundwasser ? (gwLabels[_bkGrundwasser] || _bkGrundwasser) : '—';
+  const _gwResolved = _bkGrundwasser ? (gwLabels[_bkGrundwasser] || _bkGrundwasser) : '—';
+  const _gwIsNumeric = _bkGrundwasser && !gwLabels[_bkGrundwasser] && !isNaN(parseFloat(_bkGrundwasser));
+  const gwLabel = _gwIsNumeric
+    ? `${_gwResolved}<span style="font-size:10px;color:#9ca3af;margin-left:3px;">m</span>`
+    : _gwResolved;
 
   panel.innerHTML = `
     <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:7px;padding:8px 10px;margin-bottom:8px;">
@@ -16710,6 +16846,34 @@ function updateBpBestandUI() {
   updateBpNachweisAndBoden();
 }
 
+// Masttypen / Nutzungsarten gemäss SBB-Parameterdatenbank (Zulassungsdokument)
+// typ:'mast'  = Standardmast (Stahlprofil)
+// typ:'anker' = Ankermontage auf Fundamentschrauben
+const MAST_DATEN = {
+  'DP22':    { refTyp:'DP1a', profil:'HEB 200', typ:'mast',  label:'DP22 — HEB 200' },
+  'A30':     { refTyp:'DP1a', profil:'M30',     typ:'anker', label:'A30 — Anker M30' },
+  'DP26':    { refTyp:'DP2a', profil:'HEB 260', typ:'mast',  label:'DP26 — HEB 260' },
+  'A36':     { refTyp:'DP2a', profil:'M36',     typ:'anker', label:'A36 — Anker M36' },
+  'DPM24':   { refTyp:'HP1a', profil:'HEM 240', typ:'mast',  label:'DPM24 — HEM 240' },
+  'DPM24-P': { refTyp:'HP2a', profil:'HEM 240', typ:'mast',  label:'DPM24-P — HEM 240' },
+};
+
+// Abgeleitetes Masttyp → Ref.Typ Mapping (für Import-Auflösung)
+const MASTTYP_REFTYP = Object.fromEntries(
+  Object.entries(MAST_DATEN).map(([k, v]) => [k, v.refTyp])
+);
+
+// Kompatible Masttyp-Optionen für einen Ref.Typ (inkl. Anker wo vorhanden)
+function getMastOptionen(refTyp) {
+  if (!refTyp) return [];
+  return Object.entries(MAST_DATEN)
+    .filter(([, d]) => d.refTyp === refTyp)
+    .map(([key, d]) => ({ key, ...d }));
+}
+function getMasttypenForRefTyp(refTyp) {
+  return getMastOptionen(refTyp).map(o => o.key).sort();
+}
+
 // Fundamentabmessungen gemäss SBB Dok. 0161.1011.0002 (Fallback für Legacy-Einträge ohne FT-Profil)
 const FUND_ABMESSUNGEN = {
   // DP1a — Neigung ≤ 14°
@@ -16808,133 +16972,309 @@ function onBpFundtypChange() {
 // ----------------------------------------------------------------
 function loadHoehenkoten() {
   if (!currentPairId) return;
-  const sec = document.getElementById('sec-hoehenkoten');
+  const sec  = document.getElementById('sec-hoehenkoten');
   const isBP = _activePhase === 'bauprojekt' || _activePhase === 'ausfuehrung';
   if (sec) sec.style.display = isBP ? '' : 'none';
   if (!isBP) return;
 
   const pair = PAIRS.find(p => p.id === currentPairId) || {};
-  const all = loadAllBauprojekt();
-  const bpData = all[currentPairId] || {};
+  const all  = loadAllBauprojekt();
+  let bpData = all[currentPairId] || {};
 
-  // Geländehöhe anzeigen
-  const gelanEl = document.getElementById('hk-gelaende');
-  const gelaende = parseFloat(pair.gelaendehoehe);
+  // ── Auto-fill Fundamentkopf from pair.z when missing ────────────────────
+  const hasZ = pair.z != null && !isNaN(parseFloat(pair.z));
+  if (hasZ && (bpData.fundkopf_mueM == null || isNaN(parseFloat(bpData.fundkopf_mueM)))) {
+    const autoKopf  = parseFloat(parseFloat(pair.z).toFixed(1));
+    const ft        = loadFtProfile().find(t => t.name === (bpData.fundtyp || ''));
+    let   autoSohle = null;
+    if (ft?.tiefe != null && !isNaN(parseFloat(ft.tiefe))) {
+      autoSohle = parseFloat((autoKopf - parseFloat(ft.kopfHoehe || 1.0) - parseFloat(ft.tiefe)).toFixed(1));
+    }
+    all[currentPairId] = { ...bpData, fundkopf_mueM: autoKopf,
+      ...(autoSohle !== null ? { sohle_mueM: autoSohle } : {}) };
+    saveAllBauprojekt(all);
+    bpData = all[currentPairId];
+  }
+
+  // ── Geländehöhe ──────────────────────────────────────────────────────────
+  const gelaende = parseFloat(bpData.gelaende_swisstopo ?? pair.gelaendehoehe);
+  const gelanEl  = document.getElementById('hk-gelaende');
   if (gelanEl) gelanEl.textContent = !isNaN(gelaende) ? gelaende.toFixed(1) + ' m ü.M.' : '—';
 
-  // Gespeicherte Werte laden
-  const kopfEl = document.getElementById('sb-fundkopf-mueM');
-  const sohlEl = document.getElementById('sb-sohle-mueM');
-  if (kopfEl) kopfEl.value = bpData.fundkopf_mueM ?? '';
-  if (sohlEl) sohlEl.value = bpData.sohle_mueM    ?? '';
+  // ── Fundamentkopf ────────────────────────────────────────────────────────
+  const fundkopf = bpData.fundkopf_mueM != null ? parseFloat(bpData.fundkopf_mueM) : NaN;
+  const kopfEl   = document.getElementById('sb-fundkopf-mueM');
+  const srcEl    = document.getElementById('hk-kopf-source');
+  const readOnly = hasZ;
+  if (kopfEl) {
+    kopfEl.value       = !isNaN(fundkopf) ? fundkopf.toFixed(1) : '';
+    kopfEl.readOnly    = readOnly;
+    kopfEl.style.cssText = readOnly
+      ? 'width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:#f8fafc;color:#6b7280;'
+      : 'width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;';
+  }
+  if (srcEl) srcEl.textContent = hasZ ? '(Import)' : (!isNaN(fundkopf) ? '(Berechnet)' : '');
 
-  // Hinweis aus Berechnungsgrundlage
+  // Δ Terrain (OK Kopf − Geländehöhe)
+  const refDiv   = document.getElementById('hk-fundkopf-ref');
+  const diffEl   = document.getElementById('hk-fundkopf-diff');
+  const refValEl = document.getElementById('hk-fundkopf-ref-val');
+  if (refDiv) {
+    if (!isNaN(fundkopf) && !isNaN(gelaende)) {
+      const delta = fundkopf - gelaende;
+      refDiv.style.display = '';
+      if (diffEl) {
+        diffEl.textContent = `Δ Terrain ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} m`;
+        // expected offset: 0.60 m (≤14°) or 0.40 m (14-33°)
+        const expected = [0.40, 0.60];
+        const ok = expected.some(e => Math.abs(delta - e) < 0.10);
+        diffEl.style.color = ok ? '#16a34a' : (Math.abs(delta) > 2 ? '#dc2626' : '#d97706');
+      }
+      if (refValEl) refValEl.textContent = `(${gelaende.toFixed(1)} m Terrain)`;
+    } else {
+      refDiv.style.display = !isNaN(fundkopf) ? 'none' : 'none';
+    }
+  }
+
+  // ── Sohle (auto-calculated from Fundamentkopf + FT profile) ─────────────
+  _hkComputeAndRenderSohle(bpData, fundkopf);
+
+  // ── GW-Kote ──────────────────────────────────────────────────────────────
+  const gwKote = getBpGwKote(currentPairId);
+  const gwRow  = document.getElementById('hk-gw-row');
+  if (gwRow) {
+    if (gwKote !== null) {
+      gwRow.style.display = '';
+      const tiefe = parseFloat(bpData.bkGrundwasser);
+      const koteEl = document.getElementById('hk-gw-kote-val');
+      const tiefeEl = document.getElementById('hk-gw-tiefe-val');
+      if (koteEl)  koteEl.textContent  = gwKote.toFixed(1) + ' m ü.M.';
+      if (tiefeEl) tiefeEl.textContent = `(Tiefe ${tiefe.toFixed(1)} m ab Gelände)`;
+    } else {
+      gwRow.style.display = 'none';
+    }
+  }
+
+  // ── GW-Check ─────────────────────────────────────────────────────────────
+  const sohle = bpData.sohle_mueM != null ? parseFloat(bpData.sohle_mueM) : NaN;
+  _hkRenderGwCheck(sohle, gwKote, bpData.fundtyp);
+
+  // ── Hinweis ───────────────────────────────────────────────────────────────
   const hinweisEl = document.getElementById('hk-hinweis');
-  if (hinweisEl) hinweisEl.textContent = '⚑ Startwerte basieren auf Geländehöhe + Neigung + Fundamenttyp. Werte können manuell überschrieben oder per Excel aktualisiert werden.';
+  if (hinweisEl) {
+    if (isNaN(fundkopf)) {
+      hinweisEl.textContent = 'Koten noch nicht berechnet — «Startwerte berechnen» klicken.';
+    } else if (!isNaN(gelaende)) {
+      hinweisEl.textContent = '';
+    } else {
+      hinweisEl.textContent = 'Geländehöhe nicht bekannt — «Startwerte berechnen» für swisstopo-Abfrage.';
+    }
+  }
+  renderAushubKotenInfo(currentPairId);
+}
+
+// Sohle aus Fundamentkopf + FT-Profil berechnen und im DOM anzeigen
+function _hkComputeAndRenderSohle(bpData, fundkopf) {
+  const sohlHidden  = document.getElementById('sb-sohle-mueM');
+  const sohlDisplay = document.getElementById('hk-sohle-display');
+  const sohlFormel  = document.getElementById('hk-sohle-formel');
+
+  let sohle = bpData.sohle_mueM != null ? parseFloat(bpData.sohle_mueM) : NaN;
+
+  // Auto-calc when Fundamentkopf + FT-Tiefe known
+  if (!isNaN(fundkopf)) {
+    const ft = loadFtProfile().find(t => t.name === (bpData.fundtyp || ''));
+    if (ft?.tiefe != null && !isNaN(parseFloat(ft.tiefe))) {
+      const kopfH    = parseFloat(ft.kopfHoehe || 1.0);
+      const tiefe    = parseFloat(ft.tiefe);
+      const calcSohl = parseFloat((fundkopf - kopfH - tiefe).toFixed(1));
+      if (isNaN(sohle) || Math.abs(sohle - calcSohl) > 0.05) {
+        const all = loadAllBauprojekt();
+        if (!all[currentPairId]) all[currentPairId] = {};
+        all[currentPairId].sohle_mueM = calcSohl;
+        saveAllBauprojekt(all);
+        bpData.sohle_mueM = calcSohl;
+        sohle = calcSohl;
+      }
+      if (sohlFormel) {
+        sohlFormel.style.display = '';
+        sohlFormel.textContent   = `${fundkopf.toFixed(1)} − ${kopfH.toFixed(2)} m Kopf − ${tiefe.toFixed(2)} m Tiefe`;
+      }
+    } else if (sohlFormel) {
+      sohlFormel.style.display = 'none';
+    }
+  } else if (sohlFormel) {
+    sohlFormel.style.display = 'none';
+  }
+
+  if (sohlHidden)  sohlHidden.value       = !isNaN(sohle) ? sohle.toFixed(1) : '';
+  if (sohlDisplay) sohlDisplay.textContent = !isNaN(sohle) ? sohle.toFixed(1) + ' m ü.M.' : '—';
+}
+
+// GW-Check: ist UK Fundament oberhalb des Grundwasserspiegels?
+function _hkRenderGwCheck(sohle, gwKote, fundtyp) {
+  const checkEl = document.getElementById('hk-gw-check');
+  if (!checkEl) return;
+  if (isNaN(sohle) || gwKote === null) { checkEl.style.display = 'none'; return; }
+  checkEl.style.display = '';
+  const delta    = sohle - gwKote;
+  const isSpezial = fundtyp ? isFtSpezial(fundtyp) : false;
+  if (delta >= 0) {
+    checkEl.style.background = '#f0fdf4';
+    checkEl.style.border     = '1px solid #bbf7d0';
+    checkEl.style.color      = '#166534';
+    checkEl.innerHTML = `UK Fundament <strong>${sohle.toFixed(1)} m</strong> liegt <strong>${delta.toFixed(1)} m</strong> über GW ${gwKote.toFixed(1)} m — Bedingung Standardfundament erfüllt`;
+  } else {
+    const absD = Math.abs(delta).toFixed(1);
+    if (isSpezial) {
+      checkEl.style.background = '#eff6ff';
+      checkEl.style.border     = '1px solid #bfdbfe';
+      checkEl.style.color      = '#1e40af';
+      checkEl.innerHTML = `Spezialfundament: UK <strong>${sohle.toFixed(1)} m</strong>, GW <strong>${gwKote.toFixed(1)} m</strong> — Massnahmen gemäss Spezialnachweis`;
+    } else {
+      checkEl.style.background = '#fef2f2';
+      checkEl.style.border     = '1px solid #fecaca';
+      checkEl.style.color      = '#991b1b';
+      checkEl.innerHTML = `UK Fundament <strong>${sohle.toFixed(1)} m</strong> liegt <strong>${absD} m</strong> unter GW ${gwKote.toFixed(1)} m — Spezialfundament prüfen / Wasserhaltung vorsehen`;
+    }
+  }
+}
+
+// Wird aufgerufen wenn Fundamentkopf-Input manuell geändert wird
+function onHkKopfChange() {
+  saveHoehenkoten();
+  loadHoehenkoten();
 }
 
 async function recalcHoehenkoten() {
   if (!currentPairId) return;
-  const pair = PAIRS.find(p => p.id === currentPairId) || {};
-  let gelaende = parseFloat(pair.gelaendehoehe);
+  const pair      = PAIRS.find(p => p.id === currentPairId) || {};
   const hinweisEl = document.getElementById('hk-hinweis');
+  const e         = pair.rs?.e || pair.rks?.e;
+  const n         = pair.rs?.n || pair.rks?.n;
+  const hasImportedZ = pair.z != null && !isNaN(parseFloat(pair.z));
 
+  // ── Hilfsfunktion: Geländehöhe von swisstopo holen ───────────────────────
+  const _fetchGelaende = async () => {
+    if (!e || !n) throw new Error('Keine Koordinaten');
+    if (hinweisEl) hinweisEl.textContent = 'Geländehöhe wird von swisstopo abgefragt…';
+    const res = await fetch(`https://api.geo.admin.ch/rest/services/height?easting=${e}&northing=${n}&sr=2056&format=json`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.height) throw new Error('Keine Höhe in Antwort');
+    return parseFloat(data.height);
+  };
+
+  // ── Modus A: Z aus Fundamentliste vorhanden → Geländehöhe abrufen für Δ ──
+  if (hasImportedZ) {
+    try {
+      const gelaende = await _fetchGelaende();
+      const all = loadAllBauprojekt();
+      all[currentPairId] = { ...(all[currentPairId] || {}), gelaende_swisstopo: gelaende };
+      saveAllBauprojekt(all);
+      loadHoehenkoten();   // zeigt Δ OK Kopf – Terrain, sohle, GW-Check
+    } catch(err) {
+      if (hinweisEl) hinweisEl.textContent = `⚠ Höhenabfrage fehlgeschlagen (${err.message}).`;
+    }
+    return;
+  }
+
+  // ── Modus B: kein Z-Import → Fundamentkopf aus swisstopo + Neigung ───────
+  let gelaende = parseFloat(bpDataFor(currentPairId).gelaende_swisstopo ?? pair.gelaendehoehe);
   if (isNaN(gelaende)) {
-    // 1. Z-Koordinate aus Fundamentliste-Import verwenden (Priorität)
-    const zImport = parseFloat(pair.z);
-    if (!isNaN(zImport)) {
-      gelaende = zImport;
+    try {
+      gelaende = await _fetchGelaende();
       const idx = PAIRS.findIndex(p => p.id === currentPairId);
       if (idx >= 0) { PAIRS[idx] = { ...PAIRS[idx], gelaendehoehe: gelaende }; savePairs(); }
-      loadHoehenkoten();
-    } else {
-      // 2. Automatische Abfrage geo.admin.ch
-      const e = pair.rs?.e || pair.rks?.e;
-      const n = pair.rs?.n || pair.rks?.n;
-      if (!e || !n) {
-        if (hinweisEl) hinweisEl.textContent = '⚠ Keine Koordinaten — Geländehöhe manuell eintragen.';
-        return;
-      }
-      if (hinweisEl) hinweisEl.textContent = 'Geländehöhe wird von swisstopo abgefragt…';
-      try {
-        const res = await fetch(`https://api.geo.admin.ch/rest/services/height?easting=${e}&northing=${n}&sr=2056&format=json`);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (!data.height) throw new Error('Keine Höhe in Antwort');
-        gelaende = parseFloat(data.height);
-        const idx = PAIRS.findIndex(p => p.id === currentPairId);
-        if (idx >= 0) { PAIRS[idx] = { ...PAIRS[idx], gelaendehoehe: gelaende }; savePairs(); }
-        loadHoehenkoten();
-      } catch(err) {
-        if (hinweisEl) hinweisEl.textContent = `⚠ Höhenabfrage fehlgeschlagen (${err.message}) — Geländehöhe manuell eintragen.`;
-        return;
-      }
+    } catch(err) {
+      if (hinweisEl) hinweisEl.textContent = `⚠ Höhenabfrage fehlgeschlagen (${err.message}) — Geländehöhe manuell eintragen.`;
+      return;
     }
   }
+  if (isNaN(gelaende)) return;
 
-  if (isNaN(gelaende)) { return; }
-
-  const neigung  = document.getElementById('bp-neigung')?.value || '';
-  const fundtyp  = document.getElementById('bp-fundtyp')?.value  || '';
-
-  // Fundamentkopf-Offset über Terrain
+  const neigung = document.getElementById('bp-neigung')?.value || '';
   let kopfOffset = null;
-  if (neigung === '≤14°')   kopfOffset = 0.60;
-  else if (neigung.includes('14'))  kopfOffset = 0.40;
+  if (neigung === '≤14°')           kopfOffset = 0.60;
+  else if (neigung.includes('14')) kopfOffset = 0.40;
   if (kopfOffset === null) { alert('Bitte zuerst die Geländeneigung wählen.'); return; }
 
-  const fundamentkopf = gelaende + kopfOffset;
+  const fundamentkopf = parseFloat((gelaende + kopfOffset).toFixed(1));
 
-  // Einbindetiefe: zuerst aus FUND_ABMESSUNGEN, dann aus FT-Profil-Bibliothek
-  let sohle = null;
-  let einbindetiefeStr = null;
-  const neigKey = neigung.includes('14–33') ? '14–33°' : '≤14°';
-  const key = `${fundtyp}|${neigKey}`;
-  const abmessung = FUND_ABMESSUNGEN[key];
-  if (abmessung) {
-    const einbindetiefe = parseFloat(abmessung.tiefe);
-    sohle = fundamentkopf - 1.00 - einbindetiefe;
-    einbindetiefeStr = abmessung.tiefe;
-  } else {
-    // Fallback: Tiefe aus FT-Profil-Bibliothek
-    const ft = loadFtProfile().find(t => t.name === fundtyp);
-    if (ft?.tiefe != null && !isNaN(parseFloat(ft.tiefe))) {
-      const einbindetiefe = parseFloat(ft.tiefe);
-      sohle = fundamentkopf - 1.00 - einbindetiefe;
-      einbindetiefeStr = einbindetiefe.toFixed(2) + ' m';
-    }
-  }
+  // Speichern: fundkopf_mueM + gelaende_swisstopo — sohle wird in loadHoehenkoten auto-berechnet
+  const all = loadAllBauprojekt();
+  all[currentPairId] = { ...(all[currentPairId] || {}), fundkopf_mueM: fundamentkopf, gelaende_swisstopo: gelaende };
+  saveAllBauprojekt(all);
 
+  // Grün-Flash auf OK Fundamentkopf Input
   const kopfEl = document.getElementById('sb-fundkopf-mueM');
-  const sohlEl = document.getElementById('sb-sohle-mueM');
+  if (kopfEl) { kopfEl.style.background = '#f0fdf4'; setTimeout(() => { if (kopfEl) kopfEl.style.background = ''; }, 1800); }
 
-  if (kopfEl) { kopfEl.value = fundamentkopf.toFixed(1); kopfEl.style.background = '#f0fdf4'; setTimeout(() => { if (kopfEl) kopfEl.style.background = ''; }, 2000); }
-  if (sohlEl && sohle !== null) { sohlEl.value = sohle.toFixed(1); sohlEl.style.background = '#f0fdf4'; setTimeout(() => { if (sohlEl) sohlEl.style.background = ''; }, 2000); }
+  // pair.z setzen (Koordinate = berechneter Fundamentkopf)
+  const pIdx = PAIRS.findIndex(p => p.id === currentPairId);
+  if (pIdx >= 0) { PAIRS[pIdx].z = fundamentkopf; savePairs(); renderMetaSection(PAIRS[pIdx]); }
 
-  let hinweis = `Fundamentkopf: ${gelaende.toFixed(1)} + ${kopfOffset*100} cm = ${fundamentkopf.toFixed(1)} m ü.M.`;
-  if (sohle !== null) hinweis += ` · Sohle: ${fundamentkopf.toFixed(1)} − 1.00 m − ${einbindetiefeStr} = ${sohle.toFixed(1)} m ü.M. (${fundtyp})`;
-  else hinweis += ' · Sohle: Fundamenttyp nicht bekannt oder Spezial → manuell eintragen';
-  if (hinweisEl) hinweisEl.textContent = hinweis;
-
-  saveHoehenkoten();
+  loadHoehenkoten();
 }
+
+// Hilfsfunktion: bpData ohne Neuladen
+function bpDataFor(pairId) { return (loadAllBauprojekt()[pairId]) || {}; }
 
 function saveHoehenkoten() {
   if (!currentPairId) return;
-  const all = loadAllBauprojekt();
+  const all      = loadAllBauprojekt();
   const existing = all[currentPairId] || {};
-  const kopf = parseFloat(document.getElementById('sb-fundkopf-mueM')?.value);
-  const sohl = parseFloat(document.getElementById('sb-sohle-mueM')?.value);
-  all[currentPairId] = { ...existing, fundkopf_mueM: isNaN(kopf) ? null : kopf, sohle_mueM: isNaN(sohl) ? null : sohl };
+  const kopf     = parseFloat(document.getElementById('sb-fundkopf-mueM')?.value);
+  // Sohle is auto-calculated; only persist fundkopf from manual input
+  all[currentPairId] = {
+    ...existing,
+    fundkopf_mueM: isNaN(kopf) ? null : kopf,
+  };
   saveAllBauprojekt(all);
   _autoCheckGwRelevant();
+}
+
+// Leitet GW-Kote (m ü.M.) aus bkGrundwasser (Tiefe ab Gelände) ab
+function getBpGwKote(pairId) {
+  const bp      = (loadAllBauprojekt()[pairId]) || {};
+  const pair    = PAIRS.find(p => p.id === pairId) || {};
+  const tiefe   = parseFloat(bp.bkGrundwasser);
+  if (isNaN(tiefe) || tiefe <= 0) return null;
+  const gelaende = parseFloat(bp.gelaende_swisstopo ?? pair.gelaendehoehe);
+  if (isNaN(gelaende)) return null;
+  return parseFloat((gelaende - tiefe).toFixed(1));
+}
+
+// Zeigt UK Fundament + GW-Kote + Delta im Aushubprotokoll-Sidebar
+function renderAushubKotenInfo(pairId) {
+  const infoEl = document.getElementById('au-koten-info');
+  if (!infoEl) return;
+  const bp     = loadAllBauprojekt()[pairId] || {};
+  const sohle  = bp.sohle_mueM != null ? parseFloat(bp.sohle_mueM) : NaN;
+  const gwKote = getBpGwKote(pairId);
+  if (isNaN(sohle) && gwKote === null) { infoEl.style.display = 'none'; return; }
+  infoEl.style.display = '';
+  document.getElementById('au-sohle-val').textContent = !isNaN(sohle) ? sohle.toFixed(1) + ' m ü.M.' : '—';
+  document.getElementById('au-gw-val').textContent    = gwKote !== null ? gwKote.toFixed(1) + ' m ü.M.' : '—';
+  const deltaRow = document.getElementById('au-gw-delta-row');
+  const deltaEl  = document.getElementById('au-gw-delta');
+  if (!isNaN(sohle) && gwKote !== null) {
+    const delta = sohle - gwKote;
+    deltaRow.style.display = '';
+    deltaEl.textContent = delta >= 0
+      ? `GW ${delta.toFixed(1)} m unter UK Fundament`
+      : `GW ${Math.abs(delta).toFixed(1)} m über UK Fundament — Wasserhaltung prüfen`;
+    deltaEl.style.color = delta < 0 ? '#dc2626' : delta < 0.5 ? '#d97706' : '#6b7280';
+  } else {
+    deltaRow.style.display = 'none';
+  }
 }
 
 // GW-Spiegel vs. Sohlen-Kote: Status automatisch berechnen und anzeigen
 function _autoCheckGwRelevant() { _updateGwSpiegelStatus(); }
 
 function _updateGwSpiegelStatus() {
-  const gwKote = parseFloat(document.getElementById('ns-gw-kote')?.value);
+  const gwKote = getBpGwKote(currentPairId) ?? NaN;
   const sohle  = parseFloat(document.getElementById('sb-sohle-mueM')?.value);
   const resEl  = document.getElementById('ns-gw-spiegel-result');
   const masEl  = document.getElementById('ns-gw-massnahmen');
@@ -17010,6 +17350,40 @@ function refreshBpRefFamilieSelect(bp) {
     getFtFamilies().map(f => `<option value="${f}"${saved === f ? ' selected' : ''}>${f}</option>`).join('');
 }
 
+function refreshBpNutzungsartSelect(bpData, refTyp) {
+  const wrap = document.getElementById('bp-nutzungsart-wrap');
+  const sel  = document.getElementById('bp-nutzungsart');
+  const info = document.getElementById('bp-nutzungsart-info');
+  if (!wrap || !sel) return;
+  const optionen = getMastOptionen(refTyp);
+  wrap.style.display = optionen.length ? '' : 'none';
+  if (!optionen.length) return;
+  const current = bpData.nutzungsart || '';
+  sel.innerHTML = `<option value="">— nicht definiert —</option>` +
+    optionen.map(o =>
+      `<option value="${o.key}"${current === o.key ? ' selected' : ''}>${o.label}</option>`
+    ).join('');
+  const chosen = MAST_DATEN[current];
+  if (info) info.textContent = chosen
+    ? (chosen.typ === 'anker' ? `Ankermontage, Schrauben ${chosen.profil}` : `Mastprofil ${chosen.profil}`)
+    : '';
+}
+
+function saveBpNutzungsart(pairId, value) {
+  if (!pairId) return;
+  const allBP = loadAllBauprojekt();
+  if (!allBP[pairId]) allBP[pairId] = {};
+  allBP[pairId].nutzungsart = value;
+  saveAllBauprojekt(allBP);
+  const info = document.getElementById('bp-nutzungsart-info');
+  if (info) {
+    const d = MAST_DATEN[value];
+    info.textContent = d
+      ? (d.typ === 'anker' ? `Ankermontage, Schrauben ${d.profil}` : `Mastprofil ${d.profil}`)
+      : '';
+  }
+}
+
 function updateBpNachweisAndBoden() {
   const bestand   = document.getElementById('bp-bestand')?.value   || '';
   const massnahme = document.getElementById('bp-massnahme')?.value  || '';
@@ -17024,20 +17398,43 @@ function updateBpNachweisAndBoden() {
   const isBestandAbbruchNur = bestand === 'bestand' && massnahme === 'abbruch-nur';
   const isBestandSicherung = bestand === 'bestand' && massnahme === 'sicherung';
 
+  // Prüfen ob ein FT-Profil hinterlegt ist → Felder dann gesperrt (nur über Modal änderbar)
+  const bpData   = currentPairId ? (loadAllBauprojekt()[currentPairId] || {}) : {};
+  const hasFtProfil = !!(bpData.ftProfilId);
+
   // ── Nachweis-Wrap: nur bei Spezial + Neubau, oder Fundamentsicherung ──
   const nachweisWrap  = document.getElementById('bp-nachweis-wrap');
   const nachweisInput = document.getElementById('bp-nachweis-link');
 
   const showNachweis = (isSpezial && !isBestandErhalten && !isBestandAbbruchNur) || isBestandSicherung;
 
-  if (nachweisWrap) nachweisWrap.style.display = showNachweis ? '' : 'none';
-  if (nachweisInput && showNachweis) {
+  // Wenn FT hinterlegt + Spezial → Nachweis + Referenztyp werden in der Info-Box angezeigt → Inputs ausblenden
+  const hideInBox = hasFtProfil && isSpezial;
+  if (nachweisWrap) nachweisWrap.style.display = (!hideInBox && showNachweis) ? '' : 'none';
+  if (nachweisInput && !hideInBox && showNachweis) {
     nachweisInput.placeholder = 'https://… oder Dok.-Nr.';
+    nachweisInput.disabled        = false;
+    nachweisInput.style.background = '';
+    nachweisInput.style.color      = '';
+    nachweisInput.style.cursor     = '';
+    const ftHintN = nachweisWrap.querySelector('.ft-locked-hint');
+    if (ftHintN) ftHintN.remove();
   }
 
-  // ── Referenztyp-Familie: nur bei Spezialfundamenten ──
+  // ── Referenztyp-Familie: nur bei Spezialfundamenten ohne hinterlegtem FT ──
   const refFamilieWrap = document.getElementById('bp-ref-familie-wrap');
-  if (refFamilieWrap) refFamilieWrap.style.display = isSpezial ? '' : 'none';
+  if (refFamilieWrap) refFamilieWrap.style.display = (isSpezial && !hideInBox) ? '' : 'none';
+  if (!hideInBox) {
+    const refFamilieSel = document.getElementById('bp-ref-familie');
+    if (refFamilieSel) {
+      refFamilieSel.disabled        = false;
+      refFamilieSel.style.background = 'white';
+      refFamilieSel.style.color      = '';
+      refFamilieSel.style.cursor     = '';
+    }
+    const ftHintR = refFamilieWrap?.querySelector('.ft-locked-hint');
+    if (ftHintR) ftHintR.remove();
+  }
 
   // ── Geländeneigung: bei Bauwerk/Mauer und Fels nicht relevant ──
   const neigungWrap = document.getElementById('bp-neigung')?.closest('div');
@@ -17458,15 +17855,20 @@ function loadBegehungFelder(pairId) {
   updateBegehungStatusBtns();
   updateBegehungUI();
   begFillEreignisDropdown();
+  v('beg-ereignis-vorlage', d.ereignisId);
 }
 
 function saveBegehung() {
   if (!currentPairId) return;
   const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-  const all = loadAllBegehung();
-  const key = `${currentPairId}_${_activePhase}`;
+  const all      = loadAllBegehung();
+  const key      = `${currentPairId}_${_activePhase}`;
   const existing = all[key] || {};
-  all[key] = {
+
+  const befundText = v('beg-befund').trim();
+  const prevBefund = (existing.befund || '').trim();
+
+  const updated = {
     ...existing,
     datum:              v('beg-datum'),
     person:             v('beg-person'),
@@ -17474,7 +17876,46 @@ function saveBegehung() {
     befund:             v('beg-befund'),
     massnahmeJa:        v('beg-massnahme-ja'),
     massnahmeBeschrieb: v('beg-massnahme-beschrieb'),
+    ereignisId:         v('beg-ereignis-vorlage'),
   };
+  all[key] = updated;
+
+  // Befund / Hindernisse → Notiz synchronisieren
+  // Jede Änderung erzeugt/aktualisiert eine Notiz mit context='Begehung'.
+  // Die Notiz-ID wird in befundNotizId gespeichert um Duplikate zu vermeiden.
+  if (befundText !== prevBefund) {
+    const notAll = loadAllNotizen();
+    if (!Array.isArray(notAll[currentPairId])) notAll[currentPairId] = [];
+    const existingNoteId = existing.befundNotizId;
+
+    if (befundText) {
+      const noteIdx = existingNoteId
+        ? notAll[currentPairId].findIndex(n => n.id === existingNoteId)
+        : -1;
+      if (noteIdx >= 0) {
+        // Bestehende Notiz aktualisieren
+        notAll[currentPairId][noteIdx].text  = befundText;
+        notAll[currentPairId][noteIdx].ts    = new Date().toLocaleString('de-CH');
+        notAll[currentPairId][noteIdx].phase = _activePhase || 'baugrund';
+      } else {
+        // Neue Notiz anlegen
+        const newId = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+        notAll[currentPairId].push({
+          id: newId, ts: new Date().toLocaleString('de-CH'),
+          phase: _activePhase || 'baugrund',
+          text: befundText, context: 'Begehung',
+        });
+        all[key].befundNotizId = newId;
+      }
+    } else if (existingNoteId) {
+      // Befund geleert → verknüpfte Notiz entfernen
+      notAll[currentPairId] = notAll[currentPairId].filter(n => n.id !== existingNoteId);
+      delete all[key].befundNotizId;
+    }
+    saveAllNotizen(notAll);
+    renderPaarNotizen(currentPairId);
+  }
+
   saveAllBegehung(all);
   updateBegehungUI();
 }
@@ -17528,12 +17969,13 @@ function begFillEreignisDropdown() {
     }).join('');
 }
 
-// Begehung — Ereignis-Daten in Formular übernehmen
+// Begehung — Ereignis-Daten in Formular übernehmen und auf alle Positionen der Phase anwenden
 function begLadeEreignis(id) {
   if (!id) return;
   const e = loadEreignisse().find(x => x.id === id);
   if (!e) return;
-  const datum = document.getElementById('beg-datum');
+
+  const datum  = document.getElementById('beg-datum');
   const person = document.getElementById('beg-person');
   if (datum && e.datum) datum.value = e.datum;
   if (person && Array.isArray(e.beteiligte) && e.beteiligte.length) {
@@ -17541,9 +17983,30 @@ function begLadeEreignis(id) {
   } else if (person && e.ort && !person.value) {
     person.value = e.ort;
   }
+
+  // Status auf Geplant setzen
+  _begehungStatus = 'geplant';
+  updateBegehungStatusBtns();
+
+  // Aktuellen Standort speichern (ereignisId bleibt im Dropdown gesetzt → wird via saveBegehung persistiert)
   saveBegehung();
-  const sel = document.getElementById('beg-ereignis-vorlage');
-  if (sel) sel.value = '';
+
+  // Datum + Person + status='geplant' auf alle Positionen der Phase übertragen.
+  // Positionen mit Status 'durchgefuehrt' oder 'nichtmoeglich' werden nicht überschrieben.
+  const allBeg    = loadAllBegehung();
+  const datumVal  = e.datum || '';
+  const personVal = (Array.isArray(e.beteiligte) && e.beteiligte.length)
+    ? e.beteiligte.join(', ') : (e.ort || '');
+
+  getPhasePairs().forEach(p => {
+    if (p.id === currentPairId) return;
+    const pKey     = `${p.id}_${_activePhase}`;
+    const existing = allBeg[pKey] || {};
+    if (existing.status === 'durchgefuehrt' || existing.status === 'nichtmoeglich') return;
+    allBeg[pKey] = { ...existing, datum: datumVal, person: personVal,
+                     status: 'geplant', ereignisId: id };
+  });
+  saveAllBegehung(allBeg);
 }
 
 // Begehung PDF — Modal öffnen
@@ -17746,6 +18209,8 @@ function loadAusfuehrungFelder(pairId) {
   updateAusfuehrungUI();
   // Ausführungsplanung: Baupaket-Info + Notizen
   loadAusfPlanung(pairId);
+  // Koten-Info: UK Fundament + GW-Kote
+  renderAushubKotenInfo(pairId);
 }
 
 function saveAusfuehrung() {
@@ -18442,17 +18907,19 @@ function exportMaterialbestellungXlsx() {
   const detailRows = [
     [`Materialliste · ${pn} · ${date}`],
     [],
-    ['Mast', 'KM', 'Massnahme', 'Fundamenttyp', 'Zeichnungs-Nr.', 'VFK-Zeichnungs-Nr.', 'Schrauben Art.-Nr.', 'Beton (m³)', 'Bewehrung'],
+    ['Mast', 'KM', 'Massnahme', 'Fundamenttyp', 'Nutzungsart', 'Zeichnungs-Nr.', 'VFK-Zeichnungs-Nr.', 'Schrauben Art.-Nr.', 'Beton (m³)', 'Bewehrung'],
   ];
   positionen.forEach(({ pair: p, bp, ft }) => {
     const km  = p.km_rs ? parseFloat(p.km_rs).toFixed(3) : (p.km_rks ? parseFloat(p.km_rks).toFixed(3) : '');
     const vfk = !!(bp.vfk) && !!(ft?.vfkZeichnungsNr);
     const vol = ft ? _ftBetonVolumen(ft, vfk) : null;
+    const nutz = bp.nutzungsart ? (MAST_DATEN[bp.nutzungsart]?.label || bp.nutzungsart) : '—';
     detailRows.push([
       'Mast ' + (p.mast || p.id),
       km,
       bp.bestand === 'prov' ? 'Provisorium' : 'Neubau',
       ft?.name || '—',
+      nutz,
       ft?.zeichnungsNr || '—',
       vfk ? (ft?.vfkZeichnungsNr || '—') : '—',
       ft?.schraubenArtikelNr || '—',
@@ -18493,7 +18960,7 @@ function exportMaterialbestellungXlsx() {
   const wsBestehl = window.XLSX.utils.aoa_to_sheet(bestellRows);
 
   // Spaltenbreiten
-  wsDetail['!cols']  = [{ wch:14 },{ wch:9 },{ wch:14 },{ wch:14 },{ wch:18 },{ wch:18 },{ wch:10 },{ wch:28 }];
+  wsDetail['!cols']  = [{ wch:14 },{ wch:9 },{ wch:14 },{ wch:18 },{ wch:18 },{ wch:18 },{ wch:18 },{ wch:10 },{ wch:10 },{ wch:28 }];
   wsBestehl['!cols'] = [{ wch:5 },{ wch:16 },{ wch:42 },{ wch:10 },{ wch:8 }];
 
   const wb = window.XLSX.utils.book_new();
@@ -18699,7 +19166,7 @@ function toggleCkGps() {
         _ckGpsCircle = L.circle([lat, lng], { radius: accuracy, color: '#0284c7', fillColor: '#bae6fd', fillOpacity: 0.2, weight: 1 }).addTo(_ckLeafletMap);
       }
     }, () => { _ckGpsActive = false; if (btn) { btn.style.opacity = '0.5'; btn.style.background = 'white'; } },
-    { enableHighAccuracy: true, maximumAge: 5000 });
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
   }
 }
 
@@ -22852,6 +23319,8 @@ let _bpZuwSelected      = new Set();
 let _bpZuwSort          = 'mast';
 let _bpZuwSortDir       = 1;
 let _ftSelected         = new Set();
+let _ftBulkIds          = null;   // null = Einzelbearbeitung; Array = Sammelbearbeitung
+let _ftBulkMixed        = new Set(); // Felder mit unterschiedlichen Werten über Selektion
 
 function openBpFullscreen(paketId) {
   const overlay = document.getElementById('bp-fullscreen-overlay');
@@ -26259,6 +26728,15 @@ function toggleFtSelect(ftId) {
   renderFundtypProfilGrid();
 }
 
+// Bearbeiten-Button auf Spezial-Kachel: Einzel- oder Sammelbearbeitung je nach Selektion
+function _openFtOrBulk(clickedId) {
+  if (_ftSelected.size > 1 && _ftSelected.has(clickedId)) {
+    openFundtypProfilModal(clickedId, null, [..._ftSelected]);
+  } else {
+    openFundtypProfilModal(clickedId);
+  }
+}
+
 function openGlobalFtModal() {
   const sel = _ftSelected.size;
   const info = document.getElementById('ft-global-scope-info');
@@ -26463,7 +26941,7 @@ function renderFundtypProfilGrid() {
     const lpChip       = lp
       ? `<div style="margin-bottom:6px;"><span style="font-size:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;padding:2px 7px;border-radius:4px;">${lp.name}</span></div>`
       : `<div style="margin-bottom:6px;"><span style="font-size:10px;color:#9ca3af;padding:2px 0;border-radius:4px;">Kein Leistungsprofil</span></div>`;
-    return `<div class="card" style="${ftSelStyle}" onclick="handleKachelClick('${t.id}')">
+    return `<div class="card" style="${ftSelStyle}" onclick="handleKachelClick(event,'${t.id}')">
       <!-- Header: Name + Leistungs-Button -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
         <div style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;">
@@ -26480,6 +26958,7 @@ function renderFundtypProfilGrid() {
       </div>
       ${t.einsatzBedingung ? `<div style="font-size:10px;color:#9ca3af;font-style:italic;margin-bottom:6px;">${t.einsatzBedingung}</div>` : ''}
       ${lpChip}
+      ${(() => { const ref = getBpRefFamilie({fundtyp:t.name}); const masts = getMasttypenForRefTyp(ref); return masts.length ? `<div style="font-size:9px;color:#9ca3af;margin-bottom:4px;">Mast: ${masts.join(' · ')}</div>` : ''; })()}
       <div style="margin-top:auto;display:flex;flex-direction:column;gap:4px;">
         <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:4px;color:#6b7280;">${count} Standort${count !== 1 ? 'e' : ''}</span>
         <select onclick="event.stopPropagation()" onchange="setFtBaupaket('${t.id}', this.value)"
@@ -26510,21 +26989,13 @@ function renderFundtypProfilGrid() {
     stdGrid.innerHTML = '<div style="grid-column:1/-1;font-size:12px;color:#9ca3af;padding:8px 0;">Keine Standardfundamente geladen. App neu laden.</div>';
   }
 
-  // ── Bulk-Bar für Leistungsprofil-Sammelzuweisung ──
-  const bulkBar   = document.getElementById('ft-std-bulk-bar');
-  const bulkCount = document.getElementById('ft-std-bulk-count');
-  const bulkLp    = document.getElementById('ft-std-bulk-lp');
-  if (bulkBar) {
-    const selCount = _ftSelected.size;
-    bulkBar.style.display = selCount > 0 ? 'flex' : 'none';
-    if (bulkCount) bulkCount.textContent = `${selCount} Typ${selCount !== 1 ? 'en' : ''} ausgewählt`;
-    if (bulkLp) {
-      const prevVal  = bulkLp.value;
-      const profiles = loadLeistungsprofile();
-      bulkLp.innerHTML = '<option value="">— Leistungsprofil —</option>' +
-        profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-      bulkLp.value = prevVal || 'lp_block';
-    }
+  // ── Selektion-Statusbar ──
+  const selBar   = document.getElementById('ft-sel-bar');
+  const selCount = _ftSelected.size;
+  if (selBar) {
+    selBar.style.display = selCount > 0 ? 'flex' : 'none';
+    const lbl = document.getElementById('ft-sel-bar-count');
+    if (lbl) lbl.textContent = `${selCount} Typ${selCount !== 1 ? 'en' : ''} ausgewählt`;
   }
 
   // ── Spezial-Kacheln (editierbar, Duplikat, Statikbericht-Links) ──
@@ -26542,6 +27013,7 @@ function renderFundtypProfilGrid() {
       t.anzahlPfaehle  ? `${t.anzahlPfaehle} Pfähle`                                       : '',
       t.pfahlLaenge    ? `${isFels ? 'Anker' : 'L'} = ${parseFloat(t.pfahlLaenge).toFixed(2)} m` : '',
       t.tiefe          ? `${isFels ? 'Einbind.' : 't'} = ${parseFloat(t.tiefe).toFixed(2)} m`    : '',
+      t.nutzungsart    ? (MAST_DATEN[t.nutzungsart]?.label || t.nutzungsart)                : '',
     ].filter(Boolean).join(' · ');
 
     // Verknüpfte Statikberichte
@@ -26555,7 +27027,7 @@ function renderFundtypProfilGrid() {
     ).join('');
 
     const spezSelStyle = _ftSelected.has(t.id) ? 'outline:2px solid #3b82f6;outline-offset:-2px;background:#eff6ff;' : '';
-    return `<div class="card" style="${spezSelStyle}" onclick="handleKachelClick('${t.id}')">
+    return `<div class="card" style="${spezSelStyle}" onclick="handleKachelClick(event,'${t.id}')">
       <!-- Header: Name + Aktions-Buttons -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:4px;">
         <div style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;">
@@ -26567,7 +27039,7 @@ function renderFundtypProfilGrid() {
         <div style="display:flex;gap:4px;flex-shrink:0;">
           <button onclick="event.stopPropagation();duplicateFundtyp('${t.id}')" title="Duplizieren"
             style="padding:3px 7px;border-radius:5px;border:1px solid #e5e7eb;background:white;font-size:11px;color:#6b7280;cursor:pointer;line-height:1;">⧉</button>
-          <button onclick="event.stopPropagation();openFundtypProfilModal('${t.id}')" title="Bearbeiten"
+          <button onclick="event.stopPropagation();_openFtOrBulk('${t.id}')" title="Bearbeiten"
             style="padding:3px 7px;border-radius:5px;border:1px solid #e5e7eb;background:white;font-size:11px;color:#374151;cursor:pointer;font-weight:600;line-height:1;">✎</button>
         </div>
       </div>
@@ -26609,7 +27081,11 @@ function setFtFilter(filter) {
 }
 
 // Kachel-Klick: Zuweisung an selektierte Zeilen oder Modal öffnen
-function handleKachelClick(typId) {
+function handleKachelClick(e, typId) {
+  if (e && (e.ctrlKey || e.metaKey)) {
+    toggleFtSelect(typId);
+    return;
+  }
   const selectedCbs = [...document.querySelectorAll('.ftz-row-cb:checked')];
 
   if (selectedCbs.length === 0) {
@@ -26858,6 +27334,7 @@ function exportFtXlsx() {
       'Bezeichnung':             t.name || '',
       'Typ':                     t.typ === 'standard' ? 'Standard' : 'Spezial',
       'Referenztyp':             t.referenzTyp || '',
+      'Nutzungsart':             t.nutzungsart ? (MAST_DATEN[t.nutzungsart]?.label || t.nutzungsart) : '',
       'Fundamentart':            ART_LBL[t.fundamentArt] || '',
       'Kopfabmessung':           mmAbmessungToM(t.kopfAbmessung || ''),
       'Blockabmessung':          mmAbmessungToM(t.blockAbmessung || ''),
@@ -27207,12 +27684,82 @@ function assignFundtyp(pairId, typId) {
   renderFundtypZuweisungList();
 }
 
+// Erzwingt Übernahme aller Werte aus Ref.Typ (überschreibt bestehende Felder)
+function ftPrefillFromRefTyp() {
+  const ref = document.getElementById('ft-prof-ref-typ')?.value || '';
+  if (!ref) { alert('Bitte zuerst einen Referenztyp wählen.'); return; }
+  const stdBase = DEFAULT_FT_PROFIL.find(t => t.typ === 'standard' && t.name.startsWith(ref));
+  if (!stdBase) { alert(`Kein Standardprofil für Referenztyp "${ref}" in der Bibliothek gefunden.`); return; }
+  const geoOv = loadFtGeoOverrides()[stdBase.id] || {};
+  const matOv = loadFtMatOverrides()[stdBase.id] || {};
+  const geo   = { ...stdBase, ...geoOv };
+  const mat   = { ...stdBase, ...matOv };
+  // Erzwingt Übernahme (immer setzen, auch wenn Feld bereits befüllt)
+  const sv = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== '') el.value = val; };
+  if (geo.kopfB != null) {
+    sv('ft-prof-kopf-b', parseFloat(geo.kopfB).toFixed(3));
+    sv('ft-prof-kopf-l', parseFloat(geo.kopfL ?? geo.kopfB).toFixed(3));
+  } else {
+    const km = (geo.kopfAbmessung || '').match(/(\d+)[×x](\d+)/);
+    if (km) { sv('ft-prof-kopf-b', (parseInt(km[1])/1000).toFixed(3)); sv('ft-prof-kopf-l', (parseInt(km[2])/1000).toFixed(3)); }
+  }
+  sv('ft-prof-kopf-hoehe', geo.kopfHoehe);
+  if (geo.blockB != null) {
+    sv('ft-prof-block-b', parseFloat(geo.blockB).toFixed(3));
+    sv('ft-prof-block-l', parseFloat(geo.blockL ?? geo.blockB).toFixed(3));
+  } else {
+    const bm = (geo.blockAbmessung || '').match(/(\d+)[×x](\d+)/);
+    if (bm) { sv('ft-prof-block-b', (parseInt(bm[1])/1000).toFixed(3)); sv('ft-prof-block-l', (parseInt(bm[2])/1000).toFixed(3)); }
+  }
+  sv('ft-prof-tiefe',           geo.tiefe);
+  sv('ft-prof-beton',           mat.beton);
+  sv('ft-prof-betondeckung',    mat.betondeckung);
+  sv('ft-prof-bewehrungsstahl', mat.bewehrungsstahl || mat.bewehrung);
+  sv('ft-prof-laengs-anzahl',   mat.laengsAnzahl);
+  sv('ft-prof-laengs-dm',       mat.laengsDurchmesser);
+  sv('ft-prof-buegel-anzahl',   mat.buegelAnzahl);
+  sv('ft-prof-buegel-dm',       mat.buegelDurchmesser);
+  sv('ft-prof-buegel-seite',    mat.buegelSeitenlaenge);
+  sv('ft-prof-schraub-anzahl',  mat.schraubenAnzahl);
+  sv('ft-prof-schraub-dm',      mat.schraubenDurchmesser);
+  sv('ft-prof-schraub-laenge',  mat.schraubenLaenge || mat.schraubLaenge);
+  sv('ft-prof-vfk-zeich',       geo.vfkZeichnungsNr);
+  ftUpdateVol();
+}
+
+// Masttyp-Info neben Ref.Typ aktualisieren
+function _updateFtRefMasttypInfo(ref) {
+  const infoEl = document.getElementById('ft-ref-masttyp-info');
+  if (!infoEl) return;
+  if (!ref) { infoEl.style.display = 'none'; return; }
+  const opts = getMastOptionen(ref);
+  if (opts.length) {
+    infoEl.textContent = opts.map(o => o.label).join(' · ');
+    infoEl.style.display = '';
+  } else {
+    infoEl.style.display = 'none';
+  }
+}
+
 // Felder dynamisch ein-/ausblenden je nach Fundamentart
+function _refreshFtNutzungsartSelect(ref, current) {
+  const wrap = document.getElementById('ft-nutzungsart-wrap');
+  const sel  = document.getElementById('ft-prof-nutzungsart');
+  if (!wrap || !sel) return;
+  const opts = getMastOptionen(ref);
+  if (!opts.length) { wrap.style.display = 'none'; sel.innerHTML = ''; return; }
+  wrap.style.display = '';
+  sel.innerHTML = `<option value="">— nicht definiert —</option>` +
+    opts.map(o => `<option value="${o.key}"${current === o.key ? ' selected' : ''}>${o.label}</option>`).join('');
+}
+
 function onFtRefTypChange() {
   const ref = document.getElementById('ft-prof-ref-typ')?.value || '';
+  _updateFtRefMasttypInfo(ref);
+  _refreshFtNutzungsartSelect(ref, '');
   const nameEl = document.getElementById('ft-prof-name');
   if (!nameEl) return;
-  const refTypes = ['DP1a','DP2a','HP1a','HP2a'];
+  const refTypes = ['DP1a','DP2a','HP1a','HP2a','DG1a','DG2a','DG3a'];
   let currentName = nameEl.value.trim();
   // Strip existing ref prefix
   for (const r of refTypes) {
@@ -27262,6 +27809,7 @@ function onFtRefTypChange() {
       sv('ft-prof-block-l', (parseInt(bm[2]) / 1000).toFixed(3));
     }
   }
+  sv('ft-prof-tiefe', geo.tiefe);
 
   // Materialkennwerte
   sv('ft-prof-beton',           mat.beton);
@@ -27492,9 +28040,134 @@ function ftDbTab(tab) {
   });
 }
 
-function openFundtypProfilModal(id) {
-  _ftEditId = id;
-  const isNew = !id;
+function openFundtypProfilModal(id, fallbackRefTyp, bulkIds) {
+  _ftBulkIds  = (bulkIds && bulkIds.length > 1) ? bulkIds : null;
+  _ftBulkMixed.clear();
+  _ftEditId   = id;
+  const isNew = !id && !_ftBulkIds;
+
+  // ── Sammelbearbeitung ──────────────────────────────────────────────────────
+  if (_ftBulkIds) {
+    const allFts = loadFtProfile();
+    const selFts = _ftBulkIds.map(bid => allFts.find(t => t.id === bid)).filter(Boolean);
+
+    document.getElementById('fundtyp-profil-modal-title').textContent =
+      `${selFts.length} Fundamenttypen bearbeiten`;
+    document.getElementById('ft-prof-delete-btn').style.display = 'none';
+
+    const bulkBanner = document.getElementById('ft-prof-bulk-banner');
+    const bulkText   = document.getElementById('ft-prof-bulk-banner-text');
+    if (bulkBanner && bulkText) {
+      bulkText.innerHTML = `<strong>${selFts.length} Typen</strong> werden gleichzeitig bearbeitet. ` +
+        `Felder mit <em>— Mehrere Werte —</em> werden nur überschrieben, wenn ein neuer Wert eingegeben wird.`;
+      bulkBanner.style.display = 'flex';
+    }
+    document.getElementById('ft-prof-global-banner').style.display  = 'flex';
+    document.getElementById('ft-prof-spez-banner').style.display    = 'none';
+    document.getElementById('ft-prof-readonly-banner').style.display = 'none';
+
+    // Leistungsprofil-Selector befüllen
+    const lpSel = document.getElementById('ft-prof-lp-profil');
+    if (lpSel) {
+      const profiles = loadLeistungsprofile();
+      lpSel.innerHTML = '<option value="">— Individuell (eigene Werte) —</option>' +
+        profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    // Hilfsfunktion: gemeinsamer Wert oder Sentinel
+    const MIXED = '__mixed__';
+    const shared = (getter) => {
+      const vals = selFts.map(getter);
+      return vals.every(v => v === vals[0]) ? (vals[0] ?? '') : MIXED;
+    };
+    const setInput = (elId, val) => {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (val === MIXED) {
+        _ftBulkMixed.add(elId);
+        el.value = '';
+        el.placeholder = '— Mehrere Werte —';
+        el.style.color = '#9ca3af'; el.style.fontStyle = 'italic';
+        el.addEventListener('input', function onInput() {
+          el.style.color = ''; el.style.fontStyle = '';
+          el.removeEventListener('input', onInput);
+        }, { once: true });
+      } else {
+        el.value = val || '';
+        el.style.color = ''; el.style.fontStyle = '';
+      }
+    };
+    const setSelect = (elId, val) => {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      // Mixed-Option sicherstellen
+      if (!el.querySelector('option[value="__mixed__"]')) {
+        const opt = document.createElement('option');
+        opt.value = MIXED; opt.textContent = '— Mehrere Werte —';
+        opt.style.color = '#9ca3af';
+        el.insertBefore(opt, el.firstChild);
+      }
+      if (val === MIXED) {
+        _ftBulkMixed.add(elId);
+        el.value = MIXED;
+      } else {
+        el.value = val || '';
+      }
+    };
+
+    setSelect('ft-prof-ref-typ',        shared(t => t.referenzTyp  || ''));
+    setSelect('ft-prof-art',            shared(t => t.fundamentArt || ''));
+    setSelect('ft-prof-bewehrt',        shared(t => t.bewehrt      || ''));
+    setSelect('ft-prof-lp-profil',      shared(t => t.leistungsprofilId || ''));
+    setInput ('ft-prof-kopf-b',         shared(t => t.kopfB  != null ? String(t.kopfB)  : ''));
+    setInput ('ft-prof-kopf-l',         shared(t => t.kopfL  != null ? String(t.kopfL)  : ''));
+    setInput ('ft-prof-kopf-hoehe',     shared(t => t.kopfHoehe != null ? String(t.kopfHoehe) : ''));
+    setInput ('ft-prof-block-b',        shared(t => t.blockB != null ? String(t.blockB) : ''));
+    setInput ('ft-prof-block-l',        shared(t => t.blockL != null ? String(t.blockL) : ''));
+    setInput ('ft-prof-pfaehle',        shared(t => t.anzahlPfaehle || ''));
+    setInput ('ft-prof-pfahl-laenge',   shared(t => t.pfahlLaenge   || ''));
+    setInput ('ft-prof-pfahl-leistung', shared(t => t.pfahlLeistung != null ? String(t.pfahlLeistung) : ''));
+    setInput ('ft-prof-tiefe',          shared(t => t.tiefe          || ''));
+    setInput ('ft-prof-einsatz',        shared(t => t.einsatzBedingung || ''));
+    setInput ('ft-prof-bemerkung',      shared(t => t.bemerkung        || ''));
+    setInput ('ft-prof-schraub-laenge', shared(t => t.schraubLaenge != null ? String(t.schraubLaenge) : ''));
+    setInput ('ft-prof-beton',          shared(t => t.beton          || ''));
+    setInput ('ft-prof-betondeckung',   shared(t => t.betondeckung   || ''));
+    setInput ('ft-prof-bewehrungsstahl',shared(t => t.bewehrungsstahl || ''));
+    setInput ('ft-prof-intervall',      shared(t => t.ftIntervall        != null ? String(t.ftIntervall)        : ''));
+    setInput ('ft-prof-intervall-abbruch', shared(t => t.ftIntervallAbbruch != null ? String(t.ftIntervallAbbruch) : ''));
+
+    // Name: deaktiviert (muss pro Typ eindeutig bleiben)
+    const nameEl = document.getElementById('ft-prof-name');
+    if (nameEl) {
+      nameEl.value    = `${selFts.length} Typen`;
+      nameEl.disabled = true;
+      nameEl.style.color = '#9ca3af';
+    }
+
+    onFtArtChange();
+    onFtProfProfilChange();
+    ftUpdateVol();
+
+    // Alle Felder entsperren (keine Readonly-Sperre in Bulk-Modus)
+    document.getElementById('fundtyp-profil-modal').querySelectorAll('input, select, textarea').forEach(el => {
+      if (el.id !== 'ft-prof-name') { el.disabled = false; el.style.opacity = ''; el.style.cursor = ''; }
+    });
+
+    document.getElementById('fundtyp-profil-modal').style.display = 'flex';
+    return;
+  }
+
+  // ── Einzelbearbeitung (bisheriger Code) ───────────────────────────────────
+  const bulkBannerEl = document.getElementById('ft-prof-bulk-banner');
+  if (bulkBannerEl) bulkBannerEl.style.display = 'none';
+
+  // Fallback aus Standort-Daten ableiten, falls kein expliziter Fallback mitgegeben wurde
+  if (id && !fallbackRefTyp) {
+    const allBP = loadAllBauprojekt();
+    const match = Object.values(allBP).find(bp => bp.ftProfilId === id && bp.refFamilie);
+    if (match) fallbackRefTyp = match.refFamilie;
+  }
   document.getElementById('fundtyp-profil-modal-title').textContent = isNew ? 'Fundamenttyp erfassen' : 'Fundamenttyp bearbeiten';
   document.getElementById('ft-prof-delete-btn').style.display = isNew ? 'none' : '';
   const v = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
@@ -27553,7 +28226,9 @@ function openFundtypProfilModal(id) {
     v('ft-prof-einsatz',        t.einsatzBedingung);
     v('ft-prof-bemerkung',      t.bemerkung);
     const refSel = document.getElementById('ft-prof-ref-typ');
-    if (refSel) refSel.value = t.referenzTyp || '';
+    if (refSel) refSel.value = t.referenzTyp || fallbackRefTyp || '';
+    _updateFtRefMasttypInfo(refSel?.value || '');
+    _refreshFtNutzungsartSelect(refSel?.value || '', t.nutzungsart || '');
     v('ft-prof-schraub-laenge', t.schraubLaenge != null ? t.schraubLaenge : (t.schraubenLaenge || ''));
     const bewSel = document.getElementById('ft-prof-bewehrt');
     if (bewSel) bewSel.value = t.bewehrt || '';
@@ -27587,6 +28262,7 @@ function openFundtypProfilModal(id) {
     if (lpSel) lpSel.value = '';
     const refSel = document.getElementById('ft-prof-ref-typ');
     if (refSel) refSel.value = '';
+    _refreshFtNutzungsartSelect('', '');
     const bewSel = document.getElementById('ft-prof-bewehrt');
     if (bewSel) bewSel.value = '';
     const artNrInfo = document.getElementById('ft-prof-schraub-artnr-info');
@@ -27630,6 +28306,12 @@ function openFundtypProfilModal(id) {
 function closeFundtypProfilModal() {
   document.getElementById('fundtyp-profil-modal').style.display = 'none';
   _ftEditId = null;
+  _ftBulkIds = null;
+  _ftBulkMixed.clear();
+  const bulkBanner = document.getElementById('ft-prof-bulk-banner');
+  if (bulkBanner) bulkBanner.style.display = 'none';
+  const nameEl = document.getElementById('ft-prof-name');
+  if (nameEl) { nameEl.disabled = false; nameEl.style.color = ''; }
 }
 
 // Kompaktes Read-only-Modal: zeigt nur Leistungswerte eines Fundamenttyps (aus Schichtzuweisung)
@@ -28037,6 +28719,81 @@ function deleteLpModal() {
 
 function saveFundtypProfil() {
   const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  // ── Sammelbearbeitung ──────────────────────────────────────────────────────
+  if (_ftBulkIds) {
+    const list = loadFtProfile();
+    const MIXED = '__mixed__';
+    // Nur Felder übernehmen die nicht mehr im Mixed-Zustand sind
+    const getVal = (elId, parse) => {
+      if (_ftBulkMixed.has(elId)) {
+        const cur = v(elId);
+        if (!cur || cur === MIXED) return undefined; // noch mixed → überspringen
+        return parse ? parse(cur) : cur;
+      }
+      const cur = v(elId);
+      return parse ? (cur ? parse(cur) : null) : cur;
+    };
+    const getSelect = (elId) => {
+      const cur = v(elId);
+      if (cur === MIXED || (_ftBulkMixed.has(elId) && !cur)) return undefined;
+      return cur || null;
+    };
+
+    const updates = {};
+    const maybeAdd = (key, elId, parse) => { const val = getVal(elId, parse); if (val !== undefined) updates[key] = val; };
+    const maybeAddSel = (key, elId)     => { const val = getSelect(elId);    if (val !== undefined) updates[key] = val; };
+    const toFloat = s => parseFloat(s) || null;
+
+    maybeAddSel('referenzTyp',      'ft-prof-ref-typ');
+    maybeAddSel('nutzungsart',      'ft-prof-nutzungsart');
+    maybeAddSel('fundamentArt',     'ft-prof-art');
+    maybeAddSel('bewehrt',          'ft-prof-bewehrt');
+    maybeAddSel('leistungsprofilId','ft-prof-lp-profil');
+    maybeAdd   ('kopfB',            'ft-prof-kopf-b',         toFloat);
+    maybeAdd   ('kopfL',            'ft-prof-kopf-l',         toFloat);
+    maybeAdd   ('kopfHoehe',        'ft-prof-kopf-hoehe',     toFloat);
+    maybeAdd   ('blockB',           'ft-prof-block-b',        toFloat);
+    maybeAdd   ('blockL',           'ft-prof-block-l',        toFloat);
+    maybeAdd   ('anzahlPfaehle',    'ft-prof-pfaehle',        null);
+    maybeAdd   ('pfahlLaenge',      'ft-prof-pfahl-laenge',   null);
+    maybeAdd   ('pfahlLeistung',    'ft-prof-pfahl-leistung', toFloat);
+    maybeAdd   ('tiefe',            'ft-prof-tiefe',          null);
+    maybeAdd   ('einsatzBedingung', 'ft-prof-einsatz',        null);
+    maybeAdd   ('bemerkung',        'ft-prof-bemerkung',      null);
+    maybeAdd   ('schraubLaenge',    'ft-prof-schraub-laenge', toFloat);
+    maybeAdd   ('beton',            'ft-prof-beton',          null);
+    maybeAdd   ('betondeckung',     'ft-prof-betondeckung',   null);
+    maybeAdd   ('bewehrungsstahl',  'ft-prof-bewehrungsstahl',null);
+    maybeAdd   ('ftIntervall',      'ft-prof-intervall',      toFloat);
+    maybeAdd   ('ftIntervallAbbruch','ft-prof-intervall-abbruch', toFloat);
+
+    // kopfAbmessung + blockAbmessung als String-Cache synchron halten
+    if ('kopfB' in updates) {
+      const b = updates.kopfB, l = updates.kopfL;
+      if (b) updates.kopfAbmessung = `${Math.round(b*1000)}×${Math.round((l||b)*1000)} mm`;
+    }
+    if ('blockB' in updates) {
+      const b = updates.blockB, l = updates.blockL;
+      if (b) updates.blockAbmessung = `${Math.round(b*1000)}×${Math.round((l||b)*1000)} mm`;
+    }
+
+    _ftBulkIds.forEach(bid => {
+      const idx = list.findIndex(t => t.id === bid);
+      if (idx < 0) return;
+      list[idx] = { ...list[idx], ...updates };
+    });
+    saveFtProfile(list);
+    _ftBulkIds = null;
+    _ftBulkMixed.clear();
+    closeFundtypProfilModal();
+    renderFundtypView();
+    refreshFundtypDatalist();
+    if (typeof renderBpFtInfo === 'function') renderBpFtInfo();
+    return;
+  }
+
+  // ── Einzelbearbeitung (bisheriger Code) ───────────────────────────────────
   const list    = loadFtProfile();
   const existing = _ftEditId ? list.find(t => t.id === _ftEditId) : null;
   const isStd   = existing?.typ === 'standard';
@@ -28105,6 +28862,7 @@ function saveFundtypProfil() {
     pfahlLeistung:    parseFloat(v('ft-prof-pfahl-leistung')) || null,
     tiefe:            v('ft-prof-tiefe'),
     referenzTyp:      document.getElementById('ft-prof-ref-typ')?.value || null,
+    nutzungsart:      document.getElementById('ft-prof-nutzungsart')?.value || null,
     bewehrt:          document.getElementById('ft-prof-bewehrt')?.value || null,
     nachweisRequired: true,
     ...matFields,
@@ -28128,6 +28886,8 @@ function saveFundtypProfil() {
   closeFundtypProfilModal();
   renderFundtypView();
   refreshFundtypDatalist();
+  // Info-Box im Sidebar sofort aktualisieren (falls der Standort das gerade bearbeitete FT hat)
+  if (typeof renderBpFtInfo === 'function') renderBpFtInfo();
 }
 
 function deleteFundtypProfil() {
@@ -29846,7 +30606,7 @@ const LIST_EXTRA_COLUMNS = {
     { key: 'n_rs',          label: 'N LV95',       render: p => p.rs?.n||'—' },
     { key: 'gleis',         label: 'Gleis',        render: p => `<input type="text" value="${p.gleis||''}" placeholder="—" style="width:52px;font-size:12px;border:1px solid #d1d5db;border-radius:4px;padding:1px 4px;text-align:center;" onclick="event.stopPropagation()" onchange="saveListGleis(${p.id},this.value)">` },
     { key: 'gw_zone',       label: 'GW-Zone',      render: p => { const z=(loadAllNaturschutz()[p.id]||{}).gwZone||''; return z ? (GW_ZONE_LABEL[z]||z) : '—'; } },
-    { key: 'gw_kote',       label: 'GW-Kote',      render: p => { const v=(loadAllNaturschutz()[p.id]||{}).gwKote; return v?v+' m ü.M.':'—'; } },
+    { key: 'gw_kote',       label: 'GW-Kote',      render: p => { const k=getBpGwKote(p.id); return k!==null?k.toFixed(1)+' m ü.M.':'—'; } },
     { key: 'ns_schutz',     label: 'Schutzgebiete',render: p => { const ns=loadAllNaturschutz()[p.id]||{}; const items=[ns.bln&&'BLN',ns.nsg&&'NSG',ns.gewaesser&&'Gew.',ns.wald&&'Wald',ns.andere&&'Andere'].filter(Boolean); return items.length?items.join(', '):'—'; } },
     { key: 'ns_auflagen',   label: 'Auflagen',     render: p => (loadAllNaturschutz()[p.id]||{}).auflagen||'—' },
   ],
@@ -33648,6 +34408,26 @@ function loadAllFotos() {
           </div>
         </div>
 
+        <!-- Referenzkoten (absolute m ü.M.) -->
+        <div id="ah-koten-ref" style="display:none;margin-bottom:12px;padding:8px 10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;font-size:11px;color:#374151;">
+          <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Referenzkoten m ü.M.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div>
+              <div style="color:#9ca3af;font-size:10px;margin-bottom:2px;">OK Fundamentkopf</div>
+              <div id="ah-ref-kopf" style="font-weight:600;font-size:12px;">—</div>
+            </div>
+            <div>
+              <div style="color:#9ca3af;font-size:10px;margin-bottom:2px;">UK Fundament</div>
+              <div id="ah-ref-sohle" style="font-weight:600;font-size:12px;">—</div>
+            </div>
+            <div>
+              <div style="color:#9ca3af;font-size:10px;margin-bottom:2px;">Grundwasser</div>
+              <div id="ah-ref-gw" style="font-weight:600;font-size:12px;">—</div>
+            </div>
+          </div>
+          <div id="ah-ref-gw-check" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #f0f2f5;font-size:10px;"></div>
+        </div>
+
         <!-- Grubenausmass -->
         <div style="padding:10px 12px;background:#f0f4fa;border-radius:8px;border-left:3px solid #1a3a5c;">
           <div style="font-size:10px;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Grubenausmass *)</div>
@@ -34800,6 +35580,12 @@ function loadAllFotos() {
       <span><strong>Standardfundament BS19</strong> — Geometrie schreibgeschützt. Materialkennwerte und Leistungsdaten können hier angepasst werden.</span>
     </div>
 
+    <!-- Sammelbearbeitung-Banner (mehrere FT selektiert) -->
+    <div id="ft-prof-bulk-banner" style="display:none;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:8px 12px;font-size:12px;color:#15803d;align-items:flex-start;gap:8px;margin-bottom:10px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span id="ft-prof-bulk-banner-text"></span>
+    </div>
+
     <!-- Info-Badge: Globalwirkung -->
     <div id="ft-prof-global-banner" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:8px 12px;font-size:12px;color:#1e40af;display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -34816,13 +35602,35 @@ function loadAllFotos() {
       <!-- Referenztyp * (Pflichtfeld — oben) -->
       <div class="modal-field full">
         <label>Referenztyp *</label>
-        <select class="modal-input" id="ft-prof-ref-typ" onchange="onFtRefTypChange()">
-          <option value="">— keiner —</option>
-          <option value="DP1a">DP1a</option>
-          <option value="DP2a">DP2a</option>
-          <option value="HP1a">HP1a</option>
-          <option value="HP2a">HP2a</option>
-        </select>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <select class="modal-input" id="ft-prof-ref-typ" onchange="onFtRefTypChange()" style="flex:1;">
+            <option value="">— keiner —</option>
+            <optgroup label="Druckrohrpfahl">
+              <option value="DP1a">DP1a</option>
+              <option value="DP2a">DP2a</option>
+            </optgroup>
+            <optgroup label="Hammerpfahl">
+              <option value="HP1a">HP1a</option>
+              <option value="HP2a">HP2a</option>
+            </optgroup>
+            <optgroup label="Gittermast">
+              <option value="DG1a">DG1a</option>
+              <option value="DG2a">DG2a</option>
+              <option value="DG3a">DG3a</option>
+            </optgroup>
+            <option value="Sonstige">Sonstige</option>
+          </select>
+          <button type="button" onclick="ftPrefillFromRefTyp()" title="Alle Abmessungen + Materialkennwerte aus dem Referenz-Standardprofil zurücksetzen"
+            style="flex-shrink:0;padding:5px 10px;border-radius:6px;border:1px solid #d1d5db;background:white;font-size:11px;color:#374151;cursor:pointer;white-space:nowrap;">
+            Zurücksetzen
+          </button>
+        </div>
+        <div id="ft-ref-masttyp-info" style="display:none;font-size:10px;color:#6b7280;margin-top:4px;"></div>
+        <div id="ft-nutzungsart-wrap" style="display:none;margin-top:6px;">
+          <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:3px;">Nutzungsart</label>
+          <select id="ft-prof-nutzungsart"
+            style="width:100%;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit;background:white;"></select>
+        </div>
         <div style="font-size:10px;color:#9ca3af;margin-top:3px;">Bestimmt Fundamentschrauben-Anforderungen und zulässige Standardlasten</div>
       </div>
 
@@ -35418,6 +36226,10 @@ function loadAllFotos() {
         <div class="modal-field">
           <label><span style="font-size:10px;font-weight:700;color:#10b981;background:#ecfdf5;padding:1px 5px;border-radius:4px;">RKS</span> N (LV95)</label>
           <input class="modal-input" id="qe-rks-n" type="number" placeholder="z.B. 1269271">
+        </div>
+        <div class="modal-field" style="grid-column:1/-1;">
+          <label>Z-Achse OK Kopf (m ü.M.)</label>
+          <input class="modal-input" id="qe-rs-z" type="number" step="0.01" placeholder="z.B. 388.63">
         </div>
       </div>
       <button onclick="closeQuickEdit();openModal(_qeId)"
